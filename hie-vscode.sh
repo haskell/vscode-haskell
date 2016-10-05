@@ -3,9 +3,8 @@
 export HIE_SERVER_PATH=`which hie-vscode`
 
 if [ "X" = "X$HIE_SERVER_PATH" ]; then
-  echo "Content-Length: 188\r\n\r"
-  echo '{"command":"initialize","success":false,"request_seq":1,"seq":1,"type":"response","message":"hie-vscode.exe is not found. Run `stack install hie-vscode`, and put it to PATH environment."}'
-
+  echo "Content-Length: 100\r\n\r"
+  echo '{"jsonrpc":"2.0","id":1,"error":{"code":-32099,"message":"Cannot find hie-vscode.exe in the path"}}'
   exit 1
 fi
 
