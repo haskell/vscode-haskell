@@ -1,6 +1,7 @@
 #!/bin/sh
 
-export HIE_SERVER_PATH=`which hie-vscode`
+# export HIE_SERVER_PATH=`which hie-vscode`
+export HIE_SERVER_PATH=`which hie`
 
 if [ "X" = "X$HIE_SERVER_PATH" ]; then
   echo "Content-Length: 100\r\n\r"
@@ -8,4 +9,5 @@ if [ "X" = "X$HIE_SERVER_PATH" ]; then
   exit 1
 fi
 
-hie-vscode
+# hie-vscode
+hie --lsp
