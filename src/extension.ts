@@ -5,12 +5,24 @@
 
 import * as path from 'path';
 
-import { workspace, Disposable, ExtensionContext } from 'vscode';
+import { workspace, Disposable, ExtensionContext, languages } from 'vscode';
 import { LanguageClient, LanguageClientOptions,
 	     Executable, ExecutableOptions,
          SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
 
+// --------------------------------------------------------------------
+// Example from https://github.com/Microsoft/vscode/issues/2059
+const fixProvider = {
+    provideCodeActions: function(document, range, context, token) {
+        return [{ title: "Command", command: "cursorUp" }];
+    }
+};
+
+// --------------------------------------------------------------------
+
 export function activate(context: ExtensionContext) {
+    const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
+    context.subscriptions.push(fixer);
 
 	// The server is implemented in node
 	//let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));

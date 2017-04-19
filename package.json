@@ -6,7 +6,7 @@
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
-        "vscode": "^1.5.0"
+        "vscode": "^1.1.0"
     },
     "categories": [
         "Other"
@@ -42,10 +42,10 @@
     },
     "devDependencies": {
         "typescript": "^1.8.5",
-        "vscode": "^0.11.0"
+        "vscode": "^1.1.0"
     },
     "dependencies": {
-        "vscode-languageclient": "^2.2.1"
+        "vscode-languageclient": "^3.2.0"
     }
 
 }
