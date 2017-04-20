@@ -21,8 +21,8 @@ const fixProvider = {
 // --------------------------------------------------------------------
 
 export function activate(context: ExtensionContext) {
-    const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
-    context.subscriptions.push(fixer);
+    // const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
+    // context.subscriptions.push(fixer);
 
 	// The server is implemented in node
 	//let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
