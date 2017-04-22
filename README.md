@@ -2,7 +2,16 @@
 
 This is the README for your extension "vscode-hie-server".
 
-It is still under development. To make use of it, see
+It is still under development, and requires the haskell-ide-engine.
+To make use of it, do the following
+
+```bash
+git clone https://github.com/alanz/haskell-ide-engine
+cd haskell-ide-engine
+git checkout lsp
+stack install
+```
+
 https://github.com/alanz/haskell-ide-engine/tree/lsp
 
 # The following is the initial boilerplate, to be filled in eventually
