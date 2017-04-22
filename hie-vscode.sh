@@ -10,3 +10,4 @@ fi
 
 #hie --lsp
 hie --lsp -d -l /tmp/hie.log
+#hie --lsp -d -l /tmp/hie.log | tee /tmp/hie-wire.log
