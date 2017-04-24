@@ -8,6 +8,14 @@ if [ "X" = "X$HIE_SERVER_PATH" ]; then
   exit 1
 fi
 
-#hie --lsp
-hie --lsp -d -l /tmp/hie.log
+# Run directly
+hie --lsp
+
+# Run with a log
+#hie --lsp -d -l /tmp/hie.log
+
+# Run with a log and a direct dump of the server output
 #hie --lsp -d -l /tmp/hie.log | tee /tmp/hie-wire.log
+
+# Run the 'lsp-hello' server instead
+#lsp-hello
