@@ -8,14 +8,40 @@
     "engines": {
         "vscode": "^1.6.0"
     },
+    "keywords": [
+        "language", "haskell", "lsp"
+    ],
+    "homepage": "https://github.com/alanz/vscode-hie-server",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/alanz/vscode-hie-server.git"
+    },
+    "bugs": {
+        "url": "https://github.com/alanz/vscode-hie-server/issues"
+    },
     "categories": [
-        "Other"
+        "Languages"
     ],
     "activationEvents": [
         "onLanguage:haskell"
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "languages": [{
+            "id": "haskell",
+            "aliases": ["Haskell", "haskell"],
+            "extensions": [".hs"]
+        }, {
+            "id": "cabal",
+            "aliases": ["cabal", "Cabal"],
+            "extensions": [
+                ".cabal"
+            ]
+        }, {
+            "id": "literate haskell",
+            "aliases": ["Literate Haskell", "literate Haskell"],
+            "extensions": [".lhs"]
+        }],
         "configuration": {
             "type": "object",
             "title": "Example configuration",
