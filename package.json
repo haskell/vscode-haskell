@@ -62,7 +62,22 @@
           ],
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerExample service."
-        }
+        },
+        "commands": [{
+          "command": "hare:demote",
+          "title": "HaRe demote definition"
+          }],
+        "menus": {
+          "editor/title": [{
+              "when": "resourceLangId == haskell",
+              "command": "hare:demote"
+          }],
+          "editor/context": [{
+              "when": "resourceLangId == haskell",
+              "command": "hare:demote",
+              "group": "HaRe@1"
+          }]
+    }
     },
 
     "scripts": {
@@ -78,7 +93,7 @@
         "vscode": "^1.1.0"
     },
     "dependencies": {
-        "vscode-languageclient": "^3.2.0"
+        "vscode-languageclient": "^3.2.1"
     }
 
 }
