@@ -11,7 +11,7 @@ import { LanguageClient, LanguageClientOptions,
          SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
 
 // --------------------------------------------------------------------
-// Example from https://github.com/Microsoft/vscode/issues/2059
+// Example from https://github.com/Microsoft/vscode/issues/2059 
 const fixProvider = {
     provideCodeActions: function(document, range, context, token) {
         return [{ title: "Command", command: "cursorUp" }];

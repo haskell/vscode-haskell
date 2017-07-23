@@ -23,7 +23,8 @@
         "Languages"
     ],
     "activationEvents": [
-        "onLanguage:haskell"
+        "onLanguage:haskell",
+        "onLanguage:literate haskell"
     ],
     "main": "./out/src/extension",
     "contributes": {
