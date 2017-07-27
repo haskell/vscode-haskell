@@ -1,19 +1,19 @@
-# vscode-hie-server README
+# Haskell Language Server README
 
-This is the README for your extension "vscode-hie-server".
+This is the README for the extension "vscode-hie-server".
 
-It is still under development, and requires the haskell-ide-engine.
+It is the client interface to the Language Server Protocol server for
+Haskell, as provided by the Haskell Ide Engine.
+
+It is still under development.
+
 To make use of it, do the following
 
 ```bash
-git clone https://github.com/alanz/haskell-ide-engine
+git clone https://github.com/haskell/haskell-ide-engine
 cd haskell-ide-engine
-git checkout lsp
 stack install
 ```
-
-https://github.com/alanz/haskell-ide-engine/tree/lsp
-
 # The following is the initial boilerplate, to be filled in eventually
 
 After writing up a brief description, we recommend including the following

@@ -22,6 +22,7 @@
     "categories": [
         "Languages"
     ],
+	  "icon": "images/HaskellLogo.png",
     "activationEvents": [
         "onLanguage:haskell",
         "onLanguage:literate haskell"
