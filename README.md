@@ -14,6 +14,21 @@ git clone https://github.com/haskell/haskell-ide-engine
 cd haskell-ide-engine
 stack install
 ```
+
+This extension is not yet on the vscode marketplace.  To use it in vscode,
+
+```bash
+$ npm install -g vsce
+$ vsce package
+```
+
+This will create a file something like `vscode-hie-server-0.0.1.vsix`
+according to the current version.
+
+In vscode, open the extensions tab, and click on the `...` at the top right of it,
+and use the `Install from VSIX...` option to locate and install the generated file.
+
+
 # The following is the initial boilerplate, to be filled in eventually
 
 After writing up a brief description, we recommend including the following
