@@ -39,7 +39,7 @@ export function activate(context: ExtensionContext) {
 		//run : { module: serverModule, transport: TransportKind.ipc },
 		//debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
 		run : { command: serverPath },
-		debug: { command: serverPath }
+		debug: { command: serverPath, args: ["-d", "-l", "/tmp/hie.log"] }
 	}
 
 	// Options to control the language client

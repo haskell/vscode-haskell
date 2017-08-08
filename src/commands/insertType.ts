@@ -29,14 +29,13 @@ export namespace InsertType {
         let symbolRange = editor.document.getWordRangeAtPosition(vsRng.start);
         let symbolName = editor.document.getText(symbolRange);
 
-        let indentPos = editor.document.lineAt(rng.start.line).firstNonWhitespaceCharacterIndex
-        let indent = " ".repeat(indentPos);
+        let indent = " ".repeat(vsRng.start.character);
         editor.edit(b => {
-          if (indentPos == rng.start.character && editor.document.getText(vsRng).includes('=')) {
+          if (editor.document.getText(vsRng).includes('=')) {
             b.insert(vsRng.start, `${symbolName} :: ${typ}\n${indent}`);
           } else {
-            b.insert(symbolRange.start, "(")
-            b.insert(symbolRange.end, ` :: ${typ})`)
+            b.insert(vsRng.start, "(")
+            b.insert(vsRng.end, ` :: ${typ})`)
           }
         });
       }, e => {

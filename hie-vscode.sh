@@ -9,7 +9,7 @@ if [ "X" = "X$HIE_SERVER_PATH" ]; then
 fi
 
 # Run directly
-hie --lsp
+hie --lsp $@
 
 # Run with a log
 #hie --lsp -d -l /tmp/hie.log
