@@ -65,10 +65,17 @@
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerExample service."
         },
-        "commands": [{
-          "command": "hare:demote",
-          "title": "HaRe demote definition"
-          }],
+        "commands": [
+            {
+                "command": "hare:demote",
+                "title": "HaRe demote definition"
+            },
+            {
+                "command": "hie.commands.insertType",
+                "title": "Haskell: Insert type",
+                "description": "Insert type for the expression"
+            }
+        ],
         "menus": {
           "editor/title": [{
               "when": "resourceLangId == haskell",
@@ -79,7 +86,7 @@
               "command": "hare:demote",
               "group": "HaRe@1"
           }]
-    }
+        }
     },
 
     "scripts": {
