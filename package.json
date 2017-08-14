@@ -9,7 +9,9 @@
         "vscode": "^1.12.0"
     },
     "keywords": [
-        "language", "haskell", "lsp"
+        "language",
+        "haskell",
+        "lsp"
     ],
     "homepage": "https://github.com/alanz/vscode-hie-server",
     "repository": {
@@ -22,28 +24,45 @@
     "categories": [
         "Languages"
     ],
-	  "icon": "images/HaskellLogo.png",
+    "icon": "images/HaskellLogo.png",
     "activationEvents": [
         "onLanguage:haskell",
         "onLanguage:literate haskell"
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "languages": [{
-            "id": "haskell",
-            "aliases": ["Haskell", "haskell"],
-            "extensions": [".hs"]
-        }, {
-            "id": "cabal",
-            "aliases": ["cabal", "Cabal"],
-            "extensions": [
-                ".cabal"
-            ]
-        }, {
-            "id": "literate haskell",
-            "aliases": ["Literate Haskell", "literate Haskell"],
-            "extensions": [".lhs"]
-        }],
+        "languages": [
+            {
+                "id": "haskell",
+                "aliases": [
+                    "Haskell",
+                    "haskell"
+                ],
+                "extensions": [
+                    ".hs"
+                ]
+            },
+            {
+                "id": "cabal",
+                "aliases": [
+                    "cabal",
+                    "Cabal"
+                ],
+                "extensions": [
+                    ".cabal"
+                ]
+            },
+            {
+                "id": "literate haskell",
+                "aliases": [
+                    "Literate Haskell",
+                    "literate Haskell"
+                ],
+                "extensions": [
+                    ".lhs"
+                ]
+            }
+        ],
         "configuration": {
             "type": "object",
             "title": "Example configuration",
@@ -56,19 +75,40 @@
             }
         },
         "languageServerExample.trace.server": {
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
-          "default": "off",
-          "description": "Traces the communication between VSCode and the languageServerExample service."
+            "type": "string",
+            "enum": [
+                "off",
+                "messages",
+                "verbose"
+            ],
+            "default": "off",
+            "description": "Traces the communication between VSCode and the languageServerExample service."
         },
         "commands": [
             {
-                "command": "hare:demote",
-                "title": "HaRe demote definition"
+                "command": "hie.commands.demoteDef",
+                "title": "Haskell: Demote Definition",
+                "description": "Move a definition one level down"
+            },
+            {
+                "command": "hie.commands.liftOneLevel",
+                "title": "Haskell: Lift One Level",
+                "description": "Move definition one level up from where it is now"
+            },
+            {
+                "command": "hie.commands.liftTopLevel",
+                "title": "Haskell: Lift to Top Level",
+                "description": "Move a definition to the top level"
+            },
+            {
+                "command": "hie.commands.genApplicative",
+                "title": "Haskell: Generalize Applicative",
+                "description": "Generalize a monadic function to use applicative"
+            },
+            {
+                "command": "hie.commands.deleteDef",
+                "title": "Haskell: Delete Definition",
+                "description": "Deletes a definition"
             },
             {
                 "command": "hie.commands.insertType",
@@ -77,18 +117,21 @@
             }
         ],
         "menus": {
-          "editor/title": [{
-              "when": "resourceLangId == haskell",
-              "command": "hare:demote"
-          }],
-          "editor/context": [{
-              "when": "resourceLangId == haskell",
-              "command": "hare:demote",
-              "group": "HaRe@1"
-          }]
+            "editor/title": [
+                {
+                    "when": "resourceLangId == haskell",
+                    "command": "hie.commands.demoteDef"
+                }
+            ],
+            "editor/context": [
+                {
+                    "when": "resourceLangId == haskell",
+                    "command": "hie.commands.demoteDef",
+                    "group": "HaRe@1"
+                }
+            ]
         }
     },
-
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
@@ -104,5 +147,4 @@
     "dependencies": {
         "vscode-languageclient": "^3.2.1"
     }
-
 }

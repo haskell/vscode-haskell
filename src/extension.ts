@@ -8,6 +8,8 @@ import * as path from 'path';
 import { workspace, Disposable, ExtensionContext, languages, commands } from 'vscode';
 import { LanguageClient, LanguageClientOptions,
 		 SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
+import { RequestType, Range, Position } from 'vscode-languageclient';
+
 import * as msg from 'vscode-jsonrpc';
 import * as vscode from 'vscode';
 
@@ -60,6 +62,32 @@ export function activate(context: ExtensionContext) {
 	let cmd = InsertType.registerCommand(langClient);
 	context.subscriptions.push(cmd);
 
+	registerHiePointCommand(langClient,"hie.commands.demoteDef","hare:demote",context);
+	registerHiePointCommand(langClient,"hie.commands.liftOneLevel","hare:liftonelevel",context);
+	registerHiePointCommand(langClient,"hie.commands.liftTopLevel","hare:lifttotoplevel",context);
+	registerHiePointCommand(langClient,"hie.commands.deleteDef","hare:deletedef",context);
+	registerHiePointCommand(langClient,"hie.commands.genApplicative","hare:genapplicative",context);
 	let disposable = langClient.start();
 	context.subscriptions.push(disposable);
+}
+
+function registerHiePointCommand(langClient:LanguageClient,name:string,command:string,context:ExtensionContext) {
+	let cmd2 = vscode.commands.registerTextEditorCommand(name, (editor, edit) => {
+		let cmd = {
+			command: command,
+			arguments: [
+				{
+					file: editor.document.uri.toString(),
+					pos: editor.selections[0].active
+				}
+			]
+		};
+
+		langClient.sendRequest("workspace/executeCommand", cmd).then(hints => {
+			return true;
+		}, e => {
+			console.error(e);
+		});
+	});
+	context.subscriptions.push(cmd2)
 }
