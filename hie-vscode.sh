@@ -10,9 +10,11 @@ fi
 
 # Run directly
 hie --lsp $@
+#hie --lsp
 
 # Run with a log
-#hie --lsp -d -l /tmp/hie.log
+# hie --lsp -d -l /tmp/hie.log $@
+# hie --lsp -d -l /tmp/hie.log --vomit $@
 
 # Run with a log and a direct dump of the server output
 #hie --lsp -d -l /tmp/hie.log | tee /tmp/hie-wire.log
