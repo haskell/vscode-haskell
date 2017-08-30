@@ -65,7 +65,7 @@
         ],
         "configuration": {
             "type": "object",
-            "title": "Example configuration",
+            "title": "Haskell Language Server",
             "properties": {
                 "languageServerHaskell.maxNumberOfProblems": {
                     "type": "number",
@@ -144,6 +144,9 @@
         "typescript": "^2.1.5",
         "vscode": "^1.1.0"
     },
+    "extensionDependencies": [
+        "justusadam.language-haskell"
+    ],
     "dependencies": {
         "vscode-languageclient": "^3.2.1"
     }

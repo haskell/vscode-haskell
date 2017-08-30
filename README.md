@@ -1,10 +1,8 @@
-# Haskell Language Server README
+# Haskell Language Server
 
-This is the README for the extension "vscode-hie-server", which is available on
-the vscode marketplace.
+[Available on the VSCode marketplace](https://marketplace.visualstudio.com/items?itemName=alanz.vscode-hie-server)
 
-It is the client interface to the Language Server Protocol server for
-Haskell, as provided by the Haskell Ide Engine.
+Client interface to the Language Server Protocol server for Haskell, as provided by the Haskell IDE Engine.
 
 It is still under development.
 
