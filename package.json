@@ -6,7 +6,7 @@
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
-        "vscode": "^1.12.0"
+        "vscode": "^1.15.0"
     },
     "keywords": [
         "language",
@@ -114,6 +114,19 @@
                 "command": "hie.commands.insertType",
                 "title": "Haskell: Insert type",
                 "description": "Insert type for the expression"
+            },
+            {
+                "command": "hie.commands.showType",
+                "title": "Haskell: Show type",
+                "description": "Show type for the expression"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "hie.commands.showType",
+                "key": "ctrl+alt+t",
+                "mac": "cmd+alt+t",
+                "when": "editorTextFocus"
             }
         ],
         "menus": {
@@ -139,15 +152,15 @@
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
     "devDependencies": {
-        "@types/mocha": "^2.2.33",
-        "@types/node": "^6.0.52",
+        "@types/mocha": ">=2.2.33",
+        "@types/node": ">=6.0.52",
         "typescript": "^2.1.5",
-        "vscode": "^1.1.0"
+        "vscode": ">1.1.0"
     },
     "extensionDependencies": [
         "justusadam.language-haskell"
     ],
     "dependencies": {
-        "vscode-languageclient": "^3.2.1"
+        "vscode-languageclient": ">3.2.0"
     }
 }

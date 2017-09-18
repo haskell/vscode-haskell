@@ -14,6 +14,7 @@ import * as msg from 'vscode-jsonrpc';
 import * as vscode from 'vscode';
 
 import { InsertType } from './commands/insertType';
+import { ShowType } from './commands/showType';
 
 // --------------------------------------------------------------------
 // Example from https://github.com/Microsoft/vscode/issues/2059
@@ -61,8 +62,8 @@ export function activate(context: ExtensionContext) {
 	// Create the language client and start the client.
 	let langClient = new LanguageClient('Language Server Haskell', serverOptions, clientOptions);
 
-	let cmd = InsertType.registerCommand(langClient);
-	context.subscriptions.push(cmd);
+	context.subscriptions.push(InsertType.registerCommand(langClient));
+	ShowType.registerCommand(langClient).forEach(x => context.subscriptions.push(x));
 
 	registerHiePointCommand(langClient,"hie.commands.demoteDef","hare:demote",context);
 	registerHiePointCommand(langClient,"hie.commands.liftOneLevel","hare:liftonelevel",context);
@@ -70,6 +71,7 @@ export function activate(context: ExtensionContext) {
 	registerHiePointCommand(langClient,"hie.commands.deleteDef","hare:deletedef",context);
 	registerHiePointCommand(langClient,"hie.commands.genApplicative","hare:genapplicative",context);
 	let disposable = langClient.start();
+
 	context.subscriptions.push(disposable);
 }
 
