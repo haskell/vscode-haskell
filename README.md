@@ -15,14 +15,14 @@ stack install
 ```
 
 Also, make sure the extension is installed in vscode, either via the
-marketplace, or if you are testing an unreleased version by
+marketplace (preferred), or if you are testing an unreleased version by
 
 ```bash
 $ npm install -g vsce
 $ vsce package
 ```
 
-This will create a file something like `vscode-hie-server-0.0.1.vsix`
+This will create a file something like `vscode-hie-server-0.0.3.vsix`
 according to the current version.
 
 In vscode, open the extensions tab, and click on the `...` at the top right of it,
@@ -49,6 +49,15 @@ None at present
 Only works for GHC 8.0.2 projects at the moment
 
 ## Release Notes
+
+### 0.0.3
+
+Add "Haskell: Show type" command, bound to Ctrl-alt-t (Cmd-alt-t on mac). This
+calls the `ghc-mod` `type` command on the current cursor location or highlighted
+region. Thanks to @AlexeyRaga
+
+Add a check for having the `hie` executable in the path on startup, to prevent
+an endless failure to start if the executable is not there. Thanks to @DavidEichman
 
 ### 0.0.2
 
