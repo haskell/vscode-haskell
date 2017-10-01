@@ -10,6 +10,7 @@ import { LanguageClient, LanguageClientOptions,
 		 SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
 import { RequestType, Range, Position } from 'vscode-languageclient';
 
+import * as child_process from 'child_process';
 import * as msg from 'vscode-jsonrpc';
 import * as vscode from 'vscode';
 
@@ -26,9 +27,32 @@ const fixProvider = {
 
 // --------------------------------------------------------------------
 
-export function activate(context: ExtensionContext) {
-    // const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
-    // context.subscriptions.push(fixer);
+export async function activate(context: ExtensionContext) {
+	try {
+		// Check if hie is installed.
+		if (! await isHieInstalled()) {
+			// TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
+			const notInstalledMsg: string = 'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.'
+			const forceStart: string = 'Force Start'
+			vscode.window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
+				if (option === forceStart)
+				{
+					activateNoHieCheck(context)
+				}
+			})
+		}
+		else
+		{
+			activateNoHieCheck(context)
+		}
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function activateNoHieCheck(context: ExtensionContext) {
+	// const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
+	// context.subscriptions.push(fixer);
 	// The server is implemented in node
 	//let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
 	let startupScript = ( process.platform == "win32" ) ? "hie-vscode.bat" : "hie-vscode.sh";
@@ -75,7 +99,14 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
-function registerHiePointCommand(langClient:LanguageClient,name:string,command:string,context:ExtensionContext) {
+function isHieInstalled(): Promise<boolean> {
+	return new Promise((resolve, reject) => {
+		const cmd: string = 'which hie'
+		child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
+	});
+}
+
+function registerHiePointCommand(langClient: LanguageClient, name: string, command: string, context: ExtensionContext) {
 	let cmd2 = vscode.commands.registerTextEditorCommand(name, (editor, edit) => {
 		let cmd = {
 			command: command,
