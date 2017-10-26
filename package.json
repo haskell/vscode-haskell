@@ -80,6 +80,11 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Get suggestions from hlint"
+                },
+                "languageServerHaskell.showTypeForSelection": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, when an expression is selected, vscode will the hover tooltip will try to displaay the type of the entire expression - rather than just the term under the cursor."
                 }
             }
         },
