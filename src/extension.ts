@@ -16,6 +16,7 @@ import * as vscode from 'vscode';
 
 import { InsertType } from './commands/insertType';
 import { ShowType } from './commands/showType';
+import { DocsBrowser } from './docsBrowser';
 
 // --------------------------------------------------------------------
 // Example from https://github.com/Microsoft/vscode/issues/2059
@@ -51,6 +52,10 @@ export async function activate(context: ExtensionContext) {
 }
 
 function activateNoHieCheck(context: ExtensionContext) {
+
+	let docsDisposable = DocsBrowser.registerDocsBrowser();
+	context.subscriptions.push(docsDisposable);
+
 	// const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
 	// context.subscriptions.push(fixer);
 	// The server is implemented in node
@@ -80,6 +85,9 @@ function activateNoHieCheck(context: ExtensionContext) {
 			configurationSection: 'languageServerHaskell',
 			// Notify the server about file changes to '.clientrc files contain in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+		},
+		middleware: {
+			provideHover: DocsBrowser.hoverLinksMiddlewareHook
 		}
 	}
 
