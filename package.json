@@ -2,7 +2,7 @@
     "name": "vscode-hie-server",
     "displayName": "Haskell Language Server",
     "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
@@ -71,6 +71,11 @@
                     "type": "number",
                     "default": 100,
                     "description": "Controls the maximum number of problems produced by the server."
+                },
+                "languageServerHaskell.hlintOn": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Get suggestions from hlint"
                 }
             }
         },
