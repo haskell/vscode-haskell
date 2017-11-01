@@ -88,7 +88,8 @@ function activateNoHieCheck(context: ExtensionContext) {
 		},
 		middleware: {
 			provideHover: DocsBrowser.hoverLinksMiddlewareHook
-		}
+		},
+		revealOutputChannelOn: RevealOutputChannelOn.never
 	}
 
 	// Create the language client and start the client.
