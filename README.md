@@ -50,6 +50,12 @@ Only works for GHC 8.0.2 projects at the moment
 
 ## Release Notes
 
+### 0.0.4
+
+Show documents in a tab, by @AlexeyRaga
+
+Add a configuration option to enable/disable `hlint`.
+
 ### 0.0.3
 
 Add "Haskell: Show type" command, bound to Ctrl-alt-t (Cmd-alt-t on mac). This
