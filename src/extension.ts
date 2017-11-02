@@ -6,7 +6,7 @@
 import * as path from 'path';
 
 import { workspace, Disposable, ExtensionContext, languages, commands } from 'vscode';
-import { LanguageClient, LanguageClientOptions,
+import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn,
 		 SettingMonitor, ServerOptions, TransportKind } from 'vscode-languageclient';
 import { RequestType, Range, Position } from 'vscode-languageclient';
 
@@ -89,7 +89,7 @@ function activateNoHieCheck(context: ExtensionContext) {
 		middleware: {
 			provideHover: DocsBrowser.hoverLinksMiddlewareHook
 		},
-		revealOutputChannelOn: RevealOutputChannelOn.never
+		revealOutputChannelOn: RevealOutputChannelOn.Never
 	}
 
 	// Create the language client and start the client.
