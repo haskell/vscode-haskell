@@ -7,6 +7,7 @@ import * as child_process from 'child_process';
 import * as path from 'path';
 import {
   commands,
+  DocumentFilter,
   ExtensionContext,
   window,
   workspace
@@ -19,9 +20,13 @@ import {
 } from 'vscode-languageclient';
 
 import { InsertType } from './commands/insertType';
-import { ShowType } from './commands/showType';
+import {
+  registerTypeHover,
+  ShowType,
+  ShowTypeHover,
+} from './commands/showTypeFix';
+// } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
-import { ShowTypeHover, registerTypeHover } from './commands/showType';
 
 export async function activate(context: ExtensionContext) {
   try {
@@ -46,7 +51,6 @@ export async function activate(context: ExtensionContext) {
 
 function activateNoHieCheck(context: ExtensionContext) {
 
-<<<<<<< HEAD
   const docsDisposable = DocsBrowser.registerDocsBrowser();
   context.subscriptions.push(docsDisposable);
 
@@ -89,6 +93,23 @@ function activateNoHieCheck(context: ExtensionContext) {
   context.subscriptions.push(InsertType.registerCommand(langClient));
   ShowType.registerCommand(langClient).forEach(x => context.subscriptions.push(x));
 
+  if (workspace.getConfiguration('languageServerHaskell').showTypeForSelection) {
+    context.subscriptions.push(registerTypeHover(langClient));
+  }
+
+  // context.subscriptions.push(
+  //   // NOTE: This isnt implemented yet :-\
+  //   // https://github.com/Microsoft/vscode/pull/36476/files
+  //   workspace.onDidChangeConfiguration((e) => {
+  //   // workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
+  //     // // tslint:disable-next-line
+  //     // console.log(`CONFIGURATION CHANGED!! `, e);
+  //     // const change = e.affectsConfiguration('languageServerHaskell');
+  //     // // tslint:disable-next-line
+  //     // console.log(`Changed? `, change);
+  //   })
+  // );
+
   registerHiePointCommand(langClient, 'hie.commands.demoteDef', 'hare:demote', context);
   registerHiePointCommand(langClient, 'hie.commands.liftOneLevel', 'hare:liftonelevel', context);
   registerHiePointCommand(langClient, 'hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
@@ -97,68 +118,6 @@ function activateNoHieCheck(context: ExtensionContext) {
   const disposable = langClient.start();
 
   context.subscriptions.push(disposable);
-=======
-	let docsDisposable = DocsBrowser.registerDocsBrowser();
-	context.subscriptions.push(docsDisposable);
-
-	// const fixer = languages.registerCodeActionsProvider("haskell", fixProvider);
-	// context.subscriptions.push(fixer);
-	// The server is implemented in node
-	//let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
-	let startupScript = ( process.platform == "win32" ) ? "hie-vscode.bat" : "hie-vscode.sh";
-	let serverPath = context.asAbsolutePath(path.join('.', startupScript));
-	let serverExe =  { command: serverPath }
-	// The debug options for the server
-	let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
-
-	// If the extension is launched in debug mode then the debug server options are used
-	// Otherwise the run options are used
-	let tempDir = ( process.platform == "win32" ) ? "%TEMP%" : "/tmp";
-	let serverOptions: ServerOptions = {
-		//run : { module: serverModule, transport: TransportKind.ipc },
-		//debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
-		run : { command: serverPath },
-		debug: { command: serverPath, args: ["-d", "-l", path.join(tempDir, "hie.log")] }
-	}
-
-	// Options to control the language client
-	let clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
-		documentSelector: ['haskell'],
-		synchronize: {
-			// Synchronize the setting section 'languageServerHaskell' to the server
-			configurationSection: 'languageServerHaskell',
-			// Notify the server about file changes to '.clientrc files contain in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-		},
-		middleware: {
-			provideHover: DocsBrowser.hoverLinksMiddlewareHook
-		},
-		revealOutputChannelOn: RevealOutputChannelOn.never
-	}
-
-	// Create the language client and start the client.
-	let langClient = new LanguageClient('Language Server Haskell', serverOptions, clientOptions);
-
-	context.subscriptions.push(InsertType.registerCommand(langClient));
-	ShowType.registerCommand(langClient).forEach(x => context.subscriptions.push(x));
-
-	// context.subscriptions.push(vscode.languages.registerHoverProvider(controller.IDRIS_MODE, new show.IdrisHoverProvider()))
-	// context.subscriptions.push(vscode.languages.registerHoverProvider(controller.IDRIS_MODE, new showTypeHover()))
-	if (vscode.workspace.getConfiguration('languageServerHaskell').showTypeForSelection) {
-		context.subscriptions.push(registerTypeHover(langClient));
-	}
-
-
-	registerHiePointCommand(langClient,"hie.commands.demoteDef","hare:demote",context);
-	registerHiePointCommand(langClient,"hie.commands.liftOneLevel","hare:liftonelevel",context);
-	registerHiePointCommand(langClient,"hie.commands.liftTopLevel","hare:lifttotoplevel",context);
-	registerHiePointCommand(langClient,"hie.commands.deleteDef","hare:deletedef",context);
-	registerHiePointCommand(langClient,"hie.commands.genApplicative","hare:genapplicative",context);
-	let disposable = langClient.start();
-
-	context.subscriptions.push(disposable);
->>>>>>> I got showtype on Hover working :-D
 }
 
 function isHieInstalled(): Promise<boolean> {
@@ -188,3 +147,30 @@ function registerHiePointCommand(langClient: LanguageClient, name: string, comma
   });
   context.subscriptions.push(cmd2);
 }
+
+// async function registerHiePointCommand(langClient: LanguageClient,
+//  name: string, command: string, context: ExtensionContext) {
+//   const cmd2 = commands.registerTextEditorCommand(name, (editor, edit) => {
+//     const cmd = {
+//       command,
+//       arguments: [
+//         {
+//           file: editor.document.uri.toString(),
+//           pos: editor.selections[0].active,
+//         },
+//       ],
+//     };
+//     try {
+//       const hints = await langClient.sendRequest('workspace/executeCommand', cmd);
+//       return true;
+//     } catch (e) {
+//       console.error(e);
+//     }
+//     // langClient.sendRequest('workspace/executeCommand', cmd).then(hints => {
+//     //   return true;
+//     // }, e => {
+//     //   console.error(e);
+//     // });
+//   });
+//   context.subscriptions.push(cmd2);
+// }

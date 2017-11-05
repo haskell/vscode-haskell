@@ -9,9 +9,13 @@
         "object-literal-sort-keys": false,
         "indent": [true, "spaces", 2],
         "no-namespace": false,
-        "no-console": [true, "log"],
-        "no-unused-variable": true,
-        "quotemark": [true, "single", "avoid-template"],
+        // "no-console": [true, "log"],
+        "no-console": false,
+
+        // "no-unused-variable": true,
+        // "promise-function-async": true,
+        // "quotemark": [true, "single", "avoid-template"],
+        "quotemark": [true, "single"],
         "trailing-comma": [true, {
             "multiline": {
                 "objects": "always",
