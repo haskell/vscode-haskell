@@ -1,4 +1,35 @@
-# Welcome to your first VS Code Extension
+# Contributing
+
+This document will briefly outline how to get started contributing to the `vscode-hie-server` Haskell language client for the [Haskell-IDE-Engine](https://github.com/haskell/haskell-ide-engine) language server.
+
+## Dependencies and Building
+
+For development, all you need is to,
+
+- run `npm install -g typescript` to get TypeScript,
+- then run `npm install` in the project root to install development dependencies.
+
+You can now also package up the extension with,
+
+- `vsce package` 
+
+which creates an extension package at `vscode-hie-server-<version>.vsix`.
+
+_Note:_ that if you get errors running `vsce package`, it might help running `tsc -p ./` directly, since that gives the actual error output of the TypeScript compilation.
+
+## Developing
+* Launch VS Code, press `File` > `Open Folder`, open the `vscode-hie-server` folder;
+* press `F5` to open a new window with the `vscode-hie-server` loaded (this will overwrite existing ones, e.g. from the marketplace);
+* open a Haskell file with the __new__ editor to test the LSP client;
+
+You are now ready to make changes and debug. You can,
+
+* set breakpoints in your code inside `src/extension.ts` to debug your extension;
+* find output from your extension in the debug console;
+* make changes to the code, and then
+* relaunch the extension from the debug toolbar
+
+_Note_: you can also reload (`Ctrl+R` or `Cmd+R` on macOS) the VS Code window with your extension to load your changes
 
 ## What's in the folder
 * This folder contains all of the files necessary for your extension
@@ -10,16 +41,6 @@ The file exports one function, `activate`, which is called the very first time y
 activated (in this case by executing the command). Inside the `activate` function we call `registerCommand`.
 We pass the function containing the implementation of the command as the second parameter to
 `registerCommand`.
-
-## Get up and running straight away
-* press `F5` to open a new window with your extension loaded
-* run your command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and typing `Hello World`
-* set breakpoints in your code inside `src/extension.ts` to debug your extension
-* find output from your extension in the debug console
-
-## Make changes
-* you can relaunch the extension from the debug toolbar after changing code in `src/extension.ts`
-* you can also reload (`Ctrl+R` or `Cmd+R` on Mac) the VS Code window with your extension to load your changes
 
 ## Explore the API
 * you can open the full set of our API when you open the file `node_modules/vscode/vscode.d.ts`
