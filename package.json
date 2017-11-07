@@ -25,6 +25,10 @@
         "Languages"
     ],
     "icon": "images/HaskellLogo.png",
+    "galleryBanner": {
+        "color": "#22172A",
+        "theme": "dark"
+    },
     "activationEvents": [
         "onLanguage:haskell",
         "onLanguage:literate haskell"
