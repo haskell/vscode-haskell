@@ -1,9 +1,7 @@
 # Contributing
-
 This document will briefly outline how to get started contributing to the `vscode-hie-server` Haskell language client for the [Haskell-IDE-Engine](https://github.com/haskell/haskell-ide-engine) language server.
 
 ## Dependencies and Building
-
 For development, all you need is to,
 
 - run `npm install -g typescript` to get TypeScript,
@@ -35,10 +33,12 @@ _Note_: you can also reload (`Ctrl+R` or `Cmd+R` on macOS) the VS Code window wi
 A brief overview of the files,
 * `package.json` contains the basic information about the package, see [the full manifest for more](https://code.visualstudio.com/docs/extensionAPI/extension-manifest), such as telling VS Code which scope the LSP works on (Haskell and Literate Haskell in our case), and possible configuration
 * `src/extension.ts` handles activating and deactivating the HIE language server, along with checking if HIE is installed
-* `src/docsBrowser.ts` contains the logic for displaying the documentation browser
+* `src/docsBrowser.ts` contains the logic for displaying the documentation browser (e.g. hover over a type like `mapM_` and click `Documentation` or `Source`)
+* `src/commands/constants.ts` simply exports the rest of the commands in folder
+* `src/commands/showType.ts` handles showing a type using `ghcmod:type`
+* `src/commands/insertType.ts` handles inserting a type using the output of `ghcmod:type`
 
 ## Helpful Reading Material
-
 We recommend checking out [Your First VS Code Extension](https://code.visualstudio.com/docs/extensions/example-hello-world) and [Creating a Language Server](https://code.visualstudio.com/docs/extensions/example-language-server) for some introduction to VS Code extensions.
 
 ## Running tests
