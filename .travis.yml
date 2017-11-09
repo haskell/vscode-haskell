@@ -44,22 +44,23 @@ before_deploy:
 #      b) Set a environment variable `VS_TOKEN` with the value of your VS Code personal token
 #      c) Make sure `Display value in build log` is turned OFF!
 deploy:
-- provider: releases # Deploy the *.vsix pcakge to GitHub releases.
-  file_glob: true
-  file: "*.vsix"
-  skip_cleanup: true
-  on: # Due to a limitation with releases, we can only deploy them on tags.
-    repo: alanz/vscode-hie-server
-    branch: master
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
-- provider: script # Deploy to VS Code Market Place
+- provider: script # Deploy to VS Code Market Place (only on tags!).
   script: vsce publish -p $VS_TOKEN
   skip_cleanup: true
   on: # Publish on all builds on master branch.
     repo: alanz/vscode-hie-server
     branch: master
+    tags: true
     condition: $TRAVIS_OS_NAME = linux
+# - provider: releases # Deploy the *.vsix pcakge to GitHub releases.
+#   file_glob: true
+#   file: "*.vsix"
+#   skip_cleanup: true
+#   on: # Due to a limitation with releases, we can only deploy them on tags.
+#     repo: alanz/vscode-hie-server
+#     branch: master
+#     tags: true
+#     condition: $TRAVIS_OS_NAME = linux
 
 notifications:
   email: false
