@@ -2,7 +2,7 @@
     "name": "vscode-hie-server",
     "displayName": "Haskell Language Server",
     "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
@@ -171,6 +171,6 @@
         "justusadam.language-haskell"
     ],
     "dependencies": {
-        "vscode-languageclient": ">=3.4.5"
+        "vscode-languageclient": "^3.5.0"
     }
 }

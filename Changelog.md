@@ -1,3 +1,11 @@
+### 0.0.5
+
+Stop the output channel from taking focus on startup, by @Tehnix and @halhenke
+
+Rework and improve the document layout, for gihub and the marketplace, by @Tehnix
+
+Set up Travis testing an potential auto-deply to marketplace, by @Tehnix
+
 ### 0.0.4
 
 Show documents in a tab, by @AlexeyRaga
