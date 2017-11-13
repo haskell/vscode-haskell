@@ -1,0 +1,66 @@
+language: node_js
+
+node_js:
+- 8
+
+sudo: false
+
+cache:
+  directories:
+    - "node_modules"
+
+os:
+  - osx
+  - linux
+
+# This is needed to enable testing VS Code on Travis, as per
+# https://code.visualstudio.com/docs/extensions/testing-extensions#_running-tests-automatically-on-travis-ci-build-machines
+before_install:
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
+      sh -e /etc/init.d/xvfb start;
+      sleep 3;
+    fi
+
+install:
+- npm install
+- npm run vscode:prepublish
+
+script: 
+- npm test --silent
+
+before_deploy:  
+- npm install -g vsce
+- vsce package
+
+# Deploy the extension to the Marketplace and GitHub releases (only on tags).
+# Note that this only deploys from the master branch, but will still allow
+# testing on PRs etc.
+#
+# To setup the deploys:
+#   1) Insert an encrypted GitHub OAuth API key with `travis setup releases`
+#   2) Go to the travis page for the project at, https://travis-ci.org/<User Name>/<Repo Name>
+#      a) Under `More Options` go into `Settings`
+#      b) Set a environment variable `VS_TOKEN` with the value of your VS Code personal token
+#      c) Make sure `Display value in build log` is turned OFF!
+deploy:
+- provider: script # Deploy to VS Code Market Place (only on tags!).
+  script: vsce publish -p $VS_TOKEN
+  skip_cleanup: true
+  on: # Publish on all builds on master branch.
+    repo: alanz/vscode-hie-server
+    branch: master
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux
+# - provider: releases # Deploy the *.vsix pcakge to GitHub releases.
+#   file_glob: true
+#   file: "*.vsix"
+#   skip_cleanup: true
+#   on: # Due to a limitation with releases, we can only deploy them on tags.
+#     repo: alanz/vscode-hie-server
+#     branch: master
+#     tags: true
+#     condition: $TRAVIS_OS_NAME = linux
+
+notifications:
+  email: false
