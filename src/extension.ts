@@ -120,7 +120,7 @@ function activateNoHieCheck(context: ExtensionContext) {
 
 function isHieInstalled(): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const cmd: string = 'which hie';
+    const cmd: string = ( process.platform === 'win32' ) ? 'where hie' : 'which hie';
     child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
   });
 }
