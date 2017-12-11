@@ -1,3 +1,11 @@
+### 0.0.6
+
+Update `package-lock.json` to fresh dependencies.
+
+Update the installation check on Win32 platforms, by @soylens.
+
+Use `tslint` on the plugin sources, by @halhenke.
+
 ### 0.0.5
 
 Stop the output channel from taking focus on startup, by @Tehnix and @halhenke
