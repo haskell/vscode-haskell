@@ -1,12 +1,12 @@
 import {
+  commands,
   Disposable,
   OutputChannel,
   Range,
-  Selection
+  Selection,
+  window
 } from 'vscode';
-import * as vscode from 'vscode';
-import { LanguageClient, RequestType } from 'vscode-languageclient';
-import * as lng from 'vscode-languageclient';
+import { LanguageClient, Range as VLCRange } from 'vscode-languageclient';
 
 import { CommandNames } from './constants';
 
@@ -15,10 +15,10 @@ export namespace ShowType {
   let lastRange = new Range(0, 0, 0, 0);
 
   export function registerCommand(client: LanguageClient): [Disposable] {
-    const showTypeChannel = vscode.window.createOutputChannel('Haskell Show Type');
+    const showTypeChannel = window.createOutputChannel('Haskell Show Type');
 
-    const cmd = vscode.commands.registerCommand(CommandNames.ShowTypeCommandName, c => {
-      const editor = vscode.window.activeTextEditor;
+    const cmd = commands.registerCommand(CommandNames.ShowTypeCommandName, c => {
+      const editor = window.activeTextEditor;
 
       const ghcCmd = {
         command: 'ghcmod:type',
@@ -30,12 +30,12 @@ export namespace ShowType {
       };
 
       client.sendRequest('workspace/executeCommand', ghcCmd).then(hints => {
-        const arr = hints as Array<[lng.Range, string]>;
+        const arr = hints as Array<[VLCRange, string]>;
         if (arr.length === 0) {
           return;
         }
         const ranges =
-          arr.map(x => [client.protocol2CodeConverter.asRange(x[0]), x[1]]) as Array<[vscode.Range, string]>;
+          arr.map(x => [client.protocol2CodeConverter.asRange(x[0]), x[1]]) as Array<[Range, string]>;
         const [rng, typ] = chooseRange(editor.selection, ranges);
         lastRange = rng;
 

@@ -1,16 +1,17 @@
-import * as vscode from 'vscode';
 import {
     CancellationToken,
     commands,
     Disposable,
-    ExtensionContext,
     Hover as VHover,
-    languages,
     MarkdownString,
     MarkedString,
     Position as VPosition,
     ProviderResult,
     TextDocument,
+    TextDocumentContentProvider,
+    Uri,
+    ViewColumn,
+    window,
     workspace
 } from 'vscode';
 import { ProvideHoverSignature } from 'vscode-languageclient';
@@ -20,8 +21,8 @@ export namespace DocsBrowser {
 
     // registers the browser in VSCode infrastructure
     export function registerDocsBrowser(): Disposable {
-        class DocumentationContentProvider implements vscode.TextDocumentContentProvider {
-            public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): string {
+        class DocumentationContentProvider implements TextDocumentContentProvider {
+            public provideTextDocumentContent(uri: Uri, token: CancellationToken): string {
                 const fsUri = uri.with({scheme: 'file'});
                 // tslint:disable-next-line:max-line-length
                 return `<iframe src="${fsUri}" frameBorder="0" style="background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 0px;" />`;
@@ -29,28 +30,21 @@ export namespace DocsBrowser {
         }
         const provider = new DocumentationContentProvider();
 
-        const docPreviewReg = vscode.workspace.registerTextDocumentContentProvider('doc-preview', provider);
+        workspace.registerTextDocumentContentProvider('doc-preview', provider);
 
-        const disposable = vscode.commands.registerCommand('haskell.showDocumentation',
+        const disposable = commands.registerCommand('haskell.showDocumentation',
             async ({ title, path }: { title: string, path: string }) => {
-                const uri = vscode.Uri.parse(path).with({scheme: 'doc-preview'});
+                const uri = Uri.parse(path).with({scheme: 'doc-preview'});
                 const arr = uri.path.match(/([^\/]+)\.[^.]+$/);
                 const ttl = arr.length === 2 ? arr[1].replace(/-/gi, '.') : title;
                 let result;
                 try {
-                    result = await vscode
-                        .commands.executeCommand('vscode.previewHtml', uri, vscode.ViewColumn.Two, ttl);
+                    result = await commands.
+                        executeCommand('previewHtml', uri, ViewColumn.Two, ttl);
                 } catch (e) {
-                    vscode.window.showErrorMessage(e);
+                    window.showErrorMessage(e);
                 }
                 return result;
-                // return vscode.commands.executeCommand('vscode.previewHtml', uri, vscode.ViewColumn.Two, ttl)
-                //     .catch((reason) => { vscode.window.showErrorMessage(reason); });
-            // return vscode.commands.executeCommand('vscode.previewHtml', uri, vscode.ViewColumn.Two, ttl)
-                //     .then((success) => {
-                //     }, (reason) => {
-                //         vscode.window.showErrorMessage(reason);
-                //     });
         });
 
         return disposable;

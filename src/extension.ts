@@ -7,38 +7,20 @@ import * as child_process from 'child_process';
 import * as path from 'path';
 import {
   commands,
-  Disposable,
   ExtensionContext,
-  languages,
   window,
   workspace
 } from 'vscode';
-import * as msg from 'vscode-jsonrpc';
 import {
   LanguageClient,
   LanguageClientOptions,
-  Position,
-  Range,
-  RequestType,
   RevealOutputChannelOn,
-  ServerOptions,
-  SettingMonitor,
-  TransportKind
+  ServerOptions
 } from 'vscode-languageclient';
 
 import { InsertType } from './commands/insertType';
 import { ShowType } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
-
-// --------------------------------------------------------------------
-// Example from https://github.com/Microsoft/vscode/issues/2059
-const fixProvider = {
-    provideCodeActions(document, range, context, token) {
-        return [{ title: 'Command', command: 'cursorUp' }];
-    },
-};
-
-// --------------------------------------------------------------------
 
 export async function activate(context: ExtensionContext) {
   try {
@@ -72,9 +54,6 @@ function activateNoHieCheck(context: ExtensionContext) {
   // let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
   const startupScript = ( process.platform === 'win32' ) ? 'hie-vscode.bat' : 'hie-vscode.sh';
   const serverPath = context.asAbsolutePath(path.join('.', startupScript));
-  const serverExe =  { command: serverPath };
-  // The debug options for the server
-  const debugOptions = { execArgv: ['--nolazy', '--debug=6004'] };
 
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
