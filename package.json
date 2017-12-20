@@ -6,7 +6,7 @@
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
-        "vscode": "^1.17.2"
+        "vscode": "^1.18.0"
     },
     "keywords": [
         "language",
@@ -155,20 +155,20 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
+        "vscode:prepublish": "npm run compile && npm run tslint",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
-        "tslint": "tslint -c tslint.json --format stylish 'src/**/*.ts'",
-        "tslint-fix": "tslint --fix -c tslint.json --format stylish 'src/**/*.ts'"
+        "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
+        "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'"
     },
     "devDependencies": {
         "@types/mocha": ">=2.2.33",
-        "@types/node": ">=6.0.52",
+        "@types/node": "^8.0.54",
         "tslint": "^5.8.0",
-        "typescript": "^2.1.5",
-        "vscode": ">1.1.0"
+        "typescript": "^2.6.2",
+        "vscode": "^1.1.9"
     },
     "extensionDependencies": [
         "justusadam.language-haskell"
