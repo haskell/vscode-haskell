@@ -30,9 +30,9 @@ export namespace DocsBrowser {
         }
         const provider = new DocumentationContentProvider();
 
-        workspace.registerTextDocumentContentProvider('doc-preview', provider);
+        const contentDisposable = workspace.registerTextDocumentContentProvider('doc-preview', provider);
 
-        const disposable = commands.registerCommand('haskell.showDocumentation',
+        const commandDisposable = commands.registerCommand('haskell.showDocumentation',
             async ({ title, path }: { title: string, path: string }) => {
                 const uri = Uri.parse(path).with({scheme: 'doc-preview'});
                 const arr = uri.path.match(/([^\/]+)\.[^.]+$/);
@@ -40,14 +40,14 @@ export namespace DocsBrowser {
                 let result;
                 try {
                     result = await commands.
-                        executeCommand('previewHtml', uri, ViewColumn.Two, ttl);
+                        executeCommand('vscode.previewHtml', uri, ViewColumn.Two, ttl);
                 } catch (e) {
                     window.showErrorMessage(e);
                 }
                 return result;
         });
 
-        return disposable;
+        return Disposable.from(contentDisposable, commandDisposable);
     }
 
     export function hoverLinksMiddlewareHook(
