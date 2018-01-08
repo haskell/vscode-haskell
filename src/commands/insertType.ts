@@ -1,30 +1,19 @@
-import * as vscode from 'vscode';
+import {
+  commands,
+  Disposable
+} from 'vscode';
 import {
   LanguageClient,
-  Position,
   Range,
-  RequestType
 } from 'vscode-languageclient';
-import * as lng from 'vscode-languageclient';
 
 import { CommandNames } from './constants';
 
 export namespace InsertType {
   'use strict';
 
-  export function registerCommand(client: LanguageClient): vscode.Disposable {
-    const cmd = vscode.commands.registerTextEditorCommand(CommandNames.InsertTypeCommandName, (editor, edit) => {
-      const ghcCmd = {
-        command: 'ghcmod:type',
-        arguments: [
-          {
-            file: editor.document.uri.toString(),
-            pos: editor.selections[0].active,
-            include_constraints: true,
-          },
-        ],
-      };
-
+  export function registerCommand(client: LanguageClient): Disposable {
+    const cmd = commands.registerTextEditorCommand(CommandNames.InsertTypeCommandName, (editor, edit) => {
       client.sendRequest('workspace/executeCommand', cmd).then(hints => {
         const arr = hints as Array<[Range, string]>;
         if (arr.length === 0) { return; }
