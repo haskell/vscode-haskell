@@ -13,11 +13,13 @@ import {
   Range,
   Selection,
   TextDocument,
+  TextEditor,
   window
 } from 'vscode';
 import {
   LanguageClient,
   Range as VLCRange,
+  TextEdit,
   // RequestType
 } from 'vscode-languageclient';
 
@@ -32,7 +34,7 @@ export namespace ShowType {
     const cmd = commands.registerCommand(CommandNames.ShowTypeCommandName, x => {
       const editor = window.activeTextEditor;
 
-      getTypes({client, editor}).then(typ => {
+      getTypes({client, editor}).then(([_, typ]) => {
         window.showInformationMessage(typ);
         // displayType(showTypeChannel, typ);
       }).catch(e => console.error(e));
@@ -49,7 +51,7 @@ let lastRange = blankRange;
 let lastType = '';
 // let lastRange = new Range(0, 0, 0, 0);
 
-async function getTypes({client, editor}) {
+async function getTypes({client, editor}): Promise<[Range, string]> {
   try {
     const hints = await client.sendRequest('workspace/executeCommand', getCmd(editor));
     const arr = hints as Array<[VLCRange, string]>;
@@ -63,7 +65,7 @@ async function getTypes({client, editor}) {
     const [rng, typ] = chooseRange(editor.selection, ranges);
     lastRange = rng;
     lastType = typ;
-    return typ;
+    return [rng, typ];
   } catch (e) {
     console.error(e);
   }
@@ -174,6 +176,33 @@ const typeFormatter = (typeString: string): MarkedString => {
 
 };
 
+const showShowType = (editor: TextEditor, position: Position): boolean => {
+  // NOTE: This seems to happen sometimes ¯\_(ツ)_/¯
+  if (!editor) {
+    return false;
+  }
+  // NOTE: This means cursor is not over selected text
+  if (!editor.selection.contains(position)) {
+    return false;
+  }
+  if (editor.selection.isEmpty) {
+    console.log(`Selection Empty`);
+    return false;
+  }
+  // document.
+  // NOTE: If cursor is not over highlight then dont show type
+  if ((editor.selection.active < editor.selection.start) || (editor.selection.active > editor.selection.end)) {
+    console.log(`Cursor Outside Selection`);
+    return false;
+  }
+  // NOTE: Not sure if we want this - maybe we can get multiline to work?
+  if (!editor.selection.isSingleLine) {
+    console.log(`Muliline Selection`);
+    return false;
+  }
+  return true;
+};
+
 export class ShowTypeHover implements HoverProvider {
   public client: LanguageClient;
 
@@ -183,57 +212,33 @@ export class ShowTypeHover implements HoverProvider {
 
   public provideHover(document: TextDocument, position: Position, token: CancellationToken): Thenable<Hover> {
     const editor = window.activeTextEditor;
-    if (editor.selection.isEmpty) {
-      console.log(`Selection Empty`);
+
+    if (!showShowType(editor, position)) {
       return null;
     }
-    // document.
-    // NOTE: If cursor is not over highlight then dont show type
-    if ((editor.selection.active < editor.selection.start) || (editor.selection.active > editor.selection.end)) {
-      console.log(`Cursor Outside Selection`);
-      return null;
-    }
-    // NOTE: Not sure if we want this - maybe we can get multiline to work?
-    if (!editor.selection.isSingleLine) {
-      console.log(`Muliline Selection`);
-      return null;
-    }
+
     // NOTE: No need for server call
-    // TODO: Selection/highlighted text may be unchanged but cursor may
-    // be hovering somewhere else and thus need a different type and in fact get
-    // a different type due to the ordinary ShowType function - need a way to ignore this
-    // showType when that is the case - not sure if we can without making another server call though...there is no API for getting cursor position outside of selection?
     if (lastType && editor.selection.isEqual(lastRange)) {
       console.log(`Selection unchanged...`);
-      return Promise.resolve(this.makeHover(lastType));
+      return Promise.resolve(this.makeHover(document, lastRange, lastType));
     }
 
-    return getTypes({client: this.client, editor}).then(typ => {
-
-      // return new Hover({
-      //   language: 'haskell',
-      //   // NOTE: Force some better syntax highlighting:
-      //   value: `_ :: ${typ}`,
-      // });
+    return getTypes({client: this.client, editor}).then(([r, typ]) => {
       console.log('TYP ----- ', typ);
       if (typ) {
-        return this.makeHover(lastType);
-        // return new Hover({
-        //   language: 'haskell',
-        //   // NOTE: Force some better syntax highlighting:
-        //   value: `_ :: ${typ}`,
-        // });
+        return this.makeHover(document, r, lastType);
       } else {
         return null;
       }
     });
   }
 
-  private makeHover(typ: string): Hover {
+  private makeHover(document: TextDocument, r: Range, typ: string): Hover {
+    const expression = document.getText(r);
     return new Hover({
       language: 'haskell',
       // NOTE: Force some better syntax highlighting:
-      value: `_ :: ${typ}`,
+      value: `${expression} :: ${typ}`,
     });
   }
 }
