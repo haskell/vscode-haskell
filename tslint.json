@@ -9,13 +9,10 @@
         "object-literal-sort-keys": false,
         "indent": [true, "spaces", 2],
         "no-namespace": false,
-        // "no-console": [true, "log"],
-        "no-console": false,
-
-        // "no-unused-variable": true,
-        // "promise-function-async": true,
-        // "quotemark": [true, "single", "avoid-template"],
-        "quotemark": [true, "single"],
+        "no-console": [true, "log"],
+        "no-unused-variable": true,
+        "promise-function-async": true,
+        "quotemark": [true, "single", "avoid-template"],
         "trailing-comma": [true, {
             "multiline": {
                 "objects": "always",

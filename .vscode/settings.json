@@ -3,7 +3,7 @@
     "files.exclude": {
         "out": true, // set this to true to hide the "out" folder with the compiled JS files
         ".vscode-test": true,
-        "node_modules": false
+        "node_modules": true
     },
     "search.exclude": {
         "out": true // set this to false to include "out" folder in search results

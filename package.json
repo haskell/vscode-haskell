@@ -81,28 +81,19 @@
                     "default": true,
                     "description": "Get suggestions from hlint"
                 },
-                "languageServerHaskell.showTypeForSelection": {
-                    "type": "object",
-                    "default": {
-                        "on": true,
-                        "location": "hover"
-                    },
-                    "description": "Settings for showType on editor selections."
-                },
-                "languageServerHaskell.showTypeForSelection.on": {
+                "languageServerHaskell.showTypeForSelection.onHover": {
                     "type": "boolean",
                     "default": true,
-                    "description": "If true, when an expression is selected, vscode will the hover tooltip will try to display the type of the entire expression - rather than just the term under the cursor."
+                    "description": "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
                 },
-                "languageServerHaskell.showTypeForSelection.location": {
+                "languageServerHaskell.showTypeForSelection.command.location": {
                     "type": "string",
                     "enum": [
-                        "hover",
                         "dropdown",
                         "channel"
                     ],
-                    "default": "hover",
-                    "description": "Determines where the type information for selections will be shown when this feature is enabled.\nHover: in the tooltip\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
+                    "default": "dropdown",
+                    "description": "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
                 },
                 "languageServerHaskell.trace.server": {
                     "type": "string",
