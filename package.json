@@ -2,7 +2,7 @@
     "name": "vscode-hie-server",
     "displayName": "Haskell Language Server",
     "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
@@ -178,9 +178,9 @@
         "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'"
     },
     "devDependencies": {
-        "@types/mocha": ">=2.2.33",
-        "@types/node": "^8.0.54",
-        "tslint": "^5.8.0",
+        "@types/mocha": "^2.2.46",
+        "@types/node": "^8.5.8",
+        "tslint": "^5.9.1",
         "typescript": "^2.6.2",
         "vscode": "^1.1.9"
     },

@@ -1,3 +1,15 @@
+### 0.0.7
+
+Update `package-lock.json` to fresh dependencies.
+
+Add show type *of selected expression* on hover feature, by @halhenke
+
+Added options for how to display the same information when using the show type
+command menu, by @halhenke
+
+Moved the configuration setting about showing trace information into the proper
+scope, by @halhenke
+
 ### 0.0.6
 
 Update `package-lock.json` to fresh dependencies.
