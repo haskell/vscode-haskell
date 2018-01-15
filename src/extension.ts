@@ -17,15 +17,17 @@ import {
   RevealOutputChannelOn,
   ServerOptions
 } from 'vscode-languageclient';
-
 import { InsertType } from './commands/insertType';
-import { ShowType } from './commands/showType';
+import {
+  ShowTypeCommand,
+  ShowTypeHover,
+} from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
 
 export async function activate(context: ExtensionContext) {
   try {
     // Check if hie is installed.
-    if (! await isHieInstalled()) {
+    if (!await isHieInstalled()) {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
       const notInstalledMsg: string =
         'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
@@ -85,7 +87,12 @@ function activateNoHieCheck(context: ExtensionContext) {
   const langClient = new LanguageClient('Language Server Haskell', serverOptions, clientOptions);
 
   context.subscriptions.push(InsertType.registerCommand(langClient));
-  ShowType.registerCommand(langClient).forEach(x => context.subscriptions.push(x));
+
+  ShowTypeCommand.registerCommand(langClient).forEach(x => context.subscriptions.push(x));
+
+  if (workspace.getConfiguration('languageServerHaskell').showTypeForSelection.onHover) {
+    context.subscriptions.push(ShowTypeHover.registerTypeHover(langClient));
+  }
 
   registerHiePointCommand(langClient, 'hie.commands.demoteDef', 'hare:demote', context);
   registerHiePointCommand(langClient, 'hie.commands.liftOneLevel', 'hare:liftonelevel', context);
@@ -97,14 +104,15 @@ function activateNoHieCheck(context: ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function isHieInstalled(): Promise<boolean> {
-  return new Promise((resolve, reject) => {
+async function isHieInstalled(): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
     const cmd: string = ( process.platform === 'win32' ) ? 'where hie' : 'which hie';
     child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
   });
 }
 
-function registerHiePointCommand(langClient: LanguageClient, name: string, command: string, context: ExtensionContext) {
+async function registerHiePointCommand(langClient: LanguageClient, name: string, command: string,
+                                       context: ExtensionContext) {
   const cmd2 = commands.registerTextEditorCommand(name, (editor, edit) => {
     const cmd = {
       command,

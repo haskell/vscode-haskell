@@ -11,6 +11,7 @@
         "no-namespace": false,
         "no-console": [true, "log"],
         "no-unused-variable": true,
+        "promise-function-async": true,
         "quotemark": [true, "single", "avoid-template"],
         "trailing-comma": [true, {
             "multiline": {
