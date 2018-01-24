@@ -1,3 +1,7 @@
+### 0.0.8
+
+Add new haskell-ide-engine logo, thanks to @damienflament
+
 ### 0.0.7
 
 Update `package-lock.json` to fresh dependencies.
