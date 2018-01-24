@@ -2,6 +2,12 @@
 
 Add new haskell-ide-engine logo, thanks to @damienflament
 
+Add rudimentary support for detecting the project GHC version and using the
+appropriate hie version. This currently only works on Linux (contributors on
+other platforms, please jump in with appropriate scripts) and requires
+`haskell-ide-engine` built via the `Makefile` added in
+https://github.com/haskell/haskell-ide-engine/pull/447.  Thanks to @Tehnix
+
 ### 0.0.7
 
 Update `package-lock.json` to fresh dependencies.
