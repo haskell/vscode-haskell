@@ -81,6 +81,16 @@
                     "default": false,
                     "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions."
                 },
+                "languageServerHaskell.useCustomHieWrapper": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take effect over useHieWrapper."
+                },
+                "languageServerHaskell.useCustomHieWrapperPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Specify the full path to your own custom hie wrapper (e.g. /Users/Alice/.hie-wrapper.sh)."
+                },
                 "languageServerHaskell.hlintOn": {
                     "type": "boolean",
                     "default": true,

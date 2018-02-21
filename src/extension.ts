@@ -55,7 +55,9 @@ function activateNoHieCheck(context: ExtensionContext) {
   // The server is implemented in node
   // let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
   let hieLaunchScript = 'hie-vscode.sh';
-  if (workspace.getConfiguration('languageServerHaskell').useHieWrapper) {
+  if (workspace.getConfiguration('languageServerHaskell').useCustomHieWrapper) {
+    hieLaunchScript = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapperPath;
+  } else if (workspace.getConfiguration('languageServerHaskell').useHieWrapper) {
     hieLaunchScript = 'hie-wrapper.sh';
   }
   const startupScript = ( process.platform === 'win32' ) ? 'hie-vscode.bat' : hieLaunchScript;
