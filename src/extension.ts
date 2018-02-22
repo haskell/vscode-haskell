@@ -55,12 +55,14 @@ function activateNoHieCheck(context: ExtensionContext) {
   // The server is implemented in node
   // let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
   let hieLaunchScript = 'hie-vscode.sh';
-  if (workspace.getConfiguration('languageServerHaskell').useCustomHieWrapper) {
+  const useCustomWrapper = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapper;
+  if (useCustomWrapper) {
     hieLaunchScript = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapperPath;
   } else if (workspace.getConfiguration('languageServerHaskell').useHieWrapper) {
     hieLaunchScript = 'hie-wrapper.sh';
   }
-  const startupScript = ( process.platform === 'win32' ) ? 'hie-vscode.bat' : hieLaunchScript;
+  // Don't use the .bat launcher, if the user specified a custom wrapper.
+  const startupScript = ( process.platform === 'win32' && !useCustomWrapper ) ? 'hie-vscode.bat' : hieLaunchScript;
   const serverPath = context.asAbsolutePath(path.join('.', startupScript));
 
   // If the extension is launched in debug mode then the debug server options are used
