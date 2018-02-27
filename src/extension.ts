@@ -69,10 +69,8 @@ function activateNoHieCheck(context: ExtensionContext) {
       .replace('${workspaceFolder}', workspaceFolder.uri.path)
       .replace('${workspaceRoot}', workspaceFolder.uri.path)
       .replace('${HOME}', os.homedir)
-      .replace('${home}', os.homedir);
-    if (customWrapperPath.startsWith('~')) {
-      customWrapperPath = customWrapperPath.replace('~', os.homedir);
-    }
+      .replace('${home}', os.homedir)
+      .replace(/^~/, os.homedir);
   }
 
   if (useCustomWrapper) {
