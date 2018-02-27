@@ -14,7 +14,18 @@ export namespace InsertType {
 
   export function registerCommand(client: LanguageClient): Disposable {
     const cmd = commands.registerTextEditorCommand(CommandNames.InsertTypeCommandName, (editor, edit) => {
-      client.sendRequest('workspace/executeCommand', cmd).then(hints => {
+      const ghcCmd = {
+        command: 'ghcmod:type',
+        arguments: [
+          {
+            file: editor.document.uri.toString(),
+            pos: editor.selections[0].active,
+            include_constraints: true,
+          },
+        ],
+      };
+
+      client.sendRequest('workspace/executeCommand', ghcCmd).then(hints => {
         const arr = hints as Array<[Range, string]>;
         if (arr.length === 0) { return; }
         const [rng, typ] = arr[0];
