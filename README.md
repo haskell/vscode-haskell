@@ -36,6 +36,33 @@ You can disable HLint and also control the maximum number of reported problems,
 "languageServerHaskell.hlintOn": true,
 "languageServerHaskell.maxNumberOfProblems": 100,
 ```
+
+#### HIE Wrapper
+
+Furthermore, the extension supports multiple ways of initializing hie, depending on your needs. The first one is to use the hie-wrapper that follows this extension, and tries to pick the right hie for your GHC version. The following,
+
+```json
+"languageServerHaskell.useHieWrapper": true,
+```
+
+makes VSCode use the `hie-wrapper.sh` file to start hie through. This does assume that you built the hie executable using make build, but will fall back to plain hie.
+
+#### Custom Wrapper
+
+If you need more control, and want to have a custom wrapper, either in your specific project or somewhere else on your computer, you can set a custom wrapper via,
+
+```json
+"languageServerHaskell.useCustomHieWrapper": true,
+"languageServerHaskell.useCustomHieWrapperPath": "~/wrapper-in-home.sh",
+```
+
+There are a few placeholders which will be expanded:
+
+- `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
+- `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
+
+This can be beneficial if you are using something like nix, to have a wrapper script tailored to your setup.
+
 ## Manual Installation
 Either install the extension via the marketplace (preferred), or if you are testing an unreleased version by,
 
