@@ -4,6 +4,7 @@
 // import * as vscode from 'vscode';
 
 import * as child_process from 'child_process';
+import * as os from 'os';
 import * as path from 'path';
 import {
   commands,
@@ -26,8 +27,9 @@ import { DocsBrowser } from './docsBrowser';
 
 export async function activate(context: ExtensionContext) {
   try {
+    const useCustomWrapper = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapper;
     // Check if hie is installed.
-    if (!await isHieInstalled()) {
+    if (!await isHieInstalled() && !useCustomWrapper) {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
       const notInstalledMsg: string =
         'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
@@ -55,13 +57,30 @@ function activateNoHieCheck(context: ExtensionContext) {
   // The server is implemented in node
   // let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
   let hieLaunchScript = 'hie-vscode.sh';
-  if (workspace.getConfiguration('languageServerHaskell').useCustomHieWrapper) {
-    hieLaunchScript = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapperPath;
+
+  const useCustomWrapper = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapper;
+  let customWrapperPath = workspace.getConfiguration('languageServerHaskell').useCustomHieWrapperPath;
+
+  // Substitute variables with their corresponding locations. If the `workspaceFolders` is
+  // undefined, no folders are open.
+  if (useCustomWrapper && workspace.workspaceFolders !== undefined) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    customWrapperPath = customWrapperPath
+      .replace('${workspaceFolder}', workspaceFolder.uri.path)
+      .replace('${workspaceRoot}', workspaceFolder.uri.path)
+      .replace('${HOME}', os.homedir)
+      .replace('${home}', os.homedir)
+      .replace(/^~/, os.homedir);
+  }
+
+  if (useCustomWrapper) {
+    hieLaunchScript = customWrapperPath;
   } else if (workspace.getConfiguration('languageServerHaskell').useHieWrapper) {
     hieLaunchScript = 'hie-wrapper.sh';
   }
-  const startupScript = ( process.platform === 'win32' ) ? 'hie-vscode.bat' : hieLaunchScript;
-  const serverPath = context.asAbsolutePath(path.join('.', startupScript));
+  // Don't use the .bat launcher, if the user specified a custom wrapper.
+  const startupScript = ( process.platform === 'win32' && !useCustomWrapper ) ? 'hie-vscode.bat' : hieLaunchScript;
+  const serverPath = useCustomWrapper ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
 
   // If the extension is launched in debug mode then the debug server options are used
   // Otherwise the run options are used
