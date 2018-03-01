@@ -45,7 +45,7 @@ before_deploy:
 #      c) Make sure `Display value in build log` is turned OFF!
 deploy:
 - provider: script # Deploy to VS Code Market Place (only on tags!).
-  script: vsce publish -p "$VS_TOKEN"
+  script: vsce publish -p $VS_TOKEN
   skip_cleanup: true
   on: # Publish on all builds on master branch.
     repo: alanz/vscode-hie-server
