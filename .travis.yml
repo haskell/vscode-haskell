@@ -26,10 +26,10 @@ install:
 - npm install
 - npm run vscode:prepublish
 
-script: 
+script:
 - npm test --silent
 
-before_deploy:  
+before_deploy:
 - npm install -g vsce
 - vsce package
 
@@ -52,15 +52,15 @@ deploy:
     branch: master
     tags: true
     condition: $TRAVIS_OS_NAME = linux
-# - provider: releases # Deploy the *.vsix pcakge to GitHub releases.
-#   file_glob: true
-#   file: "*.vsix"
-#   skip_cleanup: true
-#   on: # Due to a limitation with releases, we can only deploy them on tags.
-#     repo: alanz/vscode-hie-server
-#     branch: master
-#     tags: true
-#     condition: $TRAVIS_OS_NAME = linux
+- provider: releases # Deploy the *.vsix pcakge to GitHub releases.
+  file_glob: true
+  file: "*.vsix"
+  skip_cleanup: true
+  on: # Due to a limitation with releases, we can only deploy them on tags.
+    repo: alanz/vscode-hie-server
+    branch: master
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux
 
 notifications:
   email: false
