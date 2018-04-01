@@ -23,7 +23,10 @@
         "url": "https://github.com/alanz/vscode-hie-server/issues"
     },
     "categories": [
-        "Languages"
+        "Languages",
+        "Formatters",
+        "Linters",
+        "Other"
     ],
     "icon": "images/HIE_logo_128.png",
     "galleryBanner": {

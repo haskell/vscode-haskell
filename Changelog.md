@@ -1,3 +1,7 @@
+### 0.0.11
+
+Add additional marketplace categories.
+
 ### 0.0.10
 
 Add support for multi-root workspaces, thanks to @tehnix. See the README section
