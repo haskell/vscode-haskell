@@ -13,8 +13,6 @@ import {
   WorkspaceFolder
 } from 'vscode';
 import {
-  CloseAction,
-  ErrorAction,
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
@@ -34,8 +32,8 @@ const clients: Map<string, LanguageClient> = new Map();
 export async function activate(context: ExtensionContext) {
   // Register HIE to check every time a text document gets opened, to
   // support multi-root workspaces.
-  workspace.onDidOpenTextDocument((document: TextDocument) => activateHie(context, document));
-  workspace.textDocuments.forEach((document: TextDocument) => activateHie(context, document));
+  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateHie(context, document));
+  workspace.textDocuments.forEach(async (document: TextDocument) => await activateHie(context, document));
   // Stop HIE from any workspace folders that are removed.
   workspace.onDidChangeWorkspaceFolders((event) => {
     for (const folder of event.removed) {
