@@ -112,7 +112,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   if (useCustomWrapper) {
     hieLaunchScript = customWrapperPath;
-  } else if (workspace.getConfiguration('languageServerHaskell').useHieWrapper) {
+  } else if (workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper) {
     hieLaunchScript = 'hie-wrapper.sh';
   }
   // Don't use the .bat launcher, if the user specified a custom wrapper.
