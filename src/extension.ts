@@ -1,14 +1,11 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-// import * as vscode from 'vscode';
-
 import * as child_process from 'child_process';
 import * as os from 'os';
 import * as path from 'path';
 import {
   commands,
   ExtensionContext,
+  OutputChannel,
   TextDocument,
   Uri,
   window,
@@ -34,52 +31,14 @@ let docsBrowserRegistered: boolean = false;
 let hieCommandsRegistered: boolean = false;
 const clients: Map<string, LanguageClient> = new Map();
 
-/*
- * Sort the workspace folders by length.
- * Taken from https://github.com/Microsoft/vscode-extension-samples/blob/
- * 26bc3537d9817d7def2f349ff2a5e0229bbb6b4a/lsp-multi-server-sample/client/src/extension.ts#L14.
- */
-let sortedWorkspaceFolders: string[];
-function sortWorkspaceFolders(): string[] {
-  if (sortedWorkspaceFolders === void 0) {
-    sortedWorkspaceFolders = workspace.workspaceFolders.map(folder => {
-      let result = folder.uri.toString();
-      if (result.charAt(result.length - 1) !== '/') {
-        result = result + '/';
-      }
-      return result;
-    }).sort((a, b) => a.length - b.length);
-  }
-  return sortedWorkspaceFolders;
-}
-workspace.onDidChangeWorkspaceFolders(() => sortedWorkspaceFolders = undefined);
-
-/*
- * Extract the outer-most workspace folder.
- * Taken from https://github.com/Microsoft/vscode-extension-samples/blob/
- * 26bc3537d9817d7def2f349ff2a5e0229bbb6b4a/lsp-multi-server-sample/client/src/extension.ts#L32.
- */
-function getOuterMostWorkspaceFolder(folder: WorkspaceFolder): WorkspaceFolder {
-  const sorted = sortWorkspaceFolders();
-  for (const element of sorted) {
-    let uri = folder.uri.toString();
-    if (uri.charAt(uri.length - 1) !== '/') {
-      uri = uri + '/';
-    }
-    if (uri.startsWith(element)) {
-      return workspace.getWorkspaceFolder(Uri.parse(element));
-    }
-  }
-  return folder;
-}
-
 export async function activate(context: ExtensionContext) {
   // Register HIE to check every time a text document gets opened, to
   // support multi-root workspaces.
   workspace.onDidOpenTextDocument((document: TextDocument) => activateHie(context, document));
   workspace.textDocuments.forEach((document: TextDocument) => activateHie(context, document));
+  // Stop HIE from any workspace folders that are removed.
   workspace.onDidChangeWorkspaceFolders((event) => {
-    for (const folder  of event.removed) {
+    for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
         clients.delete(folder.uri.toString());
@@ -104,9 +63,6 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
   if (!folder) {
     return;
   }
-  // In case we have a nested workspace folder, only start the server on the outer-most.
-  // folder = getOuterMostWorkspaceFolder(folder);
-
   // If the client already has an LSP server, then don't start a new one.
   if (clients.has(folder.uri.toString())) {
     return;
@@ -168,46 +124,51 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // otherwise the run options are used
   const tempDir = ( process.platform === 'win32' ) ? '%TEMP%' : '/tmp';
   const serverOptions: ServerOptions = {
-    run : { command: serverPath },
+    run: { command: serverPath },
     debug: { command: serverPath, args: ['-d', '-l', path.join(tempDir, 'hie.log')] },
   };
 
+  const langName = 'Language Server Haskell (' + folder.name + ')';
+  const outputChannel: OutputChannel = window.createOutputChannel(langName);
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: ['haskell'],
+    documentSelector: ['haskell', 'cabal', 'literate haskell'],
     synchronize: {
       // Synchronize the setting section 'languageServerHaskell' to the server
       configurationSection: 'languageServerHaskell',
       // Notify the server about file changes to '.clientrc files contain in the workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
     },
+    diagnosticCollectionName: langName,
+    revealOutputChannelOn: RevealOutputChannelOn.Info, // FIXME: Change back to Never.
+    outputChannel,
+    outputChannelName: langName,
     // Set the CWD to the workspace folder
-    workspaceFolder: folder,
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
     },
-    revealOutputChannelOn: RevealOutputChannelOn.Never,
+    workspaceFolder: folder,
   };
 
   // Create the language client and start the client.
-  const langClient = new LanguageClient('Language Server Haskell', serverOptions, clientOptions);
+  const langClient = new LanguageClient(langName, serverOptions, clientOptions);
 
-  // Only register the commands once.
+  if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
+    context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));
+  }
   if (!hieCommandsRegistered) {
-    context.subscriptions.push(InsertType.registerCommand(langClient));
-    ShowTypeCommand.registerCommand(langClient).forEach(x => context.subscriptions.push(x));
-    if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
-      context.subscriptions.push(ShowTypeHover.registerTypeHover(langClient));
-    }
-    registerHiePointCommand(langClient, 'hie.commands.demoteDef', 'hare:demote', context);
-    registerHiePointCommand(langClient, 'hie.commands.liftOneLevel', 'hare:liftonelevel', context);
-    registerHiePointCommand(langClient, 'hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
-    registerHiePointCommand(langClient, 'hie.commands.deleteDef', 'hare:deletedef', context);
-    registerHiePointCommand(langClient, 'hie.commands.genApplicative', 'hare:genapplicative', context);
+    // Only register the commands once.
+    context.subscriptions.push(InsertType.registerCommand(clients));
+    ShowTypeCommand.registerCommand(clients).forEach(x => context.subscriptions.push(x));
+    registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
+    registerHiePointCommand('hie.commans.liftOneLevel', 'hare:liftonelevel', context);
+    registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
+    registerHiePointCommand('hie.commands.deleteDef', 'hare:deletedef', context);
+    registerHiePointCommand('hie.commands.genApplicative', 'hare:genapplicative', context);
     hieCommandsRegistered = true;
   }
 
+  // langClient.registerProposedFeatures();
   langClient.start();
   clients.set(folder.uri.toString(), langClient);
 }
@@ -230,9 +191,10 @@ async function isHieInstalled(): Promise<boolean> {
   });
 }
 
-async function registerHiePointCommand(langClient: LanguageClient, name: string, command: string,
+async function registerHiePointCommand(name: string,
+                                       command: string,
                                        context: ExtensionContext) {
-  const cmd2 = commands.registerTextEditorCommand(name, (editor, edit) => {
+  const editorCmd = commands.registerTextEditorCommand(name, (editor, edit) => {
     const cmd = {
       command,
       arguments: [
@@ -242,12 +204,18 @@ async function registerHiePointCommand(langClient: LanguageClient, name: string,
         },
       ],
     };
-
-    langClient.sendRequest('workspace/executeCommand', cmd).then(hints => {
-      return true;
-    }, e => {
-      console.error(e);
-    });
+    // Get the current file and workspace folder.
+    const uri = editor.document.uri;
+    const folder = workspace.getWorkspaceFolder(uri);
+    // If there is a client registered for this workspace, use that client.
+    if (clients.has(folder.uri.toString())) {
+      const client = clients.get(folder.uri.toString());
+      client.sendRequest('workspace/executeCommand', cmd).then(hints => {
+        return true;
+      }, e => {
+        console.error(e);
+      });
+    }
   });
-  context.subscriptions.push(cmd2);
+  context.subscriptions.push(editorCmd);
 }
