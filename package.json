@@ -2,7 +2,7 @@
     "name": "vscode-hie-server",
     "displayName": "Haskell Language Server",
     "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
@@ -11,7 +11,8 @@
     "keywords": [
         "language",
         "haskell",
-        "lsp"
+        "lsp",
+        "multi-root ready"
     ],
     "homepage": "https://github.com/alanz/vscode-hie-server",
     "repository": {
@@ -47,16 +48,6 @@
                 ]
             },
             {
-                "id": "cabal",
-                "aliases": [
-                    "cabal",
-                    "Cabal"
-                ],
-                "extensions": [
-                    ".cabal"
-                ]
-            },
-            {
                 "id": "literate haskell",
                 "aliases": [
                     "Literate Haskell",
@@ -72,36 +63,43 @@
             "title": "Haskell Language Server",
             "properties": {
                 "languageServerHaskell.maxNumberOfProblems": {
+                    "scope": "resource",
                     "type": "number",
                     "default": 100,
                     "description": "Controls the maximum number of problems produced by the server."
                 },
                 "languageServerHaskell.useHieWrapper": {
+                    "scope": "resource",
                     "type": "boolean",
                     "default": false,
                     "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions."
                 },
                 "languageServerHaskell.useCustomHieWrapper": {
+                    "scope": "resource",
                     "type": "boolean",
                     "default": false,
                     "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take effect over useHieWrapper."
                 },
                 "languageServerHaskell.useCustomHieWrapperPath": {
+                    "scope": "resource",
                     "type": "string",
                     "default": "",
                     "description": "Specify the full path to your own custom hie wrapper (e.g. /Users/Alice/.hie-wrapper.sh)."
                 },
                 "languageServerHaskell.hlintOn": {
+                    "scope": "resource",
                     "type": "boolean",
                     "default": true,
                     "description": "Get suggestions from hlint"
                 },
                 "languageServerHaskell.showTypeForSelection.onHover": {
+                    "scope": "resource",
                     "type": "boolean",
                     "default": true,
                     "description": "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
                 },
                 "languageServerHaskell.showTypeForSelection.command.location": {
+                    "scope": "resource",
                     "type": "string",
                     "enum": [
                         "dropdown",
@@ -111,6 +109,7 @@
                     "description": "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
                 },
                 "languageServerHaskell.trace.server": {
+                    "scope": "resource",
                     "type": "string",
                     "enum": [
                         "off",
@@ -203,6 +202,6 @@
         "justusadam.language-haskell"
     ],
     "dependencies": {
-        "vscode-languageclient": "^3.5.0"
+        "vscode-languageclient": "^4.0.1"
     }
 }

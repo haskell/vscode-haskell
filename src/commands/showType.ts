@@ -91,25 +91,32 @@ export namespace ShowTypeCommand {
     chan.show(true);
   };
 
-  export function registerCommand(client: LanguageClient): [Disposable] {
+  export function registerCommand(clients: Map<string, LanguageClient>): [Disposable, OutputChannel] {
     const showTypeChannel = window.createOutputChannel('Haskell Show Type');
     const document = window.activeTextEditor.document;
 
     const cmd = commands.registerCommand(CommandNames.ShowTypeCommandName, x => {
       const editor = window.activeTextEditor;
+      // Get the current file and workspace folder.
+      const uri = editor.document.uri;
+      const folder = workspace.getWorkspaceFolder(uri);
+      // If there is a client registered for this workspace, use that client.
+      if (clients.has(folder.uri.toString())) {
+        const client = clients.get(folder.uri.toString());
 
-      getTypes({client, editor}).then(([r, typ]) => {
-        switch (workspace.getConfiguration('languageServerHaskell').showTypeForSelection.command.location) {
-          case 'dropdown':
-            window.showInformationMessage(formatExpressionType(document, r, typ));
-            break;
-          case 'channel':
-            displayType(showTypeChannel, formatExpressionType(document, r, typ));
-            break;
-          default:
-            break;
-        }
-      }).catch(e => console.error(e));
+        getTypes({client, editor}).then(([r, typ]) => {
+          switch (workspace.getConfiguration('languageServerHaskell').showTypeForSelection.command.location) {
+            case 'dropdown':
+              window.showInformationMessage(formatExpressionType(document, r, typ));
+              break;
+            case 'channel':
+              displayType(showTypeChannel, formatExpressionType(document, r, typ));
+              break;
+            default:
+              break;
+          }
+        }).catch(e => console.error(e));
+      }
 
     });
 
@@ -149,10 +156,10 @@ export namespace ShowTypeHover {
   };
 
   class TypeHover implements HoverProvider {
-    public client: LanguageClient;
+    public clients: Map<string, LanguageClient>;
 
-    constructor(client) {
-      this.client = client;
+    constructor(clients: Map<string, LanguageClient>) {
+      this.clients = clients;
     }
 
     public provideHover(document: TextDocument, position: Position, token: CancellationToken): Thenable<Hover> {
@@ -167,13 +174,21 @@ export namespace ShowTypeHover {
         return Promise.resolve(this.makeHover(document, lastRange, lastType));
       }
 
-      return getTypes({client: this.client, editor}).then(([r, typ]) => {
-        if (typ) {
-          return this.makeHover(document, r, lastType);
-        } else {
-          return null;
-        }
-      });
+      const uri = editor.document.uri;
+      const folder = workspace.getWorkspaceFolder(uri);
+      // If there is a client registered for this workspace, use that client.
+      if (this.clients.has(folder.uri.toString())) {
+        const client = this.clients.get(folder.uri.toString());
+        return getTypes({client, editor}).then(([r, typ]) => {
+          if (typ) {
+            return this.makeHover(document, r, lastType);
+          } else {
+            return null;
+          }
+        });
+      } else {
+        return null;
+      }
     }
 
     private makeHover(document: TextDocument, r: Range, typ: string): Hover {
@@ -184,6 +199,8 @@ export namespace ShowTypeHover {
     }
   }
 
-  export const registerTypeHover = (client) => languages
-      .registerHoverProvider(HASKELL_MODE, new TypeHover(client));
+  export const registerTypeHover = (clients: Map<string, LanguageClient>) => languages.registerHoverProvider(
+    HASKELL_MODE,
+    new TypeHover(clients)
+  );
 }
