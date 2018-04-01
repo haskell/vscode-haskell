@@ -16,7 +16,8 @@ import {
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
-  ServerOptions
+  ServerOptions,
+  TransportKind
 } from 'vscode-languageclient';
 import { InsertType } from './commands/insertType';
 import {
@@ -122,15 +123,20 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // otherwise the run options are used
   const tempDir = ( process.platform === 'win32' ) ? '%TEMP%' : '/tmp';
   const serverOptions: ServerOptions = {
-    run: { command: serverPath },
-    debug: { command: serverPath, args: ['-d', '-l', path.join(tempDir, 'hie.log')] },
+    run: { command: serverPath, transport: TransportKind.stdio, },
+    debug: { command: serverPath, transport: TransportKind.stdio, args: ['-d', '-l', path.join(tempDir, 'hie.log')] },
   };
 
-  const langName = 'Language Server Haskell (' + folder.name + ')';
+  const langName = 'Haskell HIE (' + folder.name + ')';
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
   // Options to control the language client
   const clientOptions: LanguageClientOptions = {
-    documentSelector: ['haskell', 'cabal', 'literate haskell'],
+    // Use the document selector to only notify the LSP on files inside the folder
+    // path for the specific workspace.
+    documentSelector: [
+      { scheme: 'file', language: 'haskell', pattern: `${folder.uri.fsPath}/**/*` },
+      { scheme: 'file', language: 'literate haskell', pattern: `${folder.uri.fsPath}/**/*` },
+    ],
     synchronize: {
       // Synchronize the setting section 'languageServerHaskell' to the server
       configurationSection: 'languageServerHaskell',
@@ -138,18 +144,18 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
     },
     diagnosticCollectionName: langName,
-    revealOutputChannelOn: RevealOutputChannelOn.Info, // FIXME: Change back to Never.
+    revealOutputChannelOn: RevealOutputChannelOn.Never,
     outputChannel,
     outputChannelName: langName,
-    // Set the CWD to the workspace folder
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
     },
+    // Set the CWD to the workspace folder.
     workspaceFolder: folder,
   };
 
   // Create the language client and start the client.
-  const langClient = new LanguageClient(langName, serverOptions, clientOptions);
+  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions);
 
   if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
     context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));

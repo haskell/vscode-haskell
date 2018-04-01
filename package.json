@@ -2,7 +2,7 @@
     "name": "vscode-hie-server",
     "displayName": "Haskell Language Server",
     "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
@@ -11,7 +11,8 @@
     "keywords": [
         "language",
         "haskell",
-        "lsp"
+        "lsp",
+        "multi-root ready"
     ],
     "homepage": "https://github.com/alanz/vscode-hie-server",
     "repository": {
@@ -47,16 +48,6 @@
                 ]
             },
             {
-                "id": "cabal",
-                "aliases": [
-                    "cabal",
-                    "Cabal"
-                ],
-                "extensions": [
-                    ".cabal"
-                ]
-            },
-            {
                 "id": "literate haskell",
                 "aliases": [
                     "Literate Haskell",
@@ -78,7 +69,7 @@
                     "description": "Controls the maximum number of problems produced by the server."
                 },
                 "languageServerHaskell.useHieWrapper": {
-                    "scope": "window",
+                    "scope": "resource",
                     "type": "boolean",
                     "default": false,
                     "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions."
@@ -211,6 +202,6 @@
         "justusadam.language-haskell"
     ],
     "dependencies": {
-        "vscode-languageclient": "^3.5.0"
+        "vscode-languageclient": "^4.0.1"
     }
 }

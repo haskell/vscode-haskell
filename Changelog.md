@@ -1,3 +1,13 @@
+### 0.0.10
+
+Add support for multi-root workspaces, thanks to @tehnix. See the README section
+on [_Using multi-root workspaces_](https://github.com/alanz/vscode-hie-server#using-multi-root-workspaces) for more.
+
+### 0.0.9
+
+Publish to the visual studio marketplace through travis CI via git tags. E.g.
+`git tag -a 0.0.9 -m "Version 0.0.9"` and then `git push origin 0.0.9`.
+
 ### 0.0.8
 
 Add new haskell-ide-engine logo, thanks to @damienflament
