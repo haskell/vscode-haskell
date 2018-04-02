@@ -1,3 +1,7 @@
+### 0.0.12
+
+Add configuration to enable/disable HIE, useful for multi-root workspaces.
+
 ### 0.0.11
 
 Add additional marketplace categories.
