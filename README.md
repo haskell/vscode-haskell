@@ -64,6 +64,14 @@ There are a few placeholders which will be expanded:
 
 This can be beneficial if you are using something like nix, to have a wrapper script tailored to your setup.
 
+#### Enable/disable HIE
+
+You can enable or disable HIE via configuration. This is useful, because multi-root workspaces do not yet allow you to manage extensions at the folder level, which can be necessary.
+
+```json
+"languageServerHaskell.enableHIE": true
+```
+
 ## Manual Installation
 Either install the extension via the marketplace (preferred), or if you are testing an unreleased version by,
 
@@ -103,7 +111,14 @@ You can then define how to start HIE for each of these folders, by going into `S
 }
 ```
 
-to launch HIE via `hie.sh` inside the backend folder, while the frontend, because of being GHCJS, might not use HIE and use something else instead. This provides a very flexible way of customizing your setup.
+to launch HIE via `hie.sh` inside the _backend_ and _common_ folder, while the _frontend_, because of using GHCJS, might not want to use HIE, and therefore needs to disable HIE,
+
+```json
+{
+    "languageServerHaskell.useHieWrapper": false
+}
+```
+ This provides a very flexible way of customizing your setup.
 
 ## Release Notes
 

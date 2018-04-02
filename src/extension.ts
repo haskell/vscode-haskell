@@ -89,6 +89,12 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
 }
 
 function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, uri: Uri) {
+  // Stop right here, if HIE is disabled in the resource/workspace folder.
+  const enableHIE = workspace.getConfiguration('languageServerHaskell', uri).enableHIE;
+  if (!enableHIE) {
+    return;
+  }
+
   // Set up the documentation browser.
   if (!docsBrowserRegistered) {
     const docsDisposable = DocsBrowser.registerDocsBrowser();

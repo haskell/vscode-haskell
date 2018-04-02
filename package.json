@@ -121,6 +121,12 @@
                     ],
                     "default": "off",
                     "description": "Traces the communication between VSCode and the languageServerHaskell service."
+                },
+                "languageServerHaskell.enableHIE": {
+                    "scope": "resource",
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable/Disable HIE (useful for multi-root workspaces)."
                 }
             }
         },
