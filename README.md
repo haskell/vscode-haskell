@@ -46,7 +46,7 @@ Furthermore, the extension supports multiple ways of initializing hie, depending
 "languageServerHaskell.useHieWrapper": true,
 ```
 
-makes VSCode use the `hie-wrapper.sh` file to start hie through. This does assume that you built the hie executable using make build, but will fall back to plain hie.
+makes VSCode use the `hie-wrapper.sh` file to start hie through. This does assume that you built the hie executable using make build, but will fall back to plain hie. This will take precedence over `hieExecutablePath`.
 
 #### Custom Wrapper
 
@@ -62,7 +62,7 @@ There are a few placeholders which will be expanded:
 - `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 - `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
-This can be beneficial if you are using something like nix, to have a wrapper script tailored to your setup.
+This can be beneficial if you are using something like nix, to have a wrapper script tailored to your setup. This will take precedence over `useHieWrapper` and `hieExecutablePath`.
 
 #### Enable/disable HIE
 
@@ -71,6 +71,16 @@ You can enable or disable HIE via configuration. This is useful, because multi-r
 ```json
 "languageServerHaskell.enableHIE": true
 ```
+
+#### Path for hie executable
+
+If you `hie` executable is not on your path, you can manually set it,
+
+```json
+"languageServerHaskell.hieExecutablePath": "~/.local/bin/hie"
+```
+
+The path placeholders work here as well. Note that this adds the `--lsp` argument to the call of this executable.
 
 ## Manual Installation
 Either install the extension via the marketplace (preferred), or if you are testing an unreleased version by,

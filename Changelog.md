@@ -1,3 +1,8 @@
+### 0.0.13
+
+Add configuration to set the path to your HIE executable, if it's not on your PATH. Note
+that this adds the `--lsp` argument to the call of this executable.
+
 ### 0.0.12
 
 Add configuration to enable/disable HIE, useful for multi-root workspaces.
