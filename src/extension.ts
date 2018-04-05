@@ -69,8 +69,9 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
 
   try {
     const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
+    const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
     // Check if hie is installed.
-    if (!await isHieInstalled() && !useCustomWrapper) {
+    if (!await isHieInstalled() && !useCustomWrapper && hieExecutablePath === '') {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
       const notInstalledMsg: string =
         'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
@@ -102,11 +103,12 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     docsBrowserRegistered = true;
   }
 
-  let hieLaunchScript = 'hie-vscode.sh';
   const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
+  const useHieWrapper = workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper;
+  let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
 
-  // Substitute variables with their corresponding locations.
+  // Substitute path variables with their corresponding locations.
   if (useCustomWrapper) {
     customWrapperPath = customWrapperPath
       .replace('${workspaceFolder}', folder.uri.path)
@@ -114,28 +116,54 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
       .replace('${HOME}', os.homedir)
       .replace('${home}', os.homedir)
       .replace(/^~/, os.homedir);
+  } else if (hieExecutablePath !== '') {
+    hieExecutablePath = hieExecutablePath
+      .replace('${workspaceFolder}', folder.uri.path)
+      .replace('${workspaceRoot}', folder.uri.path)
+      .replace('${HOME}', os.homedir)
+      .replace('${home}', os.homedir)
+      .replace(/^~/, os.homedir);
   }
 
+  // Set the executable, based on the settings. The order goes:
+  // First check useCustomWrapper, then check useHieWrapper, then
+  // check hieExecutablePath, else retain original path.
+  let hieLaunchScript = 'hie-vscode.sh';
   if (useCustomWrapper) {
     hieLaunchScript = customWrapperPath;
-  } else if (workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper) {
+  } else if (useHieWrapper) {
     hieLaunchScript = 'hie-wrapper.sh';
+  } else if (hieExecutablePath !== '') {
+    hieLaunchScript = hieExecutablePath;
   }
-  // Don't use the .bat launcher, if the user specified a custom wrapper.
-  const startupScript = ( process.platform === 'win32' && !useCustomWrapper ) ? 'hie-vscode.bat' : hieLaunchScript;
-  const serverPath = useCustomWrapper ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
 
+  // Don't use the .bat launcher, if the user specified a custom wrapper or a executable path.
+  const startupScript = ( process.platform === 'win32' && !useCustomWrapper && !hieExecutablePath )
+    ? 'hie-vscode.bat'
+    : hieLaunchScript;
+  // If using a custom wrapper or specificed an executable path, the path is assumed to already
+  // be absolute.
+  const serverPath = useCustomWrapper || hieExecutablePath
+    ? startupScript
+    : context.asAbsolutePath(path.join('.', startupScript));
+
+  const tempDir = ( process.platform === 'win32' ) ? '%TEMP%' : '/tmp';
+  const runArgs = [];
+  const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
+    runArgs.unshift('--lsp');
+    debugArgs.unshift('--lsp');
+  }
   // If the extension is launched in debug mode then the debug server options are used,
   // otherwise the run options are used
-  const tempDir = ( process.platform === 'win32' ) ? '%TEMP%' : '/tmp';
   const serverOptions: ServerOptions = {
-    run: { command: serverPath, transport: TransportKind.stdio, },
-    debug: { command: serverPath, transport: TransportKind.stdio, args: ['-d', '-l', path.join(tempDir, 'hie.log')] },
+    run: { command: serverPath, transport: TransportKind.stdio, args: runArgs, },
+    debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs },
   };
 
+  // Set a unique name per workspace folder (useful for multi-root workspaces).
   const langName = 'Haskell HIE (' + folder.name + ')';
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
-  // Options to control the language client
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
@@ -156,18 +184,18 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
     },
-    // Set the CWD to the workspace folder.
+    // Set the current working directory, for HIE, to be the workspace folder.
     workspaceFolder: folder,
   };
 
-  // Create the language client and start the client.
+  // Create the LSP client.
   const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions);
 
   if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
     context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));
   }
+  // Register editor commands for HIE, but only register the commands once.
   if (!hieCommandsRegistered) {
-    // Only register the commands once.
     context.subscriptions.push(InsertType.registerCommand(clients));
     ShowTypeCommand.registerCommand(clients).forEach(x => context.subscriptions.push(x));
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
@@ -178,7 +206,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     hieCommandsRegistered = true;
   }
 
-  // langClient.registerProposedFeatures();
+  // Finally start the client and add it to the list of clients.
   langClient.start();
   clients.set(folder.uri.toString(), langClient);
 }
@@ -194,6 +222,9 @@ export function deactivate(): Thenable<void> {
   return Promise.all(promises).then(() => undefined);
 }
 
+/*
+ * Check if HIE is installed.
+ */
 async function isHieInstalled(): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
     const cmd: string = ( process.platform === 'win32' ) ? 'where hie' : 'which hie';
@@ -201,6 +232,9 @@ async function isHieInstalled(): Promise<boolean> {
   });
 }
 
+/*
+ * Create an editor command that calls an action on the active LSP server.
+ */
 async function registerHiePointCommand(name: string,
                                        command: string,
                                        context: ExtensionContext) {

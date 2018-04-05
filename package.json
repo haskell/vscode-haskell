@@ -2,7 +2,7 @@
     "name": "vscode-hie-server",
     "displayName": "Haskell Language Server",
     "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
@@ -71,23 +71,29 @@
                     "default": 100,
                     "description": "Controls the maximum number of problems produced by the server."
                 },
+                "languageServerHaskell.hieExecutablePath": {
+                    "scope": "resource",
+                    "type": "string",
+                    "default": "",
+                    "description": "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
+                },
                 "languageServerHaskell.useHieWrapper": {
                     "scope": "resource",
                     "type": "boolean",
                     "default": false,
-                    "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions."
+                    "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions. This will take precedence over hieExecutablePath."
                 },
                 "languageServerHaskell.useCustomHieWrapper": {
                     "scope": "resource",
                     "type": "boolean",
                     "default": false,
-                    "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take effect over useHieWrapper."
+                    "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
                 },
                 "languageServerHaskell.useCustomHieWrapperPath": {
                     "scope": "resource",
                     "type": "string",
                     "default": "",
-                    "description": "Specify the full path to your own custom hie wrapper (e.g. /Users/Alice/.hie-wrapper.sh)."
+                    "description": "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
                 },
                 "languageServerHaskell.hlintOn": {
                     "scope": "resource",
@@ -126,7 +132,7 @@
                     "scope": "resource",
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable/Disable HIE (useful for multi-root workspaces)."
+                    "description": "Enable/disable HIE (useful for multi-root workspaces)."
                 }
             }
         },
