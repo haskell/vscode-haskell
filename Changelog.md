@@ -1,3 +1,8 @@
+### 0.0.14
+
+Revert `vscode-languageclient` dependency to version 3.5.0, since version 4.x for some
+reason breaks the documentation browser.
+
 ### 0.0.13
 
 Add configuration to set the path to your HIE executable, if it's not on your PATH. Note
