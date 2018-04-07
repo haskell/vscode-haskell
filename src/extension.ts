@@ -199,7 +199,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     context.subscriptions.push(InsertType.registerCommand(clients));
     ShowTypeCommand.registerCommand(clients).forEach(x => context.subscriptions.push(x));
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
-    registerHiePointCommand('hie.commans.liftOneLevel', 'hare:liftonelevel', context);
+    registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
     registerHiePointCommand('hie.commands.deleteDef', 'hare:deletedef', context);
     registerHiePointCommand('hie.commands.genApplicative', 'hare:genapplicative', context);
