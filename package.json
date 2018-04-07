@@ -217,6 +217,6 @@
         "justusadam.language-haskell"
     ],
     "dependencies": {
-        "vscode-languageclient": "^4.0.1"
+        "vscode-languageclient": "^3.5.0"
     }
 }
