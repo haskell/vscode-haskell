@@ -14,9 +14,9 @@ export namespace InsertType {
           {
             file: editor.document.uri.toString(),
             pos: editor.selections[0].active,
-            include_constraints: true,
-          },
-        ],
+            include_constraints: true
+          }
+        ]
       };
 
       // Get the current file and workspace folder.
@@ -25,7 +25,7 @@ export namespace InsertType {
       // If there is a client registered for this workspace, use that client.
       if (folder !== undefined && clients.has(folder.uri.toString())) {
         const client = clients.get(folder.uri.toString());
-        client !== undefined &&
+        if (client !== undefined) {
           client.sendRequest('workspace/executeCommand', ghcCmd).then(
             hints => {
               const arr = hints as Array<[Range, string]>;
@@ -52,6 +52,7 @@ export namespace InsertType {
               console.error(e);
             }
           );
+        }
       }
     });
 
