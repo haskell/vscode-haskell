@@ -1,3 +1,7 @@
+### 0.0.15
+
+Support the new webview-api for the documentation browser, thanks to @AlexeyRaga.
+
 ### 0.0.14
 
 Revert `vscode-languageclient` dependency to version 3.5.0, since version 4.x for some
