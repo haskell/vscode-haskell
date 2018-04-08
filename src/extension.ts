@@ -10,20 +10,17 @@ import {
   Uri,
   window,
   workspace,
-  WorkspaceFolder
+  WorkspaceFolder,
 } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
   ServerOptions,
-  TransportKind
+  TransportKind,
 } from 'vscode-languageclient';
 import { InsertType } from './commands/insertType';
-import {
-  ShowTypeCommand,
-  ShowTypeHover,
-} from './commands/showType';
+import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
 
 let docsBrowserRegistered: boolean = false;
@@ -36,7 +33,7 @@ export async function activate(context: ExtensionContext) {
   workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateHie(context, document));
   workspace.textDocuments.forEach(async (document: TextDocument) => await activateHie(context, document));
   // Stop HIE from any workspace folders that are removed.
-  workspace.onDidChangeWorkspaceFolders((event) => {
+  workspace.onDidChangeWorkspaceFolders(event => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
@@ -49,10 +46,12 @@ export async function activate(context: ExtensionContext) {
 
 async function activateHie(context: ExtensionContext, document: TextDocument) {
   // We are only interested in Haskell files.
-  if ((document.languageId !== 'haskell'
-        && document.languageId !== 'cabal'
-        && document.languageId !== 'literate Haskell')
-        || (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')) {
+  if (
+    (document.languageId !== 'haskell' &&
+      document.languageId !== 'cabal' &&
+      document.languageId !== 'literate Haskell') ||
+    (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')
+  ) {
     return;
   }
 
@@ -138,16 +137,14 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   }
 
   // Don't use the .bat launcher, if the user specified a custom wrapper or a executable path.
-  const startupScript = ( process.platform === 'win32' && !useCustomWrapper && !hieExecutablePath )
-    ? 'hie-vscode.bat'
-    : hieLaunchScript;
+  const startupScript =
+    process.platform === 'win32' && !useCustomWrapper && !hieExecutablePath ? 'hie-vscode.bat' : hieLaunchScript;
   // If using a custom wrapper or specificed an executable path, the path is assumed to already
   // be absolute.
-  const serverPath = useCustomWrapper || hieExecutablePath
-    ? startupScript
-    : context.asAbsolutePath(path.join('.', startupScript));
+  const serverPath =
+    useCustomWrapper || hieExecutablePath ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
 
-  const tempDir = ( process.platform === 'win32' ) ? '%TEMP%' : '/tmp';
+  const tempDir = process.platform === 'win32' ? '%TEMP%' : '/tmp';
   const runArgs = [];
   const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
@@ -157,7 +154,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // If the extension is launched in debug mode then the debug server options are used,
   // otherwise the run options are used
   const serverOptions: ServerOptions = {
-    run: { command: serverPath, transport: TransportKind.stdio, args: runArgs, },
+    run: { command: serverPath, transport: TransportKind.stdio, args: runArgs },
     debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs },
   };
 
@@ -197,7 +194,8 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // Register editor commands for HIE, but only register the commands once.
   if (!hieCommandsRegistered) {
     context.subscriptions.push(InsertType.registerCommand(clients));
-    ShowTypeCommand.registerCommand(clients).forEach(x => context.subscriptions.push(x));
+    const showTypeCmd = ShowTypeCommand.registerCommand(clients);
+    showTypeCmd !== null && showTypeCmd.forEach(x => context.subscriptions.push(x));
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
     registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
@@ -227,7 +225,7 @@ export function deactivate(): Thenable<void> {
  */
 async function isHieInstalled(): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    const cmd: string = ( process.platform === 'win32' ) ? 'where hie' : 'which hie';
+    const cmd: string = process.platform === 'win32' ? 'where hie' : 'which hie';
     child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
   });
 }
@@ -235,9 +233,7 @@ async function isHieInstalled(): Promise<boolean> {
 /*
  * Create an editor command that calls an action on the active LSP server.
  */
-async function registerHiePointCommand(name: string,
-                                       command: string,
-                                       context: ExtensionContext) {
+async function registerHiePointCommand(name: string, command: string, context: ExtensionContext) {
   const editorCmd = commands.registerTextEditorCommand(name, (editor, edit) => {
     const cmd = {
       command,
@@ -252,13 +248,17 @@ async function registerHiePointCommand(name: string,
     const uri = editor.document.uri;
     const folder = workspace.getWorkspaceFolder(uri);
     // If there is a client registered for this workspace, use that client.
-    if (clients.has(folder.uri.toString())) {
+    if (folder !== undefined && clients.has(folder.uri.toString())) {
       const client = clients.get(folder.uri.toString());
-      client.sendRequest('workspace/executeCommand', cmd).then(hints => {
-        return true;
-      }, e => {
-        console.error(e);
-      });
+      client !== undefined &&
+        client.sendRequest('workspace/executeCommand', cmd).then(
+          hints => {
+            return true;
+          },
+          e => {
+            console.error(e);
+          }
+        );
     }
   });
   context.subscriptions.push(editorCmd);

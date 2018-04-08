@@ -1,223 +1,202 @@
 {
-    "name": "vscode-hie-server",
-    "displayName": "Haskell Language Server",
-    "description": "Language Server Protocol for Haskell via HIE",
-    "version": "0.0.15",
-    "license": "MIT",
-    "publisher": "alanz",
-    "engines": {
-        "vscode": "^1.22.0"
-    },
-    "keywords": [
-        "language",
-        "haskell",
-        "lsp",
-        "multi-root ready"
+  "name": "vscode-hie-server",
+  "displayName": "Haskell Language Server",
+  "description": "Language Server Protocol for Haskell via HIE",
+  "version": "0.0.15",
+  "license": "MIT",
+  "publisher": "alanz",
+  "engines": {
+    "vscode": "^1.22.0"
+  },
+  "keywords": ["language", "haskell", "lsp", "multi-root ready"],
+  "homepage": "https://github.com/alanz/vscode-hie-server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alanz/vscode-hie-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alanz/vscode-hie-server/issues"
+  },
+  "categories": ["Languages", "Formatters", "Linters", "Other"],
+  "icon": "images/HIE_logo_128.png",
+  "galleryBanner": {
+    "color": "#22172A",
+    "theme": "dark"
+  },
+  "activationEvents": ["onLanguage:haskell", "onLanguage:literate haskell"],
+  "main": "./out/src/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "haskell",
+        "aliases": ["Haskell", "haskell"],
+        "extensions": [".hs"]
+      },
+      {
+        "id": "literate haskell",
+        "aliases": ["Literate Haskell", "literate Haskell"],
+        "extensions": [".lhs"]
+      }
     ],
-    "homepage": "https://github.com/alanz/vscode-hie-server",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/alanz/vscode-hie-server.git"
-    },
-    "bugs": {
-        "url": "https://github.com/alanz/vscode-hie-server/issues"
-    },
-    "categories": [
-        "Languages",
-        "Formatters",
-        "Linters",
-        "Other"
-    ],
-    "icon": "images/HIE_logo_128.png",
-    "galleryBanner": {
-        "color": "#22172A",
-        "theme": "dark"
-    },
-    "activationEvents": [
-        "onLanguage:haskell",
-        "onLanguage:literate haskell"
-    ],
-    "main": "./out/src/extension",
-    "contributes": {
-        "languages": [
-            {
-                "id": "haskell",
-                "aliases": [
-                    "Haskell",
-                    "haskell"
-                ],
-                "extensions": [
-                    ".hs"
-                ]
-            },
-            {
-                "id": "literate haskell",
-                "aliases": [
-                    "Literate Haskell",
-                    "literate Haskell"
-                ],
-                "extensions": [
-                    ".lhs"
-                ]
-            }
-        ],
-        "configuration": {
-            "type": "object",
-            "title": "Haskell Language Server",
-            "properties": {
-                "languageServerHaskell.maxNumberOfProblems": {
-                    "scope": "resource",
-                    "type": "number",
-                    "default": 100,
-                    "description": "Controls the maximum number of problems produced by the server."
-                },
-                "languageServerHaskell.hieExecutablePath": {
-                    "scope": "resource",
-                    "type": "string",
-                    "default": "",
-                    "description": "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
-                },
-                "languageServerHaskell.useHieWrapper": {
-                    "scope": "resource",
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions. This will take precedence over hieExecutablePath."
-                },
-                "languageServerHaskell.useCustomHieWrapper": {
-                    "scope": "resource",
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
-                },
-                "languageServerHaskell.useCustomHieWrapperPath": {
-                    "scope": "resource",
-                    "type": "string",
-                    "default": "",
-                    "description": "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
-                },
-                "languageServerHaskell.hlintOn": {
-                    "scope": "resource",
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Get suggestions from hlint"
-                },
-                "languageServerHaskell.showTypeForSelection.onHover": {
-                    "scope": "resource",
-                    "type": "boolean",
-                    "default": true,
-                    "description": "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
-                },
-                "languageServerHaskell.showTypeForSelection.command.location": {
-                    "scope": "resource",
-                    "type": "string",
-                    "enum": [
-                        "dropdown",
-                        "channel"
-                    ],
-                    "default": "dropdown",
-                    "description": "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
-                },
-                "languageServerHaskell.trace.server": {
-                    "scope": "resource",
-                    "type": "string",
-                    "enum": [
-                        "off",
-                        "messages",
-                        "verbose"
-                    ],
-                    "default": "off",
-                    "description": "Traces the communication between VSCode and the languageServerHaskell service."
-                },
-                "languageServerHaskell.enableHIE": {
-                    "scope": "resource",
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable/disable HIE (useful for multi-root workspaces)."
-                }
-            }
+    "configuration": {
+      "type": "object",
+      "title": "Haskell Language Server",
+      "properties": {
+        "languageServerHaskell.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
         },
-        "commands": [
-            {
-                "command": "hie.commands.demoteDef",
-                "title": "Haskell: Demote Definition",
-                "description": "Move a definition one level down"
-            },
-            {
-                "command": "hie.commands.liftOneLevel",
-                "title": "Haskell: Lift One Level",
-                "description": "Move definition one level up from where it is now"
-            },
-            {
-                "command": "hie.commands.liftTopLevel",
-                "title": "Haskell: Lift to Top Level",
-                "description": "Move a definition to the top level"
-            },
-            {
-                "command": "hie.commands.genApplicative",
-                "title": "Haskell: Generalize Applicative",
-                "description": "Generalize a monadic function to use applicative"
-            },
-            {
-                "command": "hie.commands.deleteDef",
-                "title": "Haskell: Delete Definition",
-                "description": "Deletes a definition"
-            },
-            {
-                "command": "hie.commands.insertType",
-                "title": "Haskell: Insert type",
-                "description": "Insert type for the expression"
-            },
-            {
-                "command": "hie.commands.showType",
-                "title": "Haskell: Show type",
-                "description": "Show type for the expression"
-            }
-        ],
-        "keybindings": [
-            {
-                "command": "hie.commands.showType",
-                "key": "ctrl+alt+t",
-                "mac": "cmd+alt+t",
-                "when": "editorTextFocus"
-            }
-        ],
-        "menus": {
-            "editor/title": [
-                {
-                    "when": "resourceLangId == haskell",
-                    "command": "hie.commands.demoteDef"
-                }
-            ],
-            "editor/context": [
-                {
-                    "when": "resourceLangId == haskell",
-                    "command": "hie.commands.demoteDef",
-                    "group": "HaRe@1"
-                }
-            ]
+        "languageServerHaskell.hieExecutablePath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description":
+            "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
+        },
+        "languageServerHaskell.useHieWrapper": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description":
+            "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions. This will take precedence over hieExecutablePath."
+        },
+        "languageServerHaskell.useCustomHieWrapper": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description":
+            "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
+        },
+        "languageServerHaskell.useCustomHieWrapperPath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description":
+            "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
+        },
+        "languageServerHaskell.hlintOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Get suggestions from hlint"
+        },
+        "languageServerHaskell.showTypeForSelection.onHover": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description":
+            "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
+        },
+        "languageServerHaskell.showTypeForSelection.command.location": {
+          "scope": "resource",
+          "type": "string",
+          "enum": ["dropdown", "channel"],
+          "default": "dropdown",
+          "description":
+            "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
+        },
+        "languageServerHaskell.trace.server": {
+          "scope": "resource",
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "off",
+          "description": "Traces the communication between VSCode and the languageServerHaskell service."
+        },
+        "languageServerHaskell.enableHIE": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable HIE (useful for multi-root workspaces)."
         }
+      }
     },
-    "scripts": {
-        "vscode:prepublish": "npm run compile && npm run tslint",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test",
-        "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
-        "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
-        "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
-    },
-    "devDependencies": {
-        "@types/mocha": "^2.2.46",
-        "@types/node": "^8.5.8",
-        "tslint": "^5.9.1",
-        "typescript": "^2.6.2",
-        "vscode": "^1.1.9"
-    },
-    "extensionDependencies": [
-        "justusadam.language-haskell"
+    "commands": [
+      {
+        "command": "hie.commands.demoteDef",
+        "title": "Haskell: Demote Definition",
+        "description": "Move a definition one level down"
+      },
+      {
+        "command": "hie.commands.liftOneLevel",
+        "title": "Haskell: Lift One Level",
+        "description": "Move definition one level up from where it is now"
+      },
+      {
+        "command": "hie.commands.liftTopLevel",
+        "title": "Haskell: Lift to Top Level",
+        "description": "Move a definition to the top level"
+      },
+      {
+        "command": "hie.commands.genApplicative",
+        "title": "Haskell: Generalize Applicative",
+        "description": "Generalize a monadic function to use applicative"
+      },
+      {
+        "command": "hie.commands.deleteDef",
+        "title": "Haskell: Delete Definition",
+        "description": "Deletes a definition"
+      },
+      {
+        "command": "hie.commands.insertType",
+        "title": "Haskell: Insert type",
+        "description": "Insert type for the expression"
+      },
+      {
+        "command": "hie.commands.showType",
+        "title": "Haskell: Show type",
+        "description": "Show type for the expression"
+      }
     ],
-    "dependencies": {
-        "vscode-languageclient": "^4.1.3"
+    "keybindings": [
+      {
+        "command": "hie.commands.showType",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceLangId == haskell",
+          "command": "hie.commands.demoteDef"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceLangId == haskell",
+          "command": "hie.commands.demoteDef",
+          "group": "HaRe@1"
+        }
+      ]
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile && npm run tslint",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
+    "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
+    "precommit": "pretty-quick --staged",
+    "push-tag":
+      "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.46",
+    "@types/node": "^8.5.8",
+    "husky": "^0.14.3",
+    "prettier": "1.11.1",
+    "pretty-quick": "^1.4.1",
+    "tslint": "^5.9.1",
+    "typescript": "^2.6.2",
+    "vscode": "^1.1.9"
+  },
+  "extensionDependencies": ["justusadam.language-haskell"],
+  "dependencies": {
+    "vscode-languageclient": "^4.1.3"
+  }
 }
