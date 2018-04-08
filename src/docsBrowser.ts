@@ -72,8 +72,7 @@ export namespace DocsBrowser {
             const mstr = new MarkdownString(transform(ms));
             mstr.isTrusted = true;
             return mstr;
-        }
-        else if (typeof ms === 'object') {
+        } else if (typeof ms === 'object') {
             const mstr = new MarkdownString(transform(ms.value));
             mstr.isTrusted = true;
             return mstr;
