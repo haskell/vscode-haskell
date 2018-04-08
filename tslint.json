@@ -1,25 +1,32 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended"],
+  "jsRules": {},
+  "rules": {
+    "arrow-parens": false,
+    "object-literal-sort-keys": false,
+    "indent": [true, "spaces", 2],
+    "no-namespace": false,
+    "no-console": [true, "log"],
+    "no-unused-variable": true,
+    "no-duplicate-variable": true,
+    "no-unused-expression": true,
+    "class-name": true,
+    "promise-function-async": true,
+    "quotemark": [true, "single", "avoid-template"],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": {
+          "objects": "always",
+          "arrays": "always"
+        }
+      }
     ],
-    "jsRules": {},
-    "rules": {
-        "arrow-parens": false,
-        "object-literal-sort-keys": false,
-        "indent": [true, "spaces", 2],
-        "no-namespace": false,
-        "no-console": [true, "log"],
-        "no-unused-variable": true,
-        "promise-function-async": true,
-        "quotemark": [true, "single", "avoid-template"],
-        "trailing-comma": [true, {
-            "multiline": {
-                "objects": "always",
-                "arrays": "always"
-            }
-        }],
-        "ordered-imports": true
-    },
-    "rulesDirectory": []
+    "semicolon": [true, "always"],
+    "triple-equals": true,
+    "ordered-imports": true,
+    "curly": true
+  },
+  "rulesDirectory": []
 }
