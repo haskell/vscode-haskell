@@ -6,7 +6,7 @@
     "license": "MIT",
     "publisher": "alanz",
     "engines": {
-        "vscode": "^1.18.0"
+        "vscode": "^1.22.0"
     },
     "keywords": [
         "language",
@@ -217,6 +217,6 @@
         "justusadam.language-haskell"
     ],
     "dependencies": {
-        "vscode-languageclient": "^3.5.0"
+        "vscode-languageclient": "^4.1.3"
     }
 }
