@@ -8,12 +8,7 @@
   "engines": {
     "vscode": "^1.22.0"
   },
-  "keywords": [
-    "language",
-    "haskell",
-    "lsp",
-    "multi-root ready"
-  ],
+  "keywords": ["language", "haskell", "lsp", "multi-root ready"],
   "homepage": "https://github.com/alanz/vscode-hie-server",
   "repository": {
     "type": "git",
@@ -22,43 +17,25 @@
   "bugs": {
     "url": "https://github.com/alanz/vscode-hie-server/issues"
   },
-  "categories": [
-    "Languages",
-    "Formatters",
-    "Linters",
-    "Other"
-  ],
+  "categories": ["Languages", "Formatters", "Linters", "Other"],
   "icon": "images/HIE_logo_128.png",
   "galleryBanner": {
     "color": "#22172A",
     "theme": "dark"
   },
-  "activationEvents": [
-    "onLanguage:haskell",
-    "onLanguage:literate haskell"
-  ],
+  "activationEvents": ["onLanguage:haskell", "onLanguage:literate haskell"],
   "main": "./out/src/extension",
   "contributes": {
     "languages": [
       {
         "id": "haskell",
-        "aliases": [
-          "Haskell",
-          "haskell"
-        ],
-        "extensions": [
-          ".hs"
-        ]
+        "aliases": ["Haskell", "haskell"],
+        "extensions": [".hs"]
       },
       {
         "id": "literate haskell",
-        "aliases": [
-          "Literate Haskell",
-          "literate Haskell"
-        ],
-        "extensions": [
-          ".lhs"
-        ]
+        "aliases": ["Literate Haskell", "literate Haskell"],
+        "extensions": [".lhs"]
       }
     ],
     "configuration": {
@@ -75,25 +52,29 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
+          "description":
+            "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "languageServerHaskell.useHieWrapper": {
           "scope": "resource",
           "type": "boolean",
           "default": false,
-          "description": "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions. This will take precedence over hieExecutablePath."
+          "description":
+            "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions. This will take precedence over hieExecutablePath."
         },
         "languageServerHaskell.useCustomHieWrapper": {
           "scope": "resource",
           "type": "boolean",
           "default": false,
-          "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
+          "description":
+            "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
         },
         "languageServerHaskell.useCustomHieWrapperPath": {
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
+          "description":
+            "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "languageServerHaskell.hlintOn": {
           "scope": "resource",
@@ -105,26 +86,21 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
+          "description":
+            "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
         },
         "languageServerHaskell.showTypeForSelection.command.location": {
           "scope": "resource",
           "type": "string",
-          "enum": [
-            "dropdown",
-            "channel"
-          ],
+          "enum": ["dropdown", "channel"],
           "default": "dropdown",
-          "description": "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
+          "description":
+            "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
         },
         "languageServerHaskell.trace.server": {
           "scope": "resource",
           "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
+          "enum": ["off", "messages", "verbose"],
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerHaskell service."
         },
@@ -206,7 +182,8 @@
     "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "precommit": "pretty-quick --staged",
-    "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
+    "push-tag":
+      "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.46",
@@ -218,9 +195,7 @@
     "typescript": "^2.8.1",
     "vscode": "^1.1.14"
   },
-  "extensionDependencies": [
-    "justusadam.language-haskell"
-  ],
+  "extensionDependencies": ["justusadam.language-haskell"],
   "dependencies": {
     "vscode-languageclient": "^4.1.3"
   }
