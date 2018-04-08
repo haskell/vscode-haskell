@@ -8,9 +8,10 @@ The language client requires you to manually install the [HIE](https://github.co
 
 ```bash
 $ git clone https://github.com/haskell/haskell-ide-engine
-$ cd haskell-ide-engine
-$ stack install
+$ cd haskell-ide-engine && make build
 ```
+
+Alternatively you can just `stack install`, but `make build` will give you the best setup.
 
 ## Features
 Language server client for haskell using the [HIE](https://github.com/haskell/haskell-ide-engine) language server. Supports,
@@ -81,6 +82,32 @@ If you `hie` executable is not on your path, you can manually set it,
 ```
 
 The path placeholders work here as well. Note that this adds the `--lsp` argument to the call of this executable.
+
+## Docs on Hover/Generating Hoogle DB
+For the most current documentation on this, see [Docs on Hover/Completion](https://github.com/haskell/haskell-ide-engine#docs-on-hovercompletion).
+
+HIE supports fetching docs from haddock on hover. It will fallback on using a hoogle db(generally located in ~/.hoogle on linux)
+if no haddock documentation is found.
+
+To generate haddock documentation for stack projects:
+
+```bash
+$ cd your-project-directory
+$ stack haddock --keep-going
+```
+
+To enable documentation generation for cabal projects, add the following to your ~/.cabal/config
+
+```
+documentation: True
+```
+
+To generate a hoogle database that hie can use
+
+```bash
+$ cd haskell-ide-engine
+$ stack --stack-yaml=<stack.yaml you used to build hie> exec hoogle generate
+```
 
 ## Manual Installation
 Either install the extension via the marketplace (preferred), or if you are testing an unreleased version by,
