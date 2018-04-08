@@ -15,7 +15,7 @@
     "promise-function-async": true,
     "quotemark": [true, "single", "avoid-template"],
     "trailing-comma": [
-      true,
+      false,
       {
         "multiline": {
           "objects": "always",

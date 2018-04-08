@@ -10,14 +10,14 @@ import {
   Uri,
   window,
   workspace,
-  WorkspaceFolder,
+  WorkspaceFolder
 } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
   ServerOptions,
-  TransportKind,
+  TransportKind
 } from 'vscode-languageclient';
 import { InsertType } from './commands/insertType';
 import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
@@ -152,10 +152,10 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     debugArgs.unshift('--lsp');
   }
   // If the extension is launched in debug mode then the debug server options are used,
-  // otherwise the run options are used
+  // otherwise the run options are used.
   const serverOptions: ServerOptions = {
     run: { command: serverPath, transport: TransportKind.stdio, args: runArgs },
-    debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs },
+    debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs }
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
@@ -166,27 +166,27 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     // path for the specific workspace.
     documentSelector: [
       { scheme: 'file', language: 'haskell', pattern: `${folder.uri.fsPath}/**/*` },
-      { scheme: 'file', language: 'literate haskell', pattern: `${folder.uri.fsPath}/**/*` },
+      { scheme: 'file', language: 'literate haskell', pattern: `${folder.uri.fsPath}/**/*` }
     ],
     synchronize: {
-      // Synchronize the setting section 'languageServerHaskell' to the server
+      // Synchronize the setting section 'languageServerHaskell' to the server.
       configurationSection: 'languageServerHaskell',
-      // Notify the server about file changes to '.clientrc files contain in the workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
+      // Notify the server about file changes to '.clientrc files contain in the workspace.
+      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
     },
     diagnosticCollectionName: langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
     outputChannel,
     outputChannelName: langName,
     middleware: {
-      provideHover: DocsBrowser.hoverLinksMiddlewareHook,
+      provideHover: DocsBrowser.hoverLinksMiddlewareHook
     },
     // Set the current working directory, for HIE, to be the workspace folder.
-    workspaceFolder: folder,
+    workspaceFolder: folder
   };
 
   // Create the LSP client.
-  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions);
+  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions, true);
 
   if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
     context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));
@@ -195,7 +195,9 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   if (!hieCommandsRegistered) {
     context.subscriptions.push(InsertType.registerCommand(clients));
     const showTypeCmd = ShowTypeCommand.registerCommand(clients);
-    showTypeCmd !== null && showTypeCmd.forEach(x => context.subscriptions.push(x));
+    if (showTypeCmd !== null) {
+      showTypeCmd.forEach(x => context.subscriptions.push(x));
+    }
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
     registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
@@ -210,7 +212,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 }
 
 /*
- * Deactivate each of the LSP servers..
+ * Deactivate each of the LSP servers.
  */
 export function deactivate(): Thenable<void> {
   const promises: Array<Thenable<void>> = [];
@@ -240,9 +242,9 @@ async function registerHiePointCommand(name: string, command: string, context: E
       arguments: [
         {
           file: editor.document.uri.toString(),
-          pos: editor.selections[0].active,
-        },
-      ],
+          pos: editor.selections[0].active
+        }
+      ]
     };
     // Get the current file and workspace folder.
     const uri = editor.document.uri;
@@ -250,7 +252,7 @@ async function registerHiePointCommand(name: string, command: string, context: E
     // If there is a client registered for this workspace, use that client.
     if (folder !== undefined && clients.has(folder.uri.toString())) {
       const client = clients.get(folder.uri.toString());
-      client !== undefined &&
+      if (client !== undefined) {
         client.sendRequest('workspace/executeCommand', cmd).then(
           hints => {
             return true;
@@ -259,6 +261,7 @@ async function registerHiePointCommand(name: string, command: string, context: E
             console.error(e);
           }
         );
+      }
     }
   });
   context.subscriptions.push(editorCmd);

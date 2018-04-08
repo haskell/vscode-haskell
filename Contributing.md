@@ -57,6 +57,12 @@ We recommend checking out [Your First VS Code Extension](https://code.visualstud
 
 ## Running tests
 
+There are two ways to run (the same) tests, you can either
+
+* press `F8` to run the tests using `npm test`
+
+or
+
 * open the debug viewlet (`Ctrl+Shift+D` or `Cmd+Shift+D` on Mac) and from the launch configuration dropdown pick `Launch Tests`
 * press `F5` to run the tests in a new window with your extension loaded
 * see the output of the test result in the debug console

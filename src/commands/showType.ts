@@ -13,7 +13,7 @@ import {
   TextDocument,
   TextEditor,
   window,
-  workspace,
+  workspace
 } from 'vscode';
 import { LanguageClient, Range as VLCRange } from 'vscode-languageclient';
 
@@ -24,7 +24,7 @@ const formatExpressionType = (document: TextDocument, r: Range, typ: string): st
 
 const HASKELL_MODE: DocumentFilter = {
   language: 'haskell',
-  scheme: 'file',
+  scheme: 'file'
 };
 
 // Cache same selections...
@@ -75,9 +75,9 @@ const getCmd = (editor: TextEditor) => ({
     {
       file: editor.document.uri.toString(),
       pos: editor.selections[0].start,
-      include_constraints: true,
-    },
-  ],
+      include_constraints: true
+    }
+  ]
 });
 
 export namespace ShowTypeCommand {
@@ -208,7 +208,7 @@ export namespace ShowTypeHover {
     private makeHover(document: TextDocument, r: Range, typ: string): Hover {
       return new Hover({
         language: 'haskell',
-        value: formatExpressionType(document, r, typ),
+        value: formatExpressionType(document, r, typ)
       });
     }
   }

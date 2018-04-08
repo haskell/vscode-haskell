@@ -12,7 +12,7 @@ import {
   Uri,
   ViewColumn,
   window,
-  workspace,
+  workspace
 } from 'vscode';
 import { ProvideHoverSignature } from 'vscode-languageclient';
 
