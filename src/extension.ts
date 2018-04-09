@@ -20,10 +20,7 @@ import {
   TransportKind
 } from 'vscode-languageclient';
 import { InsertType } from './commands/insertType';
-import {
-  ShowTypeCommand,
-  ShowTypeHover,
-} from './commands/showType';
+import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
 
 let docsBrowserRegistered: boolean = false;
@@ -36,7 +33,7 @@ export async function activate(context: ExtensionContext) {
   workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateHie(context, document));
   workspace.textDocuments.forEach(async (document: TextDocument) => await activateHie(context, document));
   // Stop HIE from any workspace folders that are removed.
-  workspace.onDidChangeWorkspaceFolders((event) => {
+  workspace.onDidChangeWorkspaceFolders(event => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
@@ -49,10 +46,12 @@ export async function activate(context: ExtensionContext) {
 
 async function activateHie(context: ExtensionContext, document: TextDocument) {
   // We are only interested in Haskell files.
-  if ((document.languageId !== 'haskell'
-        && document.languageId !== 'cabal'
-        && document.languageId !== 'literate Haskell')
-        || (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')) {
+  if (
+    (document.languageId !== 'haskell' &&
+      document.languageId !== 'cabal' &&
+      document.languageId !== 'literate Haskell') ||
+    (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')
+  ) {
     return;
   }
 
@@ -138,16 +137,14 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   }
 
   // Don't use the .bat launcher, if the user specified a custom wrapper or a executable path.
-  const startupScript = ( process.platform === 'win32' && !useCustomWrapper && !hieExecutablePath )
-    ? 'hie-vscode.bat'
-    : hieLaunchScript;
+  const startupScript =
+    process.platform === 'win32' && !useCustomWrapper && !hieExecutablePath ? 'hie-vscode.bat' : hieLaunchScript;
   // If using a custom wrapper or specificed an executable path, the path is assumed to already
   // be absolute.
-  const serverPath = useCustomWrapper || hieExecutablePath
-    ? startupScript
-    : context.asAbsolutePath(path.join('.', startupScript));
+  const serverPath =
+    useCustomWrapper || hieExecutablePath ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
 
-  const tempDir = ( process.platform === 'win32' ) ? '%TEMP%' : '/tmp';
+  const tempDir = process.platform === 'win32' ? '%TEMP%' : '/tmp';
   const runArgs = [];
   const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
@@ -155,10 +152,10 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     debugArgs.unshift('--lsp');
   }
   // If the extension is launched in debug mode then the debug server options are used,
-  // otherwise the run options are used
+  // otherwise the run options are used.
   const serverOptions: ServerOptions = {
-    run: { command: serverPath, transport: TransportKind.stdio, args: runArgs, },
-    debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs },
+    run: { command: serverPath, transport: TransportKind.stdio, args: runArgs },
+    debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs }
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
@@ -169,27 +166,27 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     // path for the specific workspace.
     documentSelector: [
       { scheme: 'file', language: 'haskell', pattern: `${folder.uri.fsPath}/**/*` },
-      { scheme: 'file', language: 'literate haskell', pattern: `${folder.uri.fsPath}/**/*` },
+      { scheme: 'file', language: 'literate haskell', pattern: `${folder.uri.fsPath}/**/*` }
     ],
     synchronize: {
-      // Synchronize the setting section 'languageServerHaskell' to the server
+      // Synchronize the setting section 'languageServerHaskell' to the server.
       configurationSection: 'languageServerHaskell',
-      // Notify the server about file changes to '.clientrc files contain in the workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
+      // Notify the server about file changes to '.clientrc files contain in the workspace.
+      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
     },
     diagnosticCollectionName: langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
     outputChannel,
     outputChannelName: langName,
     middleware: {
-      provideHover: DocsBrowser.hoverLinksMiddlewareHook,
+      provideHover: DocsBrowser.hoverLinksMiddlewareHook
     },
     // Set the current working directory, for HIE, to be the workspace folder.
-    workspaceFolder: folder,
+    workspaceFolder: folder
   };
 
   // Create the LSP client.
-  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions);
+  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions, true);
 
   if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
     context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));
@@ -197,7 +194,10 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // Register editor commands for HIE, but only register the commands once.
   if (!hieCommandsRegistered) {
     context.subscriptions.push(InsertType.registerCommand(clients));
-    ShowTypeCommand.registerCommand(clients).forEach(x => context.subscriptions.push(x));
+    const showTypeCmd = ShowTypeCommand.registerCommand(clients);
+    if (showTypeCmd !== null) {
+      showTypeCmd.forEach(x => context.subscriptions.push(x));
+    }
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
     registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
@@ -212,7 +212,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 }
 
 /*
- * Deactivate each of the LSP servers..
+ * Deactivate each of the LSP servers.
  */
 export function deactivate(): Thenable<void> {
   const promises: Array<Thenable<void>> = [];
@@ -227,7 +227,7 @@ export function deactivate(): Thenable<void> {
  */
 async function isHieInstalled(): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    const cmd: string = ( process.platform === 'win32' ) ? 'where hie' : 'which hie';
+    const cmd: string = process.platform === 'win32' ? 'where hie' : 'which hie';
     child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
   });
 }
@@ -235,30 +235,33 @@ async function isHieInstalled(): Promise<boolean> {
 /*
  * Create an editor command that calls an action on the active LSP server.
  */
-async function registerHiePointCommand(name: string,
-                                       command: string,
-                                       context: ExtensionContext) {
+async function registerHiePointCommand(name: string, command: string, context: ExtensionContext) {
   const editorCmd = commands.registerTextEditorCommand(name, (editor, edit) => {
     const cmd = {
       command,
       arguments: [
         {
           file: editor.document.uri.toString(),
-          pos: editor.selections[0].active,
-        },
-      ],
+          pos: editor.selections[0].active
+        }
+      ]
     };
     // Get the current file and workspace folder.
     const uri = editor.document.uri;
     const folder = workspace.getWorkspaceFolder(uri);
     // If there is a client registered for this workspace, use that client.
-    if (clients.has(folder.uri.toString())) {
+    if (folder !== undefined && clients.has(folder.uri.toString())) {
       const client = clients.get(folder.uri.toString());
-      client.sendRequest('workspace/executeCommand', cmd).then(hints => {
-        return true;
-      }, e => {
-        console.error(e);
-      });
+      if (client !== undefined) {
+        client.sendRequest('workspace/executeCommand', cmd).then(
+          hints => {
+            return true;
+          },
+          e => {
+            console.error(e);
+          }
+        );
+      }
     }
   });
   context.subscriptions.push(editorCmd);
