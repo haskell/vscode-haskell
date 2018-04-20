@@ -147,6 +147,11 @@
         "command": "hie.commands.showType",
         "title": "Haskell: Show type",
         "description": "Show type for the expression"
+      },
+      {
+        "command": "hie.commands.caseSplit",
+        "title": "Haskell: Split case",
+        "description": "Generate pattern matches for the identifier under the cursor"
       }
     ],
     "keybindings": [
