@@ -7,7 +7,7 @@ __It is still under development!__ If you want to help, get started by reading [
 The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server,
 
 ```bash
-$ git clone https://github.com/haskell/haskell-ide-engine
+$ git clone https://github.com/haskell/haskell-ide-engine --recursive
 $ cd haskell-ide-engine && make build
 ```
 
