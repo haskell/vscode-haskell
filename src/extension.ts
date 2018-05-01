@@ -144,13 +144,14 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const serverPath =
     useCustomWrapper || hieExecutablePath ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
 
-  const tempDir = process.platform === 'win32' ? '%TEMP%' : '/tmp';
+  const tempDir = os.tmpdir();
   const runArgs = [];
   const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
     runArgs.unshift('--lsp');
     debugArgs.unshift('--lsp');
   }
+
   // If the extension is launched in debug mode then the debug server options are used,
   // otherwise the run options are used.
   const serverOptions: ServerOptions = {
