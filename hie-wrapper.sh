@@ -26,6 +26,8 @@ HIEBIN='hie'
 BACKUP_HIEBIN='hie'
 # Match the version number with a HIE version, and provide a fallback without
 # the patch number.
+
+# GHC 8.0.*
 if [[ $versionNumber = *"8.0.1"* ]]; then
   debug "Project is using GHC 8.0.1"
   HIEBIN='hie-8.0.1'
@@ -37,6 +39,8 @@ elif [[ $versionNumber = *"8.0.2"* ]]; then
 elif [[ $versionNumber = *"8.0"* ]]; then
   debug "Project is using GHC 8.0.*"
   HIEBIN='hie-8.0'
+
+# GHC 8.2.*
 elif [[ $versionNumber = *"8.2.1"* ]]; then
   debug "Project is using GHC 8.2.1"
   HIEBIN='hie-8.2.1'
@@ -48,6 +52,16 @@ elif [[ $versionNumber = *"8.2.2"* ]]; then
 elif [[ $versionNumber = *"8.2"* ]]; then
   debug "Project is using GHC 8.2.*"
   HIEBIN='hie-8.2'
+
+# GHC 8.4.*
+elif [[ $versionNumber = *"8.4.2"* ]]; then
+  debug "Project is using GHC 8.4.2"
+  HIEBIN='hie-8.4.2'
+  BACKUP_HIEBIN='hie-8.4'
+elif [[ $versionNumber = *"8.4"* ]]; then
+  debug "Project is using GHC 8.4.*"
+  HIEBIN='hie-8.4'
+
 else
   debug "WARNING: GHC version does not match any of the checked ones."
 fi

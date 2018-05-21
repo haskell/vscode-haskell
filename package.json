@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/alanz/vscode-hie-server/issues"
   },
-  "categories": ["Languages", "Formatters", "Linters", "Other"],
+  "categories": ["Programming Languages", "Formatters", "Linters", "Other"],
   "icon": "images/HIE_logo_128.png",
   "galleryBanner": {
     "color": "#22172A",
