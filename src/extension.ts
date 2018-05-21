@@ -22,6 +22,7 @@ import {
 import { InsertType } from './commands/insertType';
 import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
+import { ImportIdentifier } from './commands/importIdentifier';
 
 let docsBrowserRegistered: boolean = false;
 let hieCommandsRegistered: boolean = false;
@@ -199,6 +200,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     if (showTypeCmd !== null) {
       showTypeCmd.forEach(x => context.subscriptions.push(x));
     }
+    context.subscriptions.push(ImportIdentifier.registerCommand());
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
     registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
