@@ -39,34 +39,38 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   }
 
   const document = editor.document;
-  let edit = new vscode.WorkspaceEdit();
+  const edit = new vscode.WorkspaceEdit();
 
   const lines = document.getText().split('\n');
   const moduleLine = lines.findIndex(line => line.startsWith('module'));
   const revInputLine = lines.reverse().findIndex(l => l.startsWith('import'));
-  let nextInputLine = revInputLine !== -1 ? lines.length - 1 - revInputLine : moduleLine === -1 ? 0 : moduleLine + 1;
+  const nextInputLine = revInputLine !== -1 ? lines.length - 1 - revInputLine : moduleLine === -1 ? 0 : moduleLine + 1;
 
   if (!lines.some(line => new RegExp('^import.*' + _.escapeRegExp(arg.mod)).test(line))) {
     edit.insert(document.uri, new vscode.Position(nextInputLine, 0), 'import ' + arg.mod + '\n');
   }
 
-  const hpackDoc = await vscode.workspace.openTextDocument(vscode.workspace.rootPath + '/package.yaml');
+  try {
+    const hpackDoc = await vscode.workspace.openTextDocument(vscode.workspace.rootPath + '/package.yaml');
 
-  let hpack: any = yaml.safeLoad(hpackDoc.getText());
-  hpack['dependencies'] = hpack['dependencies'] || [];
-  if (!hpack['dependencies'].some((dep: string) => new RegExp(_.escapeRegExp(arg.package)).test(dep))) {
-    hpack['dependencies'].push(arg.package);
-    edit.replace(
-      hpackDoc.uri,
-      new vscode.Range(new vscode.Position(0, 0), hpackDoc.lineAt(hpackDoc.lineCount - 1).range.end),
-      yaml.safeDump(hpack)
-    );
+    const hpack: any = yaml.safeLoad(hpackDoc.getText());
+    hpack.dependencies = hpack.dependencies || [];
+    if (!hpack.dependencies.some((dep: string) => new RegExp(_.escapeRegExp(arg.package)).test(dep))) {
+      hpack.dependencies.push(arg.package);
+      edit.replace(
+        hpackDoc.uri,
+        new vscode.Range(new vscode.Position(0, 0), hpackDoc.lineAt(hpackDoc.lineCount - 1).range.end),
+        yaml.safeDump(hpack)
+      );
+    }
+  } catch (e) {
+    // There is no package.yaml
   }
 
   await vscode.workspace.applyEdit(edit);
 
   await Promise.all(
-    edit.entries().map(async ([uri, _edit]) => await (await vscode.workspace.openTextDocument(uri)).save())
+    edit.entries().map(async ([uri, textEdit]) => await (await vscode.workspace.openTextDocument(uri)).save())
   );
 };
 
@@ -88,7 +92,7 @@ export namespace ImportIdentifier {
         return;
       }
 
-      const response: Array<any> = await askHoogleCached(editor.document.getText(identifierRange));
+      const response: any[] = await askHoogleCached(editor.document.getText(identifierRange));
 
       const choice = await vscode.window.showQuickPick(
         response.filter(result => result.module.name).map(result => ({
