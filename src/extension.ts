@@ -19,10 +19,10 @@ import {
   ServerOptions,
   TransportKind
 } from 'vscode-languageclient';
+import { ImportIdentifier } from './commands/importIdentifier';
 import { InsertType } from './commands/insertType';
 import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
-import { ImportIdentifier } from './commands/importIdentifier';
 
 let docsBrowserRegistered: boolean = false;
 let hieCommandsRegistered: boolean = false;

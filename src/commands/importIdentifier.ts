@@ -1,10 +1,10 @@
+import * as cheerio from 'cheerio';
+import * as yaml from 'js-yaml';
+import * as _ from 'lodash';
+import * as LRU from 'lru-cache';
+import * as request from 'request-promise-native';
 import * as vscode from 'vscode';
 import { CommandNames } from './constants';
-import * as request from 'request-promise-native';
-import * as cheerio from 'cheerio';
-import * as LRU from 'lru-cache';
-import * as _ from 'lodash';
-import * as yaml from 'js-yaml';
 
 const askHoogle = async (variable: string): Promise<any> => {
   return await request({
@@ -13,13 +13,13 @@ const askHoogle = async (variable: string): Promise<any> => {
   }).promise();
 };
 
-const withCache = <T, U>(cache: LRU.Cache<T, U>, f: (a: T) => U) => (a: T) => {
-  const maybeB = cache.get(a);
+const withCache = <T, U>(theCache: LRU.Cache<T, U>, f: (a: T) => U) => (a: T) => {
+  const maybeB = theCache.get(a);
   if (maybeB) {
     return maybeB;
   } else {
     const b = f(a);
-    cache.set(a, b);
+    theCache.set(a, b);
     return b;
   }
 };
@@ -79,7 +79,8 @@ export namespace ImportIdentifier {
 
   export function registerCommand(): vscode.Disposable {
     return vscode.commands.registerTextEditorCommand(CommandNames.ImportIdentifierCommandName, async (editor, edit) => {
-      const identifierRegExp = new RegExp('[' + _.escapeRegExp('!#$%&*+./<=>?@^|-~:') + ']+' + '|' + "[\\w']+");
+      // \u0027 is ' (satisfies the linter)
+      const identifierRegExp = new RegExp('[' + _.escapeRegExp('!#$%&*+./<=>?@^|-~:') + ']+' + '|' + '[\\w\u0027]+');
 
       const identifierRange = editor.selection.isEmpty
         ? editor.document.getWordRangeAtPosition(editor.selections[0].active, identifierRegExp)
@@ -87,7 +88,7 @@ export namespace ImportIdentifier {
 
       if (!identifierRange) {
         vscode.window.showErrorMessage(
-          "No Haskell identifier found at the cursor (here's the regex used: " + identifierRegExp + ' )'
+          'No Haskell identifier found at the cursor (here is the regex used: ' + identifierRegExp + ' )'
         );
         return;
       }
