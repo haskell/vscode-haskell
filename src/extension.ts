@@ -150,9 +150,9 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const runArgs = [];
   // const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   let debugArgs = [''];
-  if (logLevel == 'verbose') {
+  if (logLevel === 'verbose') {
     debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log'), '--vomit'];
-  } else if (logLevel == 'messages') {
+  } else if (logLevel === 'messages') {
     debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   }
   if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {

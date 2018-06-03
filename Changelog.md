@@ -1,3 +1,10 @@
+### 0.0.18
+
+* Support GHC 8.4.3 in the wrapper file
+* The `languageServerHaskell.trace.server` parameter now affects
+  `/tmp/hie.log`, as well as ghc-mod `--vomit` output.
+* Add an Import identifier command, by @chrismwendt
+
 ### 0.0.17
 
 * Support GHC 8.4.2 in the wrapper file
