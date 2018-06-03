@@ -54,6 +54,10 @@ elif [[ $versionNumber = *"8.2"* ]]; then
   HIEBIN='hie-8.2'
 
 # GHC 8.4.*
+elif [[ $versionNumber = *"8.4.3"* ]]; then
+  debug "Project is using GHC 8.4.3"
+  HIEBIN='hie-8.4.3'
+  BACKUP_HIEBIN='hie-8.4'
 elif [[ $versionNumber = *"8.4.2"* ]]; then
   debug "Project is using GHC 8.4.2"
   HIEBIN='hie-8.4.2'
