@@ -107,6 +107,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const useHieWrapper = workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper;
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
+  const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
 
   // Substitute path variables with their corresponding locations.
   if (useCustomWrapper) {
@@ -147,7 +148,13 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   const tempDir = os.tmpdir();
   const runArgs = [];
-  const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  // const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  let debugArgs = [''];
+  if (logLevel == 'verbose') {
+    debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log'), '--vomit'];
+  } else if (logLevel == 'messages') {
+    debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  }
   if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
     runArgs.unshift('--lsp');
     debugArgs.unshift('--lsp');
