@@ -1,3 +1,7 @@
+### 0.0.19
+
+* Fix hie launch on windows with logging off (#90). Thanks @Tehnix.
+
 ### 0.0.18
 
 * Support GHC 8.4.3 in the wrapper file

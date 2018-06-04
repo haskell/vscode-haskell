@@ -149,7 +149,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const tempDir = os.tmpdir();
   const runArgs = [];
   // const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
-  let debugArgs = [''];
+  let debugArgs: string[] = [];
   if (logLevel === 'verbose') {
     debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log'), '--vomit'];
   } else if (logLevel === 'messages') {
