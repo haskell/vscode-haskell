@@ -1,8 +1,11 @@
 #!/bin/sh
 
 export HIE_SERVER_PATH=`which hie`
+export HIE_WRAPPER_PATH=`which hie-wrapper`
 
-if [ "X" = "X$HIE_SERVER_PATH" ]; then
+if [ "X" = "X$HIE_WRAPPER_PATH" ]; then
+hie-wrapper --lsp $@
+elif [ "X" = "X$HIE_SERVER_PATH" ]; then
   echo "Content-Length: 100\r\n\r"
   echo '{"jsonrpc":"2.0","id":1,"error":{"code":-32099,"message":"Cannot find hie.exe in the path"}}'
   exit 1
