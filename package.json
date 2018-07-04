@@ -82,6 +82,12 @@
           "default": true,
           "description": "Get suggestions from hlint"
         },
+        "languageServerHaskell.hlintHideOnError": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Hide hlint suggestions whenever ghc-mod reports an error"
+        },
         "languageServerHaskell.showTypeForSelection.onHover": {
           "scope": "resource",
           "type": "boolean",
