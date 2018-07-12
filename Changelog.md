@@ -1,3 +1,20 @@
+### 0.0.19
+
+* Fix hie launch on windows with logging off (#90). Thanks @Tehnix.
+
+### 0.0.18
+
+* Support GHC 8.4.3 in the wrapper file
+* The `languageServerHaskell.trace.server` parameter now affects
+  `/tmp/hie.log`, as well as ghc-mod `--vomit` output.
+* Add an Import identifier command, by @chrismwendt
+
+### 0.0.17
+
+* Support GHC 8.4.2 in the wrapper file
+* Update dependencies to avoid security vulnerability.
+* Use os.tmpdir() for the hie.log file
+
 ### 0.0.15
 
 Support the new webview-api for the documentation browser, thanks to @AlexeyRaga.
@@ -38,13 +55,13 @@ Add rudimentary support for detecting the project GHC version and using the
 appropriate hie version. This currently only works on Linux (contributors on
 other platforms, please jump in with appropriate scripts) and requires
 `haskell-ide-engine` built via the `Makefile` added in
-https://github.com/haskell/haskell-ide-engine/pull/447.  Thanks to @Tehnix
+https://github.com/haskell/haskell-ide-engine/pull/447. Thanks to @Tehnix
 
 ### 0.0.7
 
 Update `package-lock.json` to fresh dependencies.
 
-Add show type *of selected expression* on hover feature, by @halhenke
+Add show type _of selected expression_ on hover feature, by @halhenke
 
 Added options for how to display the same information when using the show type
 command menu, by @halhenke

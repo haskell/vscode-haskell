@@ -19,6 +19,7 @@ import {
   ServerOptions,
   TransportKind
 } from 'vscode-languageclient';
+import { ImportIdentifier } from './commands/importIdentifier';
 import { InsertType } from './commands/insertType';
 import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
@@ -106,6 +107,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const useHieWrapper = workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper;
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
+  const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
 
   // Substitute path variables with their corresponding locations.
   if (useCustomWrapper) {
@@ -144,13 +146,20 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const serverPath =
     useCustomWrapper || hieExecutablePath ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
 
-  const tempDir = process.platform === 'win32' ? '%TEMP%' : '/tmp';
+  const tempDir = os.tmpdir();
   const runArgs = [];
-  const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  // const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  let debugArgs: string[] = [];
+  if (logLevel === 'verbose') {
+    debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log'), '--vomit'];
+  } else if (logLevel === 'messages') {
+    debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+  }
   if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
     runArgs.unshift('--lsp');
     debugArgs.unshift('--lsp');
   }
+
   // If the extension is launched in debug mode then the debug server options are used,
   // otherwise the run options are used.
   const serverOptions: ServerOptions = {
@@ -198,6 +207,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     if (showTypeCmd !== null) {
       showTypeCmd.forEach(x => context.subscriptions.push(x));
     }
+    context.subscriptions.push(ImportIdentifier.registerCommand());
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
     registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);

@@ -1,37 +1,42 @@
 # Haskell Language Server Client
+
 Client interface to the Language Server Protocol server for Haskell, as provided by the Haskell IDE Engine. Check the [requirements](#user-content-requirements) for dependencies.
 
-__It is still under development!__ If you want to help, get started by reading [Contributing](https://github.com/alanz/vscode-hie-server/blob/master/Contributing.md) for more details.
+**It is still under development!** If you want to help, get started by reading [Contributing](https://github.com/alanz/vscode-hie-server/blob/master/Contributing.md) for more details.
 
 ## Requirements
+
 The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server,
 
 ```bash
-$ git clone https://github.com/haskell/haskell-ide-engine
+$ git clone https://github.com/haskell/haskell-ide-engine --recursive
 $ cd haskell-ide-engine && make build
 ```
 
 Alternatively you can just `stack install`, but `make build` will give you the best setup.
 
 ## Features
+
 Language server client for haskell using the [HIE](https://github.com/haskell/haskell-ide-engine) language server. Supports,
 
-- Diagnostics via HLint and GHC warnings/errors
-- Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
-- Type information and documentation (via hoogle) on hover
-- Jump to definition (`F12` or `Go to Definition` in command palette)
-- List all top level definitions
-- Highlight references in document
-- Completion
-- Formatting via [`brittany`](https://github.com/lspitzner/brittany) (`^ ⌥ B` or `Format Document` in command palette)
-- Renaming via [`HaRe`](https://github.com/alanz/HaRe) (`F2` or `Rename Symbol` in command palette)
-- [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
+* Diagnostics via HLint and GHC warnings/errors
+* Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
+* Type information and documentation (via hoogle) on hover
+* Jump to definition (`F12` or `Go to Definition` in command palette)
+* List all top level definitions
+* Highlight references in document
+* Completion
+* Formatting via [`brittany`](https://github.com/lspitzner/brittany) (`^ ⌥ B` or `Format Document` in command palette)
+* Renaming via [`HaRe`](https://github.com/alanz/HaRe) (`F2` or `Rename Symbol` in command palette)
+* [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 
 Additionally the language server itself features,
-- Supports plain GHC projects, cabal projects (sandboxed and non sandboxed) and stack projects
-- Fast due to caching of compile info
+
+* Supports plain GHC projects, cabal projects (sandboxed and non sandboxed) and stack projects
+* Fast due to caching of compile info
 
 ## Extension Settings
+
 You can disable HLint and also control the maximum number of reported problems,
 
 ```json
@@ -60,8 +65,8 @@ If you need more control, and want to have a custom wrapper, either in your spec
 
 There are a few placeholders which will be expanded:
 
-- `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
-- `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
+* `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
+* `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
 This can be beneficial if you are using something like nix, to have a wrapper script tailored to your setup. This will take precedence over `useHieWrapper` and `hieExecutablePath`.
 
@@ -84,6 +89,7 @@ If you `hie` executable is not on your path, you can manually set it,
 The path placeholders work here as well. Note that this adds the `--lsp` argument to the call of this executable.
 
 ## Docs on Hover/Generating Hoogle DB
+
 For the most current documentation on this, see [Docs on Hover/Completion](https://github.com/haskell/haskell-ide-engine#docs-on-hovercompletion).
 
 HIE supports fetching docs from haddock on hover. It will fallback on using a hoogle db(generally located in ~/.hoogle on linux)
@@ -110,6 +116,7 @@ $ stack --stack-yaml=<stack.yaml you used to build hie> exec hoogle generate
 ```
 
 ## Manual Installation
+
 Either install the extension via the marketplace (preferred), or if you are testing an unreleased version by,
 
 ```bash
@@ -127,15 +134,16 @@ In VS Code, open the extensions tab, and click on the `...` at the top right of 
 and use the `Install from VSIX...` option to locate and install the generated file.
 
 ## Using multi-root workspaces
+
 First, check out [what multi-root workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) are. The idea of using multi-root workspaces, is to be able to work on several different Haskell projects, where the GHC version or stackage LTS could differ, and have it work smoothly.
 
 HIE is now started for each workspace folder you have in your multi-root workspace, and several configurations are on a resource (i.e. folder) scope, instead of window (i.e. global) scope.
 
 To showcase the utility of this, let's imagine that we are writing a full-stack Haskell website, and we have three main components:
 
-- a backend using LTS 10.10 and
-- a frontend using GHCJS and LTS 8.11,
-- a common part that is shared between the two, using LTS 8.11.
+* a backend using LTS 10.10 and
+* a frontend using GHCJS and LTS 8.11,
+* a common part that is shared between the two, using LTS 8.11.
 
 One way to be able to work on all these in the same VSCode project is to create a new workspace, and then add each folder to the workspace. This way, they are considered separate entities, and HIE will start separately for each.
 
@@ -143,8 +151,8 @@ You can then define how to start HIE for each of these folders, by going into `S
 
 ```json
 {
-    "languageServerHaskell.useCustomHieWrapper": true,
-    "languageServerHaskell.useCustomHieWrapperPath": "${workspaceFolder}/hie.sh"
+  "languageServerHaskell.useCustomHieWrapper": true,
+  "languageServerHaskell.useCustomHieWrapperPath": "${workspaceFolder}/hie.sh"
 }
 ```
 
@@ -152,10 +160,11 @@ to launch HIE via `hie.sh` inside the _backend_ and _common_ folder, while the _
 
 ```json
 {
-    "languageServerHaskell.useHieWrapper": false
+  "languageServerHaskell.useHieWrapper": false
 }
 ```
- This provides a very flexible way of customizing your setup.
+
+This provides a very flexible way of customizing your setup.
 
 ## Release Notes
 
