@@ -1,3 +1,10 @@
+### 0.0.20
+
+* Add the case-split function (txsmith)
+* Update the vscode-languageclient to v4.2.0 (@Bubba)
+* Use the hie-wrapper executable now installed with hie to choose the
+  right version of hie to use for the given project.
+
 ### 0.0.19
 
 * Fix hie launch on windows with logging off (#90). Thanks @Tehnix.
