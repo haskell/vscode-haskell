@@ -42,7 +42,10 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   const edit = new vscode.WorkspaceEdit();
 
   const lines = document.getText().split('\n');
-  const moduleLine = lines.findIndex(line => line.startsWith('module'));
+  const moduleLine = lines.findIndex(line => {
+    const lineTrimmed = line.trim();
+    return lineTrimmed === 'where' || lineTrimmed.endsWith(' where') || lineTrimmed.endsWith(')where');
+  });
   const revInputLine = lines.reverse().findIndex(l => l.startsWith('import'));
   const nextInputLine = revInputLine !== -1 ? lines.length - 1 - revInputLine : moduleLine === -1 ? 0 : moduleLine + 1;
 
