@@ -104,7 +104,6 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   }
 
   const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
-  // const useHieWrapper    = workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper;
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
@@ -143,7 +142,6 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   const tempDir = os.tmpdir();
   const runArgs = [];
-  // const debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   let debugArgs: string[] = [];
   if (logLevel === 'verbose') {
     debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log'), '--vomit'];

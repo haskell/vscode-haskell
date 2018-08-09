@@ -1,6 +1,11 @@
 ### 0.0.21
 
+* Remove languageServerHaskell.useHieWrapper, We now use hie-wrapper
+  by default.
 * Update the vscode-languageclient to v4.4.0
+* Fix #98 Import identifier insertion line `moduleLine` is now the
+  first line that is (trimmed) `where` or ends with `where` or ends
+  with `)where`. (@mpilgrem)
 
 ### 0.0.20
 
