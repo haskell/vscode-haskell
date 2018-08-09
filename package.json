@@ -55,13 +55,6 @@
           "description":
             "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
         },
-        "languageServerHaskell.useHieWrapper": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description":
-            "Try to automatically select the correct hie version, based on your projects GHC version. NOTE: Build hie using the Makefile to get all versions. This will take precedence over hieExecutablePath."
-        },
         "languageServerHaskell.useCustomHieWrapper": {
           "scope": "resource",
           "type": "boolean",

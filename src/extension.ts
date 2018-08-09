@@ -104,7 +104,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   }
 
   const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
-  const useHieWrapper = workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper;
+  // const useHieWrapper    = workspace.getConfiguration('languageServerHaskell', uri).useHieWrapper;
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
@@ -126,25 +126,20 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
       .replace(/^~/, os.homedir);
   }
 
-  // Set the executable, based on the settings. The order goes:
-  // First check useCustomWrapper, then check useHieWrapper, then
-  // check hieExecutablePath, else retain original path.
-  let hieLaunchScript = 'hie-vscode.sh';
+  // Set the executable, based on the settings. The order goes: First
+  // check useCustomWrapper, then check hieExecutablePath, else retain
+  // original path.
+  let hieLaunchScript = process.platform === 'win32' ? 'hie-vscode.bat' : 'hie-vscode.sh';
   if (useCustomWrapper) {
     hieLaunchScript = customWrapperPath;
-  } else if (useHieWrapper) {
-    hieLaunchScript = 'hie-wrapper.sh';
   } else if (hieExecutablePath !== '') {
     hieLaunchScript = hieExecutablePath;
   }
 
-  // Don't use the .bat launcher, if the user specified a custom wrapper or a executable path.
-  const startupScript =
-    process.platform === 'win32' && !useCustomWrapper && !hieExecutablePath ? 'hie-vscode.bat' : hieLaunchScript;
   // If using a custom wrapper or specificed an executable path, the path is assumed to already
   // be absolute.
   const serverPath =
-    useCustomWrapper || hieExecutablePath ? startupScript : context.asAbsolutePath(path.join('.', startupScript));
+    useCustomWrapper || hieExecutablePath ? hieLaunchScript : context.asAbsolutePath(path.join('.', hieLaunchScript));
 
   const tempDir = os.tmpdir();
   const runArgs = [];
@@ -155,7 +150,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   } else if (logLevel === 'messages') {
     debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
   }
-  if (!useCustomWrapper && !useHieWrapper && hieExecutablePath !== '') {
+  if (!useCustomWrapper && hieExecutablePath !== '') {
     runArgs.unshift('--lsp');
     debugArgs.unshift('--lsp');
   }
