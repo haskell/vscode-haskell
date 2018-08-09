@@ -1,3 +1,7 @@
+### 0.0.21
+
+* Update the vscode-languageclient to v4.4.0
+
 ### 0.0.20
 
 * Add the case-split function (@txsmith). Required hie >= 0.2.1.0
