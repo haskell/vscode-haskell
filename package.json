@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -74,6 +74,12 @@
           "type": "boolean",
           "default": true,
           "description": "Get suggestions from hlint"
+        },
+        "languageServerHaskell.liquidOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Get diagnostics from liquid haskell"
         },
         "languageServerHaskell.showTypeForSelection.onHover": {
           "scope": "resource",

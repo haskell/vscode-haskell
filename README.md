@@ -44,9 +44,19 @@ You can disable HLint and also control the maximum number of reported problems,
 "languageServerHaskell.maxNumberOfProblems": 100,
 ```
 
+If the liquid haskell executable is installed, enable using it to
+process haskell files on save.
+
+```
+"languageServerHaskell.hlintOn": true,
+```
+
 #### HIE Wrapper
 
-Furthermore, the extension supports multiple ways of initializing hie, depending on your needs. The first one is to use the hie-wrapper that follows this extension, and tries to pick the right hie for your GHC version. The following,
+Furthermore, the extension supports multiple ways of initializing hie,
+depending on your needs. The first one is to use the hie-wrapper that
+follows this extension, and tries to pick the right hie for your GHC
+version. The following,
 
 ```json
 "languageServerHaskell.useHieWrapper": true,

@@ -1,3 +1,9 @@
+### 0.0.22
+
+* Add configuration option to enable liquid haskell processing. This
+  is a preview feature of hie from
+  ca2d3eaa19da8ec9d55521b461d8e2e8cffee697 on 2019-09-05.
+
 ### 0.0.21
 
 * Remove languageServerHaskell.useHieWrapper, We now use hie-wrapper
