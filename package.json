@@ -75,6 +75,13 @@
           "default": true,
           "description": "Get suggestions from hlint"
         },
+        "languageServerHaskell.completionSnippetsOn": {
+          "title": "Completion Snippets",
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Show snippets with type information when using code completion"
+        },
         "languageServerHaskell.liquidOn": {
           "scope": "resource",
           "type": "boolean",
