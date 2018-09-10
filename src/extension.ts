@@ -215,7 +215,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   if (clients.has(folder.uri.toString())) {
     return;
   }
-  
+
   // Finally start the client and add it to the list of clients.
   langClient.start();
   clients.set(folder.uri.toString(), langClient);
