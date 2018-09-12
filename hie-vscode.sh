@@ -3,7 +3,7 @@
 export HIE_SERVER_PATH=`which hie`
 export HIE_WRAPPER_PATH=`which hie-wrapper`
 
-if [ "X" = "X$HIE_WRAPPER_PATH" ]; then
+if [ ! "X" = "X$HIE_WRAPPER_PATH" ]; then
 hie-wrapper --lsp $@
 elif [ "X" = "X$HIE_SERVER_PATH" ]; then
   echo "Content-Length: 100\r\n\r"
