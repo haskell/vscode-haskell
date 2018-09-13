@@ -1,3 +1,8 @@
+### 0.0.23
+
+* Fix multi-process issue, where vscode would launch multiple hie instances.
+  By @kfigiela
+
 ### 0.0.22
 
 * Add configuration option to enable liquid haskell processing. This

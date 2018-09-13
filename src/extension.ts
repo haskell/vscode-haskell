@@ -210,6 +210,12 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     hieCommandsRegistered = true;
   }
 
+  // If the client already has an LSP server, then don't start a new one.
+  // We check this again, as there may be multiple parallel requests.
+  if (clients.has(folder.uri.toString())) {
+    return;
+  }
+
   // Finally start the client and add it to the list of clients.
   langClient.start();
   clients.set(folder.uri.toString(), langClient);
