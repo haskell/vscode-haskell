@@ -1,3 +1,7 @@
+### 0.0.24
+
+* Add snippet config option (@bubba)
+
 ### 0.0.23
 
 * Fix multi-process issue, where vscode would launch multiple hie instances.
