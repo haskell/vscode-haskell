@@ -11,9 +11,8 @@ For development, all you need is to,
 
 You can now also package up the extension with,
 
-* `vsce package`
-
-which creates an extension package at `vscode-hie-server-<version>.vsix`.
+* `npm install -g vsce` to get the Extension Manager,
+* `vsce package` which creates an extension package at `vscode-hie-server-<version>.vsix`.
 
 _Note:_ that if you get errors running `vsce package`, it might help running `tsc -p ./` directly, since that gives the actual error output of the TypeScript compilation.
 
