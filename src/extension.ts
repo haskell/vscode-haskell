@@ -206,7 +206,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
     registerHiePointCommand('hie.commands.deleteDef', 'hare:deletedef', context);
     registerHiePointCommand('hie.commands.genApplicative', 'hare:genapplicative', context);
-    registerHiePointCommand('hie.commands.caseSplit', 'ghcmod:casesplit', context);
+    registerHiePointCommand('hie.commands.caseSplit', 'hare:casesplit', context);
     hieCommandsRegistered = true;
   }
 
