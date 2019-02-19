@@ -14,5 +14,8 @@ if [%HIE_WRAPPER_PATH%] == [] (
   exit 1
 )
 
+rem Fix for access violations: https://github.com/commercialhaskell/stack/issues/3765#issuecomment-436407467
+set __COMPAT_LAYER=
+
 rem Need to run hie-wrapper if found, else hie
 hie-wrapper --lsp %1 %2 %3 %4 %5 %6 %7 %8 %9
