@@ -10,10 +10,9 @@ The language client requires you to manually install the [HIE](https://github.co
 
 ```bash
 $ git clone https://github.com/haskell/haskell-ide-engine --recursive
-$ cd haskell-ide-engine && make build-all
+$ cd haskell-ide-engine && ./install.hs build-all
 ```
-
-Alternatively you can just `stack install`, but `make build-all` will give you the best setup.
+If you experience difficulties, use the instructions at https://github.com/haskell/haskell-ide-engine#installation
 
 ## Features
 
