@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -42,12 +42,46 @@
       "type": "object",
       "title": "Haskell Language Server",
       "properties": {
+        "languageServerHaskell.hlintOn": {
+          "title": "Hlint",
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Get suggestions from hlint"
+        },
         "languageServerHaskell.maxNumberOfProblems": {
           "scope": "resource",
           "type": "number",
           "default": 100,
           "description": "Controls the maximum number of problems produced by the server."
         },
+        "languageServerHaskell.liquidOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Get diagnostics from liquid haskell"
+        },
+        "languageServerHaskell.completionSnippetsOn": {
+          "title": "Completion Snippets",
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Show snippets with type information when using code completion"
+        },
+        "languageServerHaskell.formatOnImportOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "When adding an import, use the formatter on the result"
+        },
+        "languageServerHaskell.formattingProvider": {
+          "scope": "resource",
+          "type": "string",
+          "enum": ["brittany", "floskell", "none"],
+          "default": "brittany",
+          "description": "The tool to use for formatting requests."
+        },
+
         "languageServerHaskell.hieExecutablePath": {
           "scope": "resource",
           "type": "string",
@@ -69,25 +103,6 @@
           "description":
             "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
         },
-        "languageServerHaskell.hlintOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Get suggestions from hlint"
-        },
-        "languageServerHaskell.completionSnippetsOn": {
-          "title": "Completion Snippets",
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Show snippets with type information when using code completion"
-        },
-        "languageServerHaskell.liquidOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description": "Get diagnostics from liquid haskell"
-        },
         "languageServerHaskell.showTypeForSelection.onHover": {
           "scope": "resource",
           "type": "boolean",
@@ -102,13 +117,6 @@
           "default": "dropdown",
           "description":
             "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
-        },
-        "languageServerHaskell.formattingProvider": {
-          "scope": "resource",
-          "type": "string",
-          "enum": ["brittany", "floskell", "none"],
-          "default": "brittany",
-          "description": "The tool to use for formatting requests."
         },
         "languageServerHaskell.trace.server": {
           "scope": "resource",

@@ -12,6 +12,7 @@ The language client requires you to manually install the [HIE](https://github.co
 $ git clone https://github.com/haskell/haskell-ide-engine --recursive
 $ cd haskell-ide-engine && ./install.hs build-all
 ```
+
 If you experience difficulties, use the instructions at https://github.com/haskell/haskell-ide-engine#installation
 
 ## Features
@@ -53,7 +54,7 @@ process haskell files on save.
 #### HIE Wrapper
 
 Furthermore, the extension supports multiple ways of initializing hie,
-depending on your needs. The default one uses the `hie-vscode.[sh|bat]` 
+depending on your needs. The default one uses the `hie-vscode.[sh|bat]`
 file to start hie through. This will attempt to start via `hie-wrapper`
 if it is on the vscode path, otherwise fall back to `hie`.
 The`hie-wrapper` executable is installed using `make build`,
@@ -129,7 +130,7 @@ Either install the extension via the marketplace (preferred), or if you are test
 $ npm install -g vsce
 $ git clone https://github.com/alanz/vscode-hie-server
 $ cd vscode-hie-server
-$ npm install
+$ npm ci
 $ vsce package
 ```
 
