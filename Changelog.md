@@ -1,3 +1,16 @@
+### 0.0.26
+
+* Show documentation content using Webview API (@EdAllonby)
+* npm audit fix (@alanz)
+
+### 0.0.25
+
+* Add vsce dependency to "Contributing" document (@EdAllonby)
+* Add formatterProvider config (@bubba)
+* Bugfix for stack version on windows (@beauzeaux)
+* Update settings to match hie version 0.7.0.0 (@alanz)
+* npm audit fix (@bubba)
+
 ### 0.0.24
 
 * Add snippet config option (@bubba)
