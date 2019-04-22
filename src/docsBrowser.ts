@@ -1,3 +1,4 @@
+import { dirname } from 'path';
 import {
   CancellationToken,
   commands,
@@ -8,11 +9,9 @@ import {
   Position as VPosition,
   ProviderResult,
   TextDocument,
-  TextDocumentContentProvider,
   Uri,
   ViewColumn,
-  window,
-  workspace
+  window
 } from 'vscode';
 import { ProvideHoverSignature } from 'vscode-languageclient';
 
@@ -21,34 +20,24 @@ export namespace DocsBrowser {
 
   // registers the browser in VSCode infrastructure
   export function registerDocsBrowser(): Disposable {
-    class DocumentationContentProvider implements TextDocumentContentProvider {
-      public provideTextDocumentContent(uri: Uri, token: CancellationToken): string {
-        const fsUri = uri.with({ scheme: 'file' });
+    return commands.registerCommand('haskell.showDocumentation', ({ title, path }: { title: string; path: string }) => {
+      const uri = Uri.parse(path).with({ scheme: 'vscode-resource' });
+      const arr = uri.path.match(/([^\/]+)\.[^.]+$/);
+      const ttl = arr !== null && arr.length === 2 ? arr[1].replace(/-/gi, '.') : title;
+      const documentationDirectory = dirname(uri.path);
+      let panel;
+      try {
+        panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Two, {
+          localResourceRoots: [Uri.file(documentationDirectory)]
+        });
+
         // tslint:disable-next-line:max-line-length
-        return `<iframe src="${fsUri}" frameBorder="0" style="background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 0px;" />`;
+        panel.webview.html = `<iframe src="${uri}" frameBorder="0" style="background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 0px;" />`;
+      } catch (e) {
+        window.showErrorMessage(e);
       }
-    }
-    const provider = new DocumentationContentProvider();
-
-    const contentDisposable = workspace.registerTextDocumentContentProvider('doc-preview', provider);
-
-    const commandDisposable = commands.registerCommand(
-      'haskell.showDocumentation',
-      async ({ title, path }: { title: string; path: string }) => {
-        const uri = Uri.parse(path).with({ scheme: 'doc-preview' });
-        const arr = uri.path.match(/([^\/]+)\.[^.]+$/);
-        const ttl = arr !== null && arr.length === 2 ? arr[1].replace(/-/gi, '.') : title;
-        let result;
-        try {
-          result = await commands.executeCommand('vscode.previewHtml', uri, ViewColumn.Two, ttl);
-        } catch (e) {
-          window.showErrorMessage(e);
-        }
-        return result;
-      }
-    );
-
-    return Disposable.from(contentDisposable, commandDisposable);
+      return panel;
+    });
   }
 
   export function hoverLinksMiddlewareHook(
