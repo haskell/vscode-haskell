@@ -28,7 +28,8 @@ export namespace DocsBrowser {
       let panel;
       try {
         panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Two, {
-          localResourceRoots: [Uri.file(documentationDirectory)]
+          localResourceRoots: [Uri.file(documentationDirectory)],
+          enableFindWidget: true
         });
 
         // tslint:disable-next-line:max-line-length
