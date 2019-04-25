@@ -1,3 +1,8 @@
+### 0.0.27
+
+* Re-enable search feature for documentation (@anonimitoraf)
+  Accesed via `ctrl-f`.
+
 ### 0.0.26
 
 * Show documentation content using Webview API (@EdAllonby)
