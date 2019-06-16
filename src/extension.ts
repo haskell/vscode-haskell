@@ -190,6 +190,9 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // Create the LSP client.
   const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions, true);
 
+  // Register ClientCapabilities for stuff like window/progress
+  langClient.registerProposedFeatures();
+
   if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
     context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));
   }
