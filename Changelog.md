@@ -1,3 +1,11 @@
+### 0.0.28
+
+* remove unused `lsp` flag (@bubba)
+* do not start `hie` if `hie-wrapper` crashes (@bubba)
+* Expose diagnosticsOnChange option for settings (Frederik Ramcke)
+* Avoid CVE on `extend` package
+* Enable displaying window progress (@bubba)
+
 ### 0.0.27
 
 * Re-enable search feature for documentation (@anonimitoraf)
