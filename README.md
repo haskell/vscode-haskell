@@ -6,7 +6,7 @@ Client interface to the Language Server Protocol server for Haskell, as provided
 
 ## Requirements
 
-The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server,
+The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server which can be done with commands below but this will take exceedingly long time and less than robust, consider proceeding to installation readme at the link below, it has option for getting bins directly,
 
 ```bash
 $ git clone https://github.com/haskell/haskell-ide-engine --recursive
