@@ -243,7 +243,7 @@
     "compile": "webpack --mode none",
     "watch": "webpack --mode none --watch --info-verbosity verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "test": "tsc -p . && node ./node_modules/vscode/bin/test",
     "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "precommit": "pretty-quick --staged",
