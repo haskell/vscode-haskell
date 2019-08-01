@@ -7,3 +7,7 @@ src/**
 **/*.map
 .gitignore
 tsconfig.json
+node_modules
+out
+src
+webpack.config.json

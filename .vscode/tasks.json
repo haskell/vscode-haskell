@@ -6,7 +6,23 @@
     {
       "type": "npm",
       "script": "watch",
-      "problemMatcher": "$tsc-watch",
+      "problemMatcher": {
+        "owner": "typescript",
+        "applyTo": "closedDocuments",
+        "fileLocation": ["absolute"],
+        "pattern": {
+          "regexp": "<nothing>"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "Compilation (.*?)starting…"
+          },
+          "endsPattern": {
+            "regexp": "Compilation (.*?)finished"
+          }
+        }
+      },
       "isBackground": true,
       "presentation": {
         "reveal": "never"
