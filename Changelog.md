@@ -1,3 +1,9 @@
+### 0.0.29
+
+* bump protocol version to 3.15 (prerelease) (@alanz)
+* upgrade deps, including avoiding vulnerabilities on lodash (@alanz)
+* warn about compile time and wrapped hie (@janat08)
+
 ### 0.0.28
 
 * remove unused `lsp` flag (@bubba)
