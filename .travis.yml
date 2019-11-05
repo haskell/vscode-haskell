@@ -1,13 +1,13 @@
 language: node_js
 
 node_js:
-  - 8
+- 8
 
 sudo: false
 
 cache:
   directories:
-    - 'node_modules'
+    - "node_modules"
 
 os:
   - osx
@@ -22,16 +22,15 @@ before_install:
       /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
     fi
 install:
-  - npm install
-  - npm run vscode:prepublish
+- npm install
+- npm run vscode:prepublish
 
 script:
-  # VS Code 1.36.1 fails to start on Linux for an unknown reason.
-  - if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then npm test --silent; fi
+- npm test --silent
 
 before_deploy:
-  - npm install -g vsce
-  - vsce package
+- npm install -g vsce
+- vsce package
 
 # Deploy the extension to the Marketplace and GitHub releases (only on tags).
 # Note that this only deploys from the master branch, but will still allow
@@ -44,14 +43,14 @@ before_deploy:
 #      b) Set a environment variable `VS_TOKEN` with the value of your VS Code personal token
 #      c) Make sure `Display value in build log` is turned OFF!
 deploy:
-  - provider: script # Deploy to VS Code Market Place (only on tags!).
-    script: vsce publish -p $VS_CODE
-    skip_cleanup: true
-    on: # Publish on all builds on master branch.
-      repo: alanz/vscode-hie-server
-      branch: master
-      tags: true
-      condition: $TRAVIS_OS_NAME = linux
+- provider: script # Deploy to VS Code Market Place (only on tags!).
+  script: vsce publish -p $VS_CODE
+  skip_cleanup: true
+  on: # Publish on all builds on master branch.
+    repo: alanz/vscode-hie-server
+    branch: master
+    tags: true
+    condition: $TRAVIS_OS_NAME = linux
 # - provider: releases # Deploy the *.vsix pcakge to GitHub releases.
 #   file_glob: true
 #   file: "*.vsix"
