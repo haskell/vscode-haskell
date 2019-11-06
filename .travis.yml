@@ -26,8 +26,7 @@ install:
 - npm run vscode:prepublish
 
 script:
-# VS Code 1.36.1 fails to start on Linux for an unknown reason.
-- if [[ "$TRAVIS_OS_NAME" != "linux" ]]; then npm test --silent; fi
+- npm test --silent
 
 before_deploy:
 - npm install -g vsce
