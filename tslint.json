@@ -8,7 +8,6 @@
     "indent": [true, "spaces", 2],
     "no-namespace": false,
     "no-console": [true, "log"],
-    "no-unused-variable": true,
     "no-duplicate-variable": true,
     "no-unused-expression": true,
     "class-name": true,

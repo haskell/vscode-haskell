@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import * as yaml from 'js-yaml';
-import * as _ from 'lodash';
+import escapeRegExp from 'lodash-es/escapeRegExp';
 import * as LRU from 'lru-cache';
 import * as request from 'request-promise-native';
 import * as vscode from 'vscode';
@@ -49,7 +49,7 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   const revInputLine = lines.reverse().findIndex(l => l.startsWith('import'));
   const nextInputLine = revInputLine !== -1 ? lines.length - 1 - revInputLine : moduleLine === -1 ? 0 : moduleLine + 1;
 
-  if (!lines.some(line => new RegExp('^import.*' + _.escapeRegExp(arg.mod)).test(line))) {
+  if (!lines.some(line => new RegExp('^import.*' + escapeRegExp(arg.mod)).test(line))) {
     edit.insert(document.uri, new vscode.Position(nextInputLine, 0), 'import ' + arg.mod + '\n');
   }
 
@@ -58,7 +58,7 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
 
     const hpack: any = yaml.safeLoad(hpackDoc.getText());
     hpack.dependencies = hpack.dependencies || [];
-    if (!hpack.dependencies.some((dep: string) => new RegExp(_.escapeRegExp(arg.package)).test(dep))) {
+    if (!hpack.dependencies.some((dep: string) => new RegExp(escapeRegExp(arg.package)).test(dep))) {
       hpack.dependencies.push(arg.package);
       edit.replace(
         hpackDoc.uri,
@@ -83,7 +83,7 @@ export namespace ImportIdentifier {
   export function registerCommand(): vscode.Disposable {
     return vscode.commands.registerTextEditorCommand(CommandNames.ImportIdentifierCommandName, async (editor, edit) => {
       // \u0027 is ' (satisfies the linter)
-      const identifierRegExp = new RegExp('[' + _.escapeRegExp('!#$%&*+./<=>?@^|-~:') + ']+' + '|' + '[\\w\u0027]+');
+      const identifierRegExp = new RegExp('[' + escapeRegExp('!#$%&*+./<=>?@^|-~:') + ']+' + '|' + '[\\w\u0027]+');
 
       const identifierRange = editor.selection.isEmpty
         ? editor.document.getWordRangeAtPosition(editor.selections[0].active, identifierRegExp)
