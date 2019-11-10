@@ -1,3 +1,10 @@
+### 0.0.30
+
+* Bundle using webpack (@chrismwendt)
+* Bump protocol version to 3.15 prerelease (@alanz)
+  This allows working progress reporting from hie.
+* Update casesplit plugin (@Avi-D-coder)
+
 ### 0.0.29
 
 * bump protocol version to 3.15 (prerelease) (@alanz)
