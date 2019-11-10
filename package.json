@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -24,7 +24,7 @@
     "theme": "dark"
   },
   "activationEvents": ["onLanguage:haskell", "onLanguage:literate haskell"],
-  "main": "./out/src/extension",
+  "main": "./dist/extension",
   "contributes": {
     "languages": [
       {
