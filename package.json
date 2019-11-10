@@ -24,7 +24,7 @@
     "theme": "dark"
   },
   "activationEvents": ["onLanguage:haskell", "onLanguage:literate haskell"],
-  "main": "./out/src/extension",
+  "main": "./dist/extension",
   "contributes": {
     "languages": [
       {
