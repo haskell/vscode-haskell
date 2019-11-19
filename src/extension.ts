@@ -107,6 +107,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
+  const logFile = workspace.getConfiguration('languageServerHaskell', uri).logFile;
 
   // Substitute path variables with their corresponding locations.
   if (useCustomWrapper) {
@@ -140,17 +141,15 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const serverPath =
     useCustomWrapper || hieExecutablePath ? hieLaunchScript : context.asAbsolutePath(path.join('.', hieLaunchScript));
 
-  const tempDir = os.tmpdir();
-  const runArgs = [];
+  const runArgs: string[] = [];
   let debugArgs: string[] = [];
   if (logLevel === 'verbose') {
-    debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log'), '--vomit'];
+    debugArgs = ['-d', '--vomit'];
   } else if (logLevel === 'messages') {
-    debugArgs = ['-d', '-l', path.join(tempDir, 'hie.log')];
+    debugArgs = ['-d'];
   }
-  if (!useCustomWrapper && hieExecutablePath !== '') {
-    runArgs.unshift('--lsp');
-    debugArgs.unshift('--lsp');
+  if (logFile !== '') {
+    debugArgs = debugArgs.concat(['-l', logFile]);
   }
 
   // If the extension is launched in debug mode then the debug server options are used,

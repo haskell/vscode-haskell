@@ -131,6 +131,12 @@
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerHaskell service."
         },
+        "languageServerHaskell.logFile": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description": "If set, redirects the logs to a file."
+        },
         "languageServerHaskell.enableHIE": {
           "scope": "resource",
           "type": "boolean",
