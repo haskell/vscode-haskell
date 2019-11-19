@@ -1,3 +1,7 @@
+### 0.0.31
+
+* Log to stderr (vscode output) by default, add option for logfile (@bubba)
+
 ### 0.0.30
 
 * Bundle using webpack (@chrismwendt)
