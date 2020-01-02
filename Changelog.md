@@ -1,3 +1,8 @@
+### 0.0.32
+
+* Re-enable the `--lsp` flag for the hie server
+* Update some deps for security vulnerabilities
+
 ### 0.0.31
 
 * Log to stderr (vscode output) by default, add option for logfile (@bubba)

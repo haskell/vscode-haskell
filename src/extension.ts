@@ -148,6 +148,10 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   } else if (logLevel === 'messages') {
     debugArgs = ['-d'];
   }
+  if (!useCustomWrapper) {
+    runArgs.unshift('--lsp');
+    debugArgs.unshift('--lsp');
+  }
   if (logFile !== '') {
     debugArgs = debugArgs.concat(['-l', logFile]);
   }
