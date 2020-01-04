@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -108,6 +108,12 @@
           "default": "",
           "description":
             "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
+        },
+        "languageServerHaskell.noLspParam": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Do not set the '--lsp' flag in the hie/hie-wrapper arguments when launching it"
         },
         "languageServerHaskell.showTypeForSelection.onHover": {
           "scope": "resource",

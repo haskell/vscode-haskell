@@ -106,6 +106,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
+  const noLspParam = workspace.getConfiguration('languageServerHaskell', uri).noLspParam;
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
   const logFile = workspace.getConfiguration('languageServerHaskell', uri).logFile;
 
@@ -148,7 +149,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   } else if (logLevel === 'messages') {
     debugArgs = ['-d'];
   }
-  if (!useCustomWrapper) {
+  if (!noLspParam) {
     runArgs.unshift('--lsp');
     debugArgs.unshift('--lsp');
   }
