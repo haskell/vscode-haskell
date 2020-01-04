@@ -1,3 +1,9 @@
+### 0.0.33
+
+* Introduced configuration setting `noLspParam`, default `false` to control
+  setting the `--lsp` flag for the hie server. So by default we will set the
+  command line argument for the server, but it can be turned off.
+
 ### 0.0.32
 
 * Re-enable the `--lsp` flag for the hie server
