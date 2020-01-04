@@ -18,4 +18,4 @@ rem Fix for access violations: https://github.com/commercialhaskell/stack/issues
 set __COMPAT_LAYER=
 
 rem Need to run hie-wrapper if found, else hie
-hie-wrapper --lsp %1 %2 %3 %4 %5 %6 %7 %8 %9
+hie-wrapper %1 %2 %3 %4 %5 %6 %7 %8 %9

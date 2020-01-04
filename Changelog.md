@@ -1,3 +1,7 @@
+### 0.0.34
+
+* Remove --lsp parameter from hie-vscode.bat
+
 ### 0.0.33
 
 * Introduced configuration setting `noLspParam`, default `false` to control
