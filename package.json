@@ -228,7 +228,7 @@
       {
         "command": "hie.commands.restartHie",
         "title": "Haskell: Restart HIE",
-        "description": "Restart the Hie LPS server"
+        "description": "Restart the Hie LSP server"
       }
     ],
     "keybindings": [
