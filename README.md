@@ -10,14 +10,14 @@ The language client requires you to manually install the [HIE](https://github.co
 
 ```bash
 $ git clone https://github.com/haskell/haskell-ide-engine --recursive
-$ cd haskell-ide-engine && ./install.hs build
+$ cd haskell-ide-engine && ./install.hs hie
 ```
 
 On Windows, it is advised to either install HIE at the root of the drive, and/or to enable [Win32 Long paths](https://github.com/haskell/haskell-ide-engine#windows-specific-pre-requirements).
 
 ```cmd
 C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
-C:\> cd hie && stack ./install.hs build
+C:\> cd hie && stack ./install.hs hie
 ```
 
 If you experience difficulties, use the instructions at https://github.com/haskell/haskell-ide-engine#installation

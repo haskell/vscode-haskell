@@ -106,11 +106,7 @@
         "languageServerHaskell.formattingProvider": {
           "scope": "resource",
           "type": "string",
-          "enum": [
-            "brittany",
-            "floskell",
-            "none"
-          ],
+          "enum": ["brittany", "floskell", "ormolu", "none"],
           "default": "brittany",
           "description": "The tool to use for formatting requests."
         },
