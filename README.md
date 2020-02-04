@@ -180,6 +180,16 @@ to launch HIE via `hie.sh` inside the _backend_ and _common_ folder, while the _
 
 This provides a very flexible way of customizing your setup.
 
+## Investigating and reporting problems
+
+1. Go to extensions and right click `Haskell Language Server` and choose `Configure Extensions Settings`
+2. Scroll down to `Language Server Haskell › Trace: Server` and set it to `verbose`
+3. Restart vscode and reproduce your problem
+4. Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
+5. On the new Output panel that opens on the right side in the drop down menu choose `Haskell HIE (cabal)`
+
+Now you will see the information which you can use to diagnose or report a problem
+
 ## Release Notes
 
 See the [Changelog](https://github.com/alanz/vscode-hie-server/blob/master/Changelog.md) for more details.
