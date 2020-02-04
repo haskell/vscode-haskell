@@ -6,7 +6,8 @@ This document will briefly outline how to get started contributing to the `vscod
 
 For development, all you need is to,
 
-* run `npm install -g typescript` to get TypeScript,
+* run `npm install -g typescript` to get [TypeScript](https://www.typescriptlang.org),
+* run `npm install -g webpack` to get [Webpack](https://webpack.js.org),
 * then run `npm install` in the project root to install development dependencies.
 
 You can now also package up the extension with,
