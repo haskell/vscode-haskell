@@ -21,6 +21,7 @@ import {
 } from 'vscode-languageclient';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { InsertType } from './commands/insertType';
+import { RestartHie } from './commands/restartHie';
 import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
 
@@ -71,7 +72,7 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
     const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
     const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
     // Check if hie is installed.
-    if (!await isHieInstalled() && !useCustomWrapper && hieExecutablePath === '') {
+    if (!(await isHieInstalled()) && !useCustomWrapper && hieExecutablePath === '') {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
       const notInstalledMsg: string =
         'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
@@ -203,6 +204,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // Register editor commands for HIE, but only register the commands once.
   if (!hieCommandsRegistered) {
     context.subscriptions.push(InsertType.registerCommand(clients));
+    context.subscriptions.push(RestartHie.registerCommand(clients));
     const showTypeCmd = ShowTypeCommand.registerCommand(clients);
     if (showTypeCmd !== null) {
       showTypeCmd.forEach(x => context.subscriptions.push(x));
