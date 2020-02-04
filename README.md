@@ -42,6 +42,9 @@ Additionally the language server itself features,
 * Supports plain GHC projects, cabal projects (sandboxed and non sandboxed) and stack projects
 * Fast due to caching of compile info
 
+## Supported GHC versions
+vscode-hie-server depends on haskell-ide-engine to support different versions of GHC. At the moment of writing the following versions are supported: 8.4, 8.6 and 8.8. If your project uses any other GHC version it won't work.
+
 ## Extension Settings
 
 You can disable HLint and also control the maximum number of reported problems,
