@@ -2,18 +2,13 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
     "vscode": "^1.33.0"
   },
-  "keywords": [
-    "language",
-    "haskell",
-    "lsp",
-    "multi-root ready"
-  ],
+  "keywords": ["language", "haskell", "lsp", "multi-root ready"],
   "homepage": "https://github.com/alanz/vscode-hie-server",
   "repository": {
     "type": "git",
@@ -22,43 +17,25 @@
   "bugs": {
     "url": "https://github.com/alanz/vscode-hie-server/issues"
   },
-  "categories": [
-    "Programming Languages",
-    "Formatters",
-    "Linters",
-    "Other"
-  ],
+  "categories": ["Programming Languages", "Formatters", "Linters", "Other"],
   "icon": "images/HIE_logo_128.png",
   "galleryBanner": {
     "color": "#22172A",
     "theme": "dark"
   },
-  "activationEvents": [
-    "onLanguage:haskell",
-    "onLanguage:literate haskell"
-  ],
+  "activationEvents": ["onLanguage:haskell", "onLanguage:literate haskell"],
   "main": "./dist/extension",
   "contributes": {
     "languages": [
       {
         "id": "haskell",
-        "aliases": [
-          "Haskell",
-          "haskell"
-        ],
-        "extensions": [
-          ".hs"
-        ]
+        "aliases": ["Haskell", "haskell"],
+        "extensions": [".hs"]
       },
       {
         "id": "literate haskell",
-        "aliases": [
-          "Literate Haskell",
-          "literate Haskell"
-        ],
-        "extensions": [
-          ".lhs"
-        ]
+        "aliases": ["Literate Haskell", "literate Haskell"],
+        "extensions": [".lhs"]
       }
     ],
     "configuration": {
@@ -82,7 +59,8 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
+          "description":
+            "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
         },
         "languageServerHaskell.liquidOn": {
           "scope": "resource",
@@ -114,19 +92,22 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
+          "description":
+            "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "languageServerHaskell.useCustomHieWrapper": {
           "scope": "resource",
           "type": "boolean",
           "default": false,
-          "description": "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
+          "description":
+            "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
         },
         "languageServerHaskell.useCustomHieWrapperPath": {
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
+          "description":
+            "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "languageServerHaskell.noLspParam": {
           "scope": "resource",
@@ -138,26 +119,21 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
+          "description":
+            "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
         },
         "languageServerHaskell.showTypeForSelection.command.location": {
           "scope": "resource",
           "type": "string",
-          "enum": [
-            "dropdown",
-            "channel"
-          ],
+          "enum": ["dropdown", "channel"],
           "default": "dropdown",
-          "description": "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
+          "description":
+            "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
         },
         "languageServerHaskell.trace.server": {
           "scope": "resource",
           "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
+          "enum": ["off", "messages", "verbose"],
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerHaskell service."
         },
@@ -260,30 +236,29 @@
     "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "precommit": "pretty-quick --staged",
-    "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
+    "push-tag":
+      "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.13",
-    "@types/js-yaml": "^3.12.1",
+    "@types/cheerio": "^0.22.16",
+    "@types/js-yaml": "^3.12.2",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^4.1.2",
     "@types/mocha": "^2.2.46",
-    "@types/node": "^8.10.58",
+    "@types/node": "^8.10.59",
     "@types/request-promise-native": "^1.0.17",
     "husky": "^0.14.3",
     "prettier": "1.11.1",
     "pretty-quick": "^1.11.1",
     "ts-loader": "^6.0.4",
-    "tslint": "^5.20.0",
+    "tslint": "^5.20.1",
     "tslint-loader": "^3.5.4",
-    "typescript": "^3.6.4",
+    "typescript": "^3.7.5",
     "vscode": "^1.1.36",
-    "webpack": "^4.38.0",
+    "webpack": "^4.41.5",
     "webpack-cli": "^3.3.6"
   },
-  "extensionDependencies": [
-    "justusadam.language-haskell"
-  ],
+  "extensionDependencies": ["justusadam.language-haskell"],
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "extend": ">=3.0.2",
@@ -292,6 +267,6 @@
     "lru-cache": "^4.1.5",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
-    "vscode-languageclient": "6.0.0-next.3"
+    "vscode-languageclient": "6.1.0"
   }
 }

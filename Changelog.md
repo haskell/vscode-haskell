@@ -1,3 +1,9 @@
+### 0.0.35
+
+* Add Restart command (@gdziadkiewicz)
+* Add Ormolu as a formatter option (@DavSanchez)
+* Update README
+
 ### 0.0.34
 
 * Remove --lsp parameter from hie-vscode.bat
