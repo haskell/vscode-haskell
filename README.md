@@ -6,18 +6,36 @@ Client interface to the Language Server Protocol server for Haskell, as provided
 
 ## Requirements
 
-The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server which can be done with commands below but this will take exceedingly long time and less than robust, consider proceeding to installation readme at the link below, it has option for getting bins directly,
+The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server which can be done with commands below but this will take exceedingly long time and less than robust, consider proceeding to installation readme at the link below, it has option for getting bins directly:
+
+* using stack:
 
 ```bash
 $ git clone https://github.com/haskell/haskell-ide-engine --recursive
-$ cd haskell-ide-engine && ./install.hs build
+$ cd haskell-ide-engine && ./install.hs hie
 ```
 
-On Windows, it is advised to either install HIE at the root of the drive, and/or to enable [Win32 Long paths](https://github.com/haskell/haskell-ide-engine#windows-specific-pre-requirements).
+* using cabal:
+
+```bash
+$ git clone https://github.com/haskell/haskell-ide-engine --recursive
+$ cd haskell-ide-engine && ./cabal-hie-install hie
+```
+
+On Windows, it is advised to either install HIE at the root of the drive, and/or to enable [Win32 Long paths](https://github.com/haskell/haskell-ide-engine#windows-specific-pre-requirements):
+
+* using stack:
 
 ```cmd
 C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
-C:\> cd hie && stack ./install.hs build
+C:\> cd hie && stack .\install.hs hie
+```
+
+* using cabal:
+
+```cmd
+C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
+C:\> cd hie && .\cabal-hie-install hie
 ```
 
 If you experience difficulties, use the instructions at https://github.com/haskell/haskell-ide-engine#installation
