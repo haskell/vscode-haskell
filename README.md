@@ -8,16 +8,34 @@ Client interface to the Language Server Protocol server for Haskell, as provided
 
 The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server which can be done with commands below but this will take exceedingly long time and less than robust, consider proceeding to installation readme at the link below, it has option for getting bins directly,
 
+Using stack:
+
 ```bash
 $ git clone https://github.com/haskell/haskell-ide-engine --recursive
 $ cd haskell-ide-engine && ./install.hs hie
 ```
 
+Using cabal:
+
+```bash
+$ git clone https://github.com/haskell/haskell-ide-engine --recursive
+$ cd haskell-ide-engine && ./cabal-hie-install hie
+```
+
 On Windows, it is advised to either install HIE at the root of the drive, and/or to enable [Win32 Long paths](https://github.com/haskell/haskell-ide-engine#windows-specific-pre-requirements).
+
+Using stack:
 
 ```cmd
 C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
-C:\> cd hie && stack ./install.hs hie
+C:\> cd hie && stack .\install.hs hie
+```
+
+Using cabal:
+
+```cmd
+C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
+C:\> cd hie && .\cabal-hie-install hie
 ```
 
 If you experience difficulties, use the instructions at https://github.com/haskell/haskell-ide-engine#installation
@@ -43,6 +61,7 @@ Additionally the language server itself features,
 * Fast due to caching of compile info
 
 ## Supported GHC versions
+
 vscode-hie-server depends on haskell-ide-engine to support different versions of GHC. At the moment of writing the following versions are supported: 8.4, 8.6 and 8.8. If your project uses any other GHC version it won't work.
 
 ## Extension Settings
@@ -185,11 +204,11 @@ This provides a very flexible way of customizing your setup.
 
 ## Investigating and reporting problems
 
-1. Go to extensions and right click `Haskell Language Server` and choose `Configure Extensions Settings`
-2. Scroll down to `Language Server Haskell › Trace: Server` and set it to `verbose`
-3. Restart vscode and reproduce your problem
-4. Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
-5. On the new Output panel that opens on the right side in the drop down menu choose `Haskell HIE (cabal)`
+1.  Go to extensions and right click `Haskell Language Server` and choose `Configure Extensions Settings`
+2.  Scroll down to `Language Server Haskell › Trace: Server` and set it to `verbose`
+3.  Restart vscode and reproduce your problem
+4.  Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
+5.  On the new Output panel that opens on the right side in the drop down menu choose `Haskell HIE (cabal)`
 
 Now you will see the information which you can use to diagnose or report a problem
 
