@@ -78,11 +78,10 @@ process haskell files on save.
 
 #### HIE Wrapper
 
-Furthermore, the extension supports multiple ways of initializing hie,
-depending on your needs. The default one uses the `hie-vscode.[sh|bat]`
-file to start hie through. This will attempt to start via `hie-wrapper`
-if it is on the vscode path, otherwise fall back to `hie`.
-The`hie-wrapper` executable is installed using `make build`,
+Furthermore, the extension supports multiple ways of initializing hie, depending on your needs. 
+The default one uses the `hie-vscode.[sh|bat]` file to start hie through. 
+This will attempt to start via `hie-wrapper` if it is on the vscode path, otherwise fall back to `hie`.
+The`hie-wrapper` executable is installed using `stack ./install.hs hie` or `./cabal-hie-install hie`, 
 together with the other GHC version specific `hie-8.x` executables.
 This will take precedence over `hieExecutablePath`.
 
