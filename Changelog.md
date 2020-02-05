@@ -1,3 +1,15 @@
+### 0.0.37
+
+Trying again, working 0.0.35
+
+* Add Restart command (@gdziadkiewicz)
+* Add Ormolu as a formatter option (@DavSanchez)
+* Update README
+
+### 0.0.36
+
+* Roll back to 0.0.34
+
 ### 0.0.35
 
 * Add Restart command (@gdziadkiewicz)

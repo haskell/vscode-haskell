@@ -2,11 +2,11 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.35",
+  "version": "0.0.37",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
-    "vscode": "^1.33.0"
+    "vscode": "^1.39.0"
   },
   "keywords": ["language", "haskell", "lsp", "multi-root ready"],
   "homepage": "https://github.com/alanz/vscode-hie-server",
