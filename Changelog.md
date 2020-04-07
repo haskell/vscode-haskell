@@ -1,3 +1,7 @@
+### 0.0.39
+
+Remove verbose logging option, it is not longer supported.
+
 ### 0.0.38
 
 Bump dependencies

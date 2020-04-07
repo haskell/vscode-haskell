@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -133,7 +133,7 @@
         "languageServerHaskell.trace.server": {
           "scope": "resource",
           "type": "string",
-          "enum": ["off", "messages", "verbose"],
+          "enum": ["off", "messages"],
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerHaskell service."
         },

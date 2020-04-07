@@ -72,7 +72,7 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
     const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
     const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
     // Check if hie is installed.
-    if (!(await isHieInstalled()) && !useCustomWrapper && hieExecutablePath === '') {
+    if (!await isHieInstalled() && !useCustomWrapper && hieExecutablePath === '') {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
       const notInstalledMsg: string =
         'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
@@ -145,9 +145,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   const runArgs: string[] = [];
   let debugArgs: string[] = [];
-  if (logLevel === 'verbose') {
-    debugArgs = ['-d', '--vomit'];
-  } else if (logLevel === 'messages') {
+  if (logLevel === 'messages') {
     debugArgs = ['-d'];
   }
   if (!noLspParam) {
