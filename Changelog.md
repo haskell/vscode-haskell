@@ -1,3 +1,7 @@
+### 0.0.38
+
+Bump dependencies
+
 ### 0.0.37
 
 Trying again, working 0.0.35

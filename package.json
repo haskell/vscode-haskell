@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -240,8 +240,8 @@
       "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.16",
-    "@types/js-yaml": "^3.12.2",
+    "@types/cheerio": "^0.22.17",
+    "@types/js-yaml": "^3.12.3",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^4.1.2",
     "@types/mocha": "^2.2.46",
@@ -250,13 +250,13 @@
     "husky": "^0.14.3",
     "prettier": "1.11.1",
     "pretty-quick": "^1.11.1",
-    "ts-loader": "^6.0.4",
+    "ts-loader": "^6.2.2",
     "tslint": "^5.20.1",
     "tslint-loader": "^3.5.4",
-    "typescript": "^3.7.5",
+    "typescript": "^3.8.3",
     "vscode": "^1.1.36",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.6"
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
   },
   "extensionDependencies": ["justusadam.language-haskell"],
   "dependencies": {
@@ -265,8 +265,8 @@
     "js-yaml": "^3.13.1",
     "lodash-es": "^4.17.15",
     "lru-cache": "^4.1.5",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
-    "vscode-languageclient": "6.1.0"
+    "vscode-languageclient": "6.1.3"
   }
 }
