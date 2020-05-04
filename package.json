@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
   "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -88,33 +88,6 @@
           "default": "brittany",
           "description": "The tool to use for formatting requests."
         },
-        "languageServerHaskell.hieExecutablePath": {
-          "scope": "resource",
-          "type": "string",
-          "default": "",
-          "description":
-            "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
-        },
-        "languageServerHaskell.useCustomHieWrapper": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description":
-            "Use your own custom wrapper for hie (remember to specify the path!). This will take precedence over useHieWrapper and hieExecutablePath."
-        },
-        "languageServerHaskell.useCustomHieWrapperPath": {
-          "scope": "resource",
-          "type": "string",
-          "default": "",
-          "description":
-            "Specify the full path to your own custom hie wrapper (e.g. ${HOME}/.hie-wrapper.sh). Works with ~, ${HOME} and ${workspaceFolder}."
-        },
-        "languageServerHaskell.noLspParam": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description": "Do not set the '--lsp' flag in the hie/hie-wrapper arguments when launching it"
-        },
         "languageServerHaskell.showTypeForSelection.onHover": {
           "scope": "resource",
           "type": "boolean",
@@ -142,6 +115,20 @@
           "type": "string",
           "default": "",
           "description": "If set, redirects the logs to a file."
+        },
+        "languageServerHaskell.hieVariant": {
+          "scope": "resource",
+          "type": "string",
+          "enum": ["haskell-ide-engine", "haskell-language-server", "ghcide"],
+          "default": "haskell-ide-engine",
+          "description": "Which hasell language server to use."
+        },
+        "languageServerHaskell.hieExecutablePath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description":
+            "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "languageServerHaskell.enableHIE": {
           "scope": "resource",

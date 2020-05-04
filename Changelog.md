@@ -1,3 +1,12 @@
+### 0.0.40
+
+Change the way the backend is configured, simplifying it.
+
+* remove wrapper scripts (hie-vscode.sh/hie-vscode.bat)
+* dropdown choice between `haskell-ide-engine`, `haskell-language-server` or
+  `ghcide` in the `hieVariant` setting.
+* this can be overridden by an explicit `hieExecutablePath`, as before.
+
 ### 0.0.39
 
 Remove verbose logging option, it is not longer supported.

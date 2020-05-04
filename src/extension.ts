@@ -1,7 +1,6 @@
 'use strict';
 import * as child_process from 'child_process';
 import * as os from 'os';
-import * as path from 'path';
 import {
   commands,
   ExtensionContext,
@@ -69,13 +68,13 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
   }
 
   try {
-    const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
     const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
     // Check if hie is installed.
-    if (!await isHieInstalled() && !useCustomWrapper && hieExecutablePath === '') {
+    const exeName = 'hie';
+    if (!await isHieInstalled(exeName) && hieExecutablePath === '') {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
       const notInstalledMsg: string =
-        'hie executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
+        exeName + ' executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
       const forceStart: string = 'Force Start';
       window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
         if (option === forceStart) {
@@ -104,22 +103,13 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
     docsBrowserRegistered = true;
   }
 
-  const useCustomWrapper = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapper;
+  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
-  let customWrapperPath = workspace.getConfiguration('languageServerHaskell', uri).useCustomHieWrapperPath;
-  const noLspParam = workspace.getConfiguration('languageServerHaskell', uri).noLspParam;
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
   const logFile = workspace.getConfiguration('languageServerHaskell', uri).logFile;
 
   // Substitute path variables with their corresponding locations.
-  if (useCustomWrapper) {
-    customWrapperPath = customWrapperPath
-      .replace('${workspaceFolder}', folder.uri.path)
-      .replace('${workspaceRoot}', folder.uri.path)
-      .replace('${HOME}', os.homedir)
-      .replace('${home}', os.homedir)
-      .replace(/^~/, os.homedir);
-  } else if (hieExecutablePath !== '') {
+  if (hieExecutablePath !== '') {
     hieExecutablePath = hieExecutablePath
       .replace('${workspaceFolder}', folder.uri.path)
       .replace('${workspaceRoot}', folder.uri.path)
@@ -128,30 +118,33 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
       .replace(/^~/, os.homedir);
   }
 
-  // Set the executable, based on the settings. The order goes: First
-  // check useCustomWrapper, then check hieExecutablePath, else retain
-  // original path.
-  let hieLaunchScript = process.platform === 'win32' ? 'hie-vscode.bat' : 'hie-vscode.sh';
-  if (useCustomWrapper) {
-    hieLaunchScript = customWrapperPath;
-  } else if (hieExecutablePath !== '') {
+  // Set the executable, based on the settings.
+  let hieLaunchScript = 'hie'; // should get set below
+  switch (hieVariant) {
+    case 'haskell-ide-engine':
+      hieLaunchScript = 'hie-wrapper';
+      break;
+    case 'haskell-language-server':
+      hieLaunchScript = 'haskell-language-server-wrapper';
+      break;
+    case 'ghcide':
+      hieLaunchScript = 'ghcide';
+      break;
+  }
+  if (hieExecutablePath !== '') {
     hieLaunchScript = hieExecutablePath;
   }
 
   // If using a custom wrapper or specificed an executable path, the path is assumed to already
   // be absolute.
-  const serverPath =
-    useCustomWrapper || hieExecutablePath ? hieLaunchScript : context.asAbsolutePath(path.join('.', hieLaunchScript));
+  const serverPath = hieLaunchScript;
 
-  const runArgs: string[] = [];
-  let debugArgs: string[] = [];
+  const runArgs: string[] = ['--lsp'];
+  let debugArgs: string[] = ['--lsp'];
   if (logLevel === 'messages') {
     debugArgs = ['-d'];
   }
-  if (!noLspParam) {
-    runArgs.unshift('--lsp');
-    debugArgs.unshift('--lsp');
-  }
+
   if (logFile !== '') {
     debugArgs = debugArgs.concat(['-l', logFile]);
   }
@@ -242,9 +235,9 @@ export function deactivate(): Thenable<void> {
 /*
  * Check if HIE is installed.
  */
-async function isHieInstalled(): Promise<boolean> {
+async function isHieInstalled(exeName: string): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
-    const cmd: string = process.platform === 'win32' ? 'where hie' : 'which hie';
+    const cmd: string = process.platform === 'win32' ? 'where ' + exeName : 'which ' + exeName;
     child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
   });
 }
