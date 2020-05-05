@@ -121,7 +121,7 @@
           "type": "string",
           "enum": ["haskell-ide-engine", "haskell-language-server", "ghcide"],
           "default": "haskell-ide-engine",
-          "description": "Which hasell language server to use."
+          "description": "Which haskell language server to use."
         },
         "languageServerHaskell.hieExecutablePath": {
           "scope": "resource",
