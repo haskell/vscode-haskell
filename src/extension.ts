@@ -68,13 +68,33 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
   }
 
   try {
+    const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
     const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
     // Check if hie is installed.
-    const exeName = 'hie';
+    let exeName = 'hie';
+    switch (hieVariant) {
+      case 'haskell-ide-engine':
+        break;
+      case 'haskell-language-server':
+      case 'ghcide':
+        exeName = hieVariant;
+        break;
+    }
     if (!await isHieInstalled(exeName) && hieExecutablePath === '') {
       // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
+      let hieProjectUrl = '/haskell/haskell-ide-engine';
+      switch (hieVariant) {
+        case 'haskell-ide-engine':
+          break;
+        case 'haskell-language-server':
+          hieProjectUrl = '/haskell/haskell-language-server';
+          break;
+        case 'ghcide':
+          hieProjectUrl = '/digital-asset/ghcide';
+          break;
+      }
       const notInstalledMsg: string =
-        exeName + ' executable missing, please make sure it is installed, see github.com/haskell/haskell-ide-engine.';
+        exeName + ' executable missing, please make sure it is installed, see https://github.com' + hieProjectUrl + '.';
       const forceStart: string = 'Force Start';
       window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
         if (option === forceStart) {
@@ -141,7 +161,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   const runArgs: string[] = ['--lsp'];
   let debugArgs: string[] = ['--lsp'];
-  
+
   // ghcide does not accept -d and -l params
   if (hieVariant !== 'ghcide') {
     if (logLevel === 'messages') {
