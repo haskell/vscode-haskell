@@ -141,12 +141,16 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   const runArgs: string[] = ['--lsp'];
   let debugArgs: string[] = ['--lsp'];
-  if (logLevel === 'messages') {
-    debugArgs = ['-d'];
-  }
+  
+  // ghcide does not accept -d and -l params
+  if (hieVariant !== 'ghcide') {
+    if (logLevel === 'messages') {
+      debugArgs = debugArgs.concat(['-d']);
+    }
 
-  if (logFile !== '') {
-    debugArgs = debugArgs.concat(['-l', logFile]);
+    if (logFile !== '') {
+      debugArgs = debugArgs.concat(['-l', logFile]);
+    }
   }
 
   // If the extension is launched in debug mode then the debug server options are used,
