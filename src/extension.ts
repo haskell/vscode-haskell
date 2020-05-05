@@ -163,6 +163,8 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
   const langName = 'Haskell HIE (' + folder.name + ')';
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
+  outputChannel.appendLine('[client] run command = "' + serverPath + ' ' + runArgs.join(' ') + '"');
+  outputChannel.appendLine('[client] debug command = "' + serverPath + ' ' + debugArgs.join(' ') + '"');
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
