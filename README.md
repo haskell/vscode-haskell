@@ -11,7 +11,7 @@ The language client requires you to manually install at least one of:
 
 * [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): It was the unique haskell LSP server supported by this extension until version `0.40.0`. It is stable and functional but it will be replaced sooner or later by the new Haskell Language Server (see below).
 * [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with the [main basic features](https://github.com/digital-asset/ghcide#features). Supported since the `0.40.0` version of the extension.
-* [Haskell language server](https://github.com/haskell/haskell-language-server#installation): The future succesor of haskell-ide-engine. Its goal is to add features like formatting and refactor on top of ghcide, via custom plugins. It is still under heavy development and it does not have all the features of haskell-ide-engine, so use at your own risk! It is supported since the `0.40.0` version of the extension.
+* [Haskell language server](https://github.com/haskell/haskell-language-server#installation): The future successor of haskell-ide-engine. It is still under heavy development and it does not have all the features of haskell-ide-engine, yet, so use at your own risk! It is supported since the `0.40.0` version of the extension.
 
 ## Features
 
