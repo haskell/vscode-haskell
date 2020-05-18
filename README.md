@@ -57,14 +57,14 @@ process haskell files on save.
 
 ### HIE Variant
 
-Since `0.40` the extension no longer uses the wrapper. It has been replaced by a selection over
-the three supported language servers: `haskell-ide-engine`, `ghcide` and `haskell-language-server`.
-The default one is `haskell-ide-engine`, although it will be changed to `haskell-language-server`
+Since `0.40` the extension hasa selection over the three supported language servers:
+`haskell-ide-engine`, `ghcide` and `haskell-language-server`.
+The default one is `haskell-ide-engine`, although it will be changed by `haskell-language-server`
 when it will be stable enough.
 
-The extension will look for the executable in `$PATH` and it will call it with the appropiate params
-depending on the extension settings. However, not all extension settings can be applied to all the language
-servers:
+The extension will look for the language server executable in `$PATH` and it will call it
+with the appropiate params depending on the extension settings.
+However, not all extension settings can be applied to all the language servers:
 
 * `haskell-ide-engine`: It supports all of them.
 * `ghcide`: It does not support any of them.
