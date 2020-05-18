@@ -57,7 +57,7 @@ process haskell files on save.
 
 ### HIE Variant
 
-Since `0.40` the extension hasa selection over the three supported language servers:
+Since `0.40` the extension has a selection over the three supported language servers:
 `haskell-ide-engine`, `ghcide` and `haskell-language-server`.
 The default one is `haskell-ide-engine`, although it will be changed by `haskell-language-server`
 when it will be stable enough.
