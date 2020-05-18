@@ -63,7 +63,7 @@ The default one is `haskell-ide-engine`, although it will be changed to `haskell
 when it will be stable enough.
 
 The extension will look for the executable in `$PATH` and it will call it with the appropiate params
-depending on the extension settings. However, not all extension settings could be applied to all the language
+depending on the extension settings. However, not all extension settings can be applied to all the language
 servers:
 
 * `haskell-ide-engine`: It supports all of them.
