@@ -1,44 +1,17 @@
 # Haskell Language Server Client
 
-Client interface to the Language Server Protocol server for Haskell, as provided by the Haskell IDE Engine. Check the [requirements](#user-content-requirements) for dependencies.
+Client interface to the Language Server Protocol server for Haskell, as provided by the [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine), [ghcide](https://github.com/digital-asset/ghcide) or the new [Haskell Language Server](https://github.com/haskell/haskell-language-server).
+Check the [requirements](#user-content-requirements) for dependencies.
 
 **It is still under development!** If you want to help, get started by reading [Contributing](https://github.com/alanz/vscode-hie-server/blob/master/Contributing.md) for more details.
 
 ## Requirements
 
-The language client requires you to manually install the [HIE](https://github.com/haskell/haskell-ide-engine) language server which can be done with commands below but this will take exceedingly long time and less than robust, consider proceeding to installation readme at the link below, it has option for getting bins directly:
+The language client requires you to manually install at least one of:
 
-* using stack:
-
-```bash
-$ git clone https://github.com/haskell/haskell-ide-engine --recursive
-$ cd haskell-ide-engine && ./install.hs hie
-```
-
-* using cabal:
-
-```bash
-$ git clone https://github.com/haskell/haskell-ide-engine --recursive
-$ cd haskell-ide-engine && ./cabal-hie-install hie
-```
-
-On Windows, it is advised to either install HIE at the root of the drive, and/or to enable [Win32 Long paths](https://github.com/haskell/haskell-ide-engine#windows-specific-pre-requirements):
-
-* using stack:
-
-```cmd
-C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
-C:\> cd hie && stack .\install.hs hie
-```
-
-* using cabal:
-
-```cmd
-C:\> git clone https://github.com/haskell/haskell-ide-engine --recursive hie
-C:\> cd hie && .\cabal-hie-install hie
-```
-
-If you experience difficulties, use the instructions at https://github.com/haskell/haskell-ide-engine#installation
+* [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): It was the unique haskell LSP server supported by this extension until version `0.40.0`. It is stable and functional but it will be replaced sooner or later by the new Haskell Language Server (see below).
+* [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with the [main basic features](https://github.com/digital-asset/ghcide#features). Supported since the `0.40.0` version of the extension.
+* [Haskell language server](https://github.com/haskell/haskell-language-server#installation): The future succesor of haskell-ide-engine. Its goal is to add features like formatting and refactor on top of ghcide, via custom plugins. It is still under heavy development and it does not have all the features of haskell-ide-engine, so use at your own risk! It is supported since the `0.40.0` version of the extension.
 
 ## Features
 
@@ -57,12 +30,14 @@ Language server client for haskell using the [HIE](https://github.com/haskell/ha
 
 Additionally the language server itself features,
 
-* Supports plain GHC projects, cabal projects (sandboxed and non sandboxed) and stack projects
+* Supports plain GHC projects, cabal projects and stack projects
 * Fast due to caching of compile info
+
+The other two language servers ([ghcide](https://github.com/digital-asset/ghcide#features) and haskell-language-server) have a subset of the features described above.
 
 ## Supported GHC versions
 
-vscode-hie-server depends on haskell-ide-engine to support different versions of GHC. At the moment of writing the following versions are supported: 8.4, 8.6 and 8.8. If your project uses any other GHC version it won't work.
+vscode-hie-server depends on the chosen haskell language server to support different versions of GHC. At the moment of writing the following versions are supported using Haskell Ide Engine: 8.4, 8.6 and 8.8. ghcide and Haskell Language Server also have support for ghc 8.10. If your project uses any other GHC version it won't work.
 
 ## Extension Settings
 
@@ -76,52 +51,45 @@ You can disable HLint and also control the maximum number of reported problems,
 If the liquid haskell executable is installed, enable using it to
 process haskell files on save.
 
-```
+```json
 "languageServerHaskell.liquidOn": true,
 ```
 
-#### HIE Wrapper
+### HIE Variant
 
-Furthermore, the extension supports multiple ways of initializing hie, depending on your needs. 
-The default one uses the `hie-vscode.[sh|bat]` file to start hie through. 
-This will attempt to start via `hie-wrapper` if it is on the vscode path, otherwise fall back to `hie`.
-The`hie-wrapper` executable is installed using `stack ./install.hs hie` or `./cabal-hie-install hie`, 
-together with the other GHC version specific `hie-8.x` executables.
-This will take precedence over `hieExecutablePath`.
+Since `0.40` the extension no longer uses the wrapper. It has been replaced by a selection over
+the three supported language servers: `haskell-ide-engine`, `ghcide` and `haskell-language-server`.
+The default one is `haskell-ide-engine`, although it will be changed by `haskell-language-server`
+when it would be stable enough.
 
-#### Custom Wrapper
+The extension will look for the executable in `$PATH` and it will call it with the appropiate params
+depending on the extension settings. However, not all extension settings could be applied to all the language
+servers:
 
-If you need more control, and want to have a custom wrapper, either in your specific project or somewhere else on your computer, you can set a custom wrapper via,
+* `haskell-ide-engine`: It supports all of them.
+* `ghcide`: It does not support any of them.
+* `haskell-language-server`: It only supports for now the log related settings: `Log File` and `Trace:server`. The goal is it will support all the same settings as `haskell-ide-engine`.
+
+### Enable/disable HIE
+
+You can enable or disable the chosen haskell language server via configuration. This is sometimes useful at workspace level, because multi-root workspaces do not yet allow you to manage extensions at the folder level, which can be necessary.
 
 ```json
-"languageServerHaskell.useCustomHieWrapper": true,
-"languageServerHaskell.useCustomHieWrapperPath": "~/wrapper-in-home.sh",
+"languageServerHaskell.enableHIE": true
+```
+
+### Path for hie executable
+
+If your chosen haskell language server executable is not on your path, you can manually set it,
+
+```json
+"languageServerHaskell.hieExecutablePath": "~/.local/bin/hie"
 ```
 
 There are a few placeholders which will be expanded:
 
 * `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 * `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
-
-This can be beneficial if you are using something like nix, to have a wrapper script tailored to your setup. This will take precedence over `useHieWrapper` and `hieExecutablePath`.
-
-#### Enable/disable HIE
-
-You can enable or disable HIE via configuration. This is useful, because multi-root workspaces do not yet allow you to manage extensions at the folder level, which can be necessary.
-
-```json
-"languageServerHaskell.enableHIE": true
-```
-
-#### Path for hie executable
-
-If you `hie` executable is not on your path, you can manually set it,
-
-```json
-"languageServerHaskell.hieExecutablePath": "~/.local/bin/hie"
-```
-
-The path placeholders work here as well. Note that this adds the `--lsp` argument to the call of this executable.
 
 ## Docs on Hover/Generating Hoogle DB
 
@@ -139,7 +107,7 @@ $ stack haddock --keep-going
 
 To enable documentation generation for cabal projects, add the following to your ~/.cabal/config
 
-```
+```json
 documentation: True
 ```
 
@@ -149,6 +117,9 @@ To generate a hoogle database that hie can use
 $ cd haskell-ide-engine
 $ stack --stack-yaml=<stack.yaml you used to build hie> exec hoogle generate
 ```
+
+For now `ghcide`and `haskell-language-server` have not that fallback to the hoogle database, so
+you should generate haddock documentation as described above.
 
 ## Manual Installation
 
@@ -173,33 +144,6 @@ and use the `Install from VSIX...` option to locate and install the generated fi
 First, check out [what multi-root workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) are. The idea of using multi-root workspaces, is to be able to work on several different Haskell projects, where the GHC version or stackage LTS could differ, and have it work smoothly.
 
 HIE is now started for each workspace folder you have in your multi-root workspace, and several configurations are on a resource (i.e. folder) scope, instead of window (i.e. global) scope.
-
-To showcase the utility of this, let's imagine that we are writing a full-stack Haskell website, and we have three main components:
-
-* a backend using LTS 10.10 and
-* a frontend using GHCJS and LTS 8.11,
-* a common part that is shared between the two, using LTS 8.11.
-
-One way to be able to work on all these in the same VSCode project is to create a new workspace, and then add each folder to the workspace. This way, they are considered separate entities, and HIE will start separately for each.
-
-You can then define how to start HIE for each of these folders, by going into `Settings` and then choosing `Folder Settings -> <the folder you want>`, or just configure the workspace. E.g. the _backend_ and _common_ projects could have a folder settting,
-
-```json
-{
-  "languageServerHaskell.useCustomHieWrapper": true,
-  "languageServerHaskell.useCustomHieWrapperPath": "${workspaceFolder}/hie.sh"
-}
-```
-
-to launch HIE via `hie.sh` inside the _backend_ and _common_ folder, while the _frontend_, because of using GHCJS, might not want to use HIE, and therefore needs to disable HIE,
-
-```json
-{
-  "languageServerHaskell.useHieWrapper": false
-}
-```
-
-This provides a very flexible way of customizing your setup.
 
 ## Investigating and reporting problems
 
