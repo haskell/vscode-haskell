@@ -68,7 +68,7 @@ servers:
 
 * `haskell-ide-engine`: It supports all of them.
 * `ghcide`: It does not support any of them.
-* `haskell-language-server`: It only supports for now the log related settings: `Log File` and `Trace:server`. The goal is it will support all the same settings as `haskell-ide-engine`.
+* `haskell-language-server`: For now it only supports the log related settings: `Log File` and `Trace:server`. The goal is to support the same settings as `haskell-ide-engine`.
 
 ### Enable/disable HIE
 
