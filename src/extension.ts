@@ -159,7 +159,7 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // be absolute.
   const serverPath = hieLaunchScript;
 
-  const runArgs: string[] = ['--lsp'];
+  let runArgs: string[] = ['--lsp'];
   let debugArgs: string[] = ['--lsp'];
 
   // ghcide does not accept -d and -l params
@@ -170,6 +170,14 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
     if (logFile !== '') {
       debugArgs = debugArgs.concat(['-l', logFile]);
+    }
+  }
+  if (hieVariant === 'ghcide' || hieVariant === 'haskell-language-server') {
+    const shakeThreads: number | null = workspace.getConfiguration('languageServerHaskell', uri).shakeThreads;
+    if (shakeThreads !== null) {
+      const threadsArg = ['-j', shakeThreads.toString()];
+      runArgs = runArgs.concat(threadsArg);
+      debugArgs = debugArgs.concat(threadsArg);
     }
   }
 

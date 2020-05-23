@@ -110,6 +110,13 @@
           "default": "off",
           "description": "Traces the communication between VSCode and the languageServerHaskell service."
         },
+        "languageServerHaskell.shakeThreads": {
+          "scope": "machine",
+          "type": ["integer", "null"],
+          "default": null,
+          "description":
+            "The number of Shake threads to use in ghcide or haskell-language-server. Leave empty for single threaded, or 0 for automatic."
+        },
         "languageServerHaskell.logFile": {
           "scope": "resource",
           "type": "string",
