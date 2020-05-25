@@ -155,6 +155,16 @@ HIE is now started for each workspace folder you have in your multi-root workspa
 
 Now you will see the information which you can use to diagnose or report a problem
 
+### Troubleshooting
+
+* Usually the error or unexpected behaviour is already reported in issue tracker of the haskell language server [used by the extension](#hie-variant). Finding the issue in its issue tracker could be useful to help resolve it. Sometimes even it includes a workaround for the issue.
+* Haskell language servers issue trackers:
+  * haskell-ide-engine (the default haskell language server): https://github.com/haskell/haskell-ide-engine/issues
+  * haskell-language-server: https://github.com/haskell/haskell-language-server/issues
+* *Common issues*:
+  * For now, the extension is not able to open a single haskell source file. You need to open a workspace or folder, configured to be built with cabal, stack or other hie-bios compatible program.
+  * Check you don't have other haskell extensions active, they can interfere with each other.
+
 ## Release Notes
 
 See the [Changelog](https://github.com/alanz/vscode-hie-server/blob/master/Changelog.md) for more details.
