@@ -180,7 +180,7 @@ function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: Worksp
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
-  const langName = 'Haskell HIE' + (folder ? ` ( ${folder.name} )` : '');
+  const langName = 'Haskell' + (folder ? ` ( ${folder.name} )` : '');
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
   outputChannel.appendLine('[client] run command = "' + serverPath + ' ' + runArgs.join(' ') + '"');
   outputChannel.appendLine('[client] debug command = "' + serverPath + ' ' + debugArgs.join(' ') + '"');
