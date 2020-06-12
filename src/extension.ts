@@ -58,12 +58,8 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
 
   const uri = document.uri;
   const folder = workspace.getWorkspaceFolder(uri);
-  // Don't handle files outside of a folder.
-  if (!folder) {
-    return;
-  }
-  // If the client already has an LSP server, then don't start a new one.
-  if (clients.has(folder.uri.toString())) {
+  // If the client already has an LSP server for this folder, then don't start a new one.
+  if (folder && clients.has(folder.uri.toString())) {
     return;
   }
 
@@ -98,18 +94,18 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
       const forceStart: string = 'Force Start';
       window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
         if (option === forceStart) {
-          activateHieNoCheck(context, folder, uri);
+          activateHieNoCheck(context, uri, folder);
         }
       });
     } else {
-      activateHieNoCheck(context, folder, uri);
+      activateHieNoCheck(context, uri, folder);
     }
   } catch (e) {
     console.error(e);
   }
 }
 
-function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, uri: Uri) {
+function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
   // Stop right here, if HIE is disabled in the resource/workspace folder.
   const enableHIE = workspace.getConfiguration('languageServerHaskell', uri).enableHIE;
   if (!enableHIE) {
@@ -131,11 +127,14 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   // Substitute path variables with their corresponding locations.
   if (hieExecutablePath !== '') {
     hieExecutablePath = hieExecutablePath
-      .replace('${workspaceFolder}', folder.uri.path)
-      .replace('${workspaceRoot}', folder.uri.path)
       .replace('${HOME}', os.homedir)
       .replace('${home}', os.homedir)
       .replace(/^~/, os.homedir);
+    if (folder) {
+      hieExecutablePath = hieExecutablePath
+        .replace('${workspaceFolder}', folder.uri.path)
+        .replace('${workspaceRoot}', folder.uri.path);
+    }
   }
 
   // Set the executable, based on the settings.
@@ -181,16 +180,17 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
-  const langName = 'Haskell HIE (' + folder.name + ')';
+  const langName = 'Haskell HIE' + (folder ? ` ( ${folder.name} )` : '');
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
   outputChannel.appendLine('[client] run command = "' + serverPath + ' ' + runArgs.join(' ') + '"');
   outputChannel.appendLine('[client] debug command = "' + serverPath + ' ' + debugArgs.join(' ') + '"');
+  const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
     documentSelector: [
-      { scheme: 'file', language: 'haskell', pattern: `${folder.uri.fsPath}/**/*` },
-      { scheme: 'file', language: 'literate haskell', pattern: `${folder.uri.fsPath}/**/*` }
+      { scheme: 'file', language: 'haskell', pattern: pat },
+      { scheme: 'file', language: 'literate haskell', pattern: pat }
     ],
     synchronize: {
       // Synchronize the setting section 'languageServerHaskell' to the server.
@@ -238,13 +238,15 @@ function activateHieNoCheck(context: ExtensionContext, folder: WorkspaceFolder, 
 
   // If the client already has an LSP server, then don't start a new one.
   // We check this again, as there may be multiple parallel requests.
-  if (clients.has(folder.uri.toString())) {
+  if (folder && clients.has(folder.uri.toString())) {
     return;
   }
 
   // Finally start the client and add it to the list of clients.
   langClient.start();
-  clients.set(folder.uri.toString(), langClient);
+  if (folder) {
+    clients.set(folder.uri.toString(), langClient);
+  }
 }
 
 /*
