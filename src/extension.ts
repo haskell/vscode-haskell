@@ -1,6 +1,10 @@
 'use strict';
 import * as child_process from 'child_process';
+import * as fs from 'fs';
+import * as https from 'https';
 import * as os from 'os';
+import * as path from 'path';
+import * as url from 'url';
 import {
   commands,
   ExtensionContext,
@@ -9,32 +13,46 @@ import {
   Uri,
   window,
   workspace,
-  WorkspaceFolder
+  WorkspaceFolder,
 } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
   ServerOptions,
-  TransportKind
+  TransportKind,
 } from 'vscode-languageclient';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { InsertType } from './commands/insertType';
 import { RestartHie } from './commands/restartHie';
 import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
+import { downloadFile, userAgentHeader } from './download';
 
 let docsBrowserRegistered: boolean = false;
 let hieCommandsRegistered: boolean = false;
 const clients: Map<string, LanguageClient> = new Map();
+
+/** GitHub API release */
+interface IRelease {
+  assets: [IAsset];
+  tag_name: string;
+  prerelease: boolean;
+}
+/** GitHub API asset */
+interface IAsset {
+  browser_download_url: string;
+  name: string;
+}
 
 export async function activate(context: ExtensionContext) {
   // Register HIE to check every time a text document gets opened, to
   // support multi-root workspaces.
   workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateHie(context, document));
   workspace.textDocuments.forEach(async (document: TextDocument) => await activateHie(context, document));
+
   // Stop HIE from any workspace folders that are removed.
-  workspace.onDidChangeWorkspaceFolders(event => {
+  workspace.onDidChangeWorkspaceFolders((event) => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
@@ -43,6 +61,164 @@ export async function activate(context: ExtensionContext) {
       }
     }
   });
+}
+
+async function getProjectGhcVersion(context: ExtensionContext, release: IRelease): Promise<string | null> {
+  const callWrapper = (wrapper: string) => {
+    // Need to set the encoding to 'utf8' in order to get back a string
+    const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8' });
+    return !out.error ? out.stdout.trim() : null;
+  };
+
+  const localWrapper = ['haskell-language-server-wrapper', 'haskell-ide-engine-wrapper'].find(executableExists);
+  if (localWrapper) {
+    return callWrapper(localWrapper);
+  }
+
+  // Otherwise search to see if we previously downloaded the wrapper
+
+  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}`;
+  const downloadedWrapper = path.join(context.globalStoragePath, wrapperName);
+
+  if (executableExists(downloadedWrapper)) {
+    return callWrapper(downloadedWrapper);
+  }
+
+  // Otherwise download the wrapper
+
+  const githubOS = getGithubOS();
+  if (githubOS === null) {
+    // Don't have any binaries available for this platform
+    window.showErrorMessage(`Couldn't find any haskell-language-server-wrapper binaries for ${process.platform}`);
+    return null;
+  }
+  const wrapperAsset = release.assets.find((x) => x.name === `haskell-language-server-wrapper-${githubOS}`);
+
+  if (!wrapperAsset) {
+    return null;
+  }
+
+  const wrapperUrl = url.parse(wrapperAsset.browser_download_url);
+  try {
+    await downloadFile('Downloading haskell-language-server-wrapper', wrapperUrl, downloadedWrapper);
+  } catch (e) {
+    if (e instanceof Error) {
+      window.showErrorMessage(e.message);
+    }
+    return null;
+  }
+
+  return callWrapper(downloadedWrapper);
+}
+
+/** Searches the PATH for whatever is set in hieVariant as well as whatever's in hieExecutablePath */
+function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
+  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+  let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
+
+  // Substitute path variables with their corresponding locations.
+  if (hieExecutablePath !== '') {
+    hieExecutablePath = hieExecutablePath
+      .replace('${HOME}', os.homedir)
+      .replace('${home}', os.homedir)
+      .replace(/^~/, os.homedir);
+    if (folder) {
+      hieExecutablePath = hieExecutablePath
+        .replace('${workspaceFolder}', folder.uri.path)
+        .replace('${workspaceRoot}', folder.uri.path);
+    }
+    return hieExecutablePath;
+  }
+
+  // Set the executable, based on the settings.
+  let serverExecutable = 'hie'; // should get set below
+  switch (hieVariant) {
+    case 'haskell-ide-engine':
+      serverExecutable = 'hie-wrapper';
+      break;
+    case 'haskell-language-server':
+      serverExecutable = 'haskell-language-server-wrapper';
+      break;
+    case 'ghcide':
+      serverExecutable = 'ghcide';
+      break;
+  }
+  if (hieExecutablePath !== '') {
+    serverExecutable = hieExecutablePath;
+  }
+
+  if (executableExists(serverExecutable)) {
+    return serverExecutable;
+  }
+
+  return null;
+}
+
+/** The OS label used by GitHub */
+function getGithubOS(): string | null {
+  function platformToGithubOS(x: string): string | null {
+    switch (x) {
+      case 'darwin':
+        return 'macOS';
+      case 'linux':
+        return 'Linux';
+      case 'win32':
+        return 'Windows';
+      default:
+        return null;
+    }
+  }
+
+  return platformToGithubOS(process.platform);
+}
+
+async function downloadServer(context: ExtensionContext, releases: IRelease[]): Promise<string | null> {
+  // fetch the latest release from GitHub
+
+  const githubOS = getGithubOS();
+  if (githubOS === null) {
+    // Don't have any binaries available for this platform
+    window.showErrorMessage(`Couldn't find any haskell-language-server binaries for ${process.platform}`);
+    return null;
+  }
+
+  // const release = releases.find(x => !x.prerelease);
+  const release = releases[0];
+
+  const ghcVersion = await getProjectGhcVersion(context, release);
+  if (!ghcVersion) {
+    window.showErrorMessage("Couldn't figure out what GHC version the project is using");
+    // We couldn't figure out the right ghc version to download
+    return null;
+  }
+
+  const asset = release?.assets.find((x) => x.name.includes(githubOS) && x.name.includes(ghcVersion));
+  if (!release || !asset) {
+    return null;
+  }
+  const binaryURL = url.parse(asset.browser_download_url);
+
+  if (!fs.existsSync(context.globalStoragePath)) {
+    fs.mkdirSync(context.globalStoragePath);
+  }
+
+  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}`;
+  const binaryDest = path.join(context.globalStoragePath, serverName);
+
+  if (fs.existsSync(binaryDest)) {
+    return binaryDest;
+  }
+
+  const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
+  try {
+    await downloadFile(title, binaryURL, binaryDest);
+    return binaryDest;
+  } catch (e) {
+    if (e instanceof Error) {
+      window.showErrorMessage(e.message);
+    }
+    return null;
+  }
 }
 
 async function activateHie(context: ExtensionContext, document: TextDocument) {
@@ -58,54 +234,56 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
 
   const uri = document.uri;
   const folder = workspace.getWorkspaceFolder(uri);
+
   // If the client already has an LSP server for this folder, then don't start a new one.
   if (folder && clients.has(folder.uri.toString())) {
     return;
   }
 
-  try {
-    const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
-    const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
-    // Check if hie is installed.
-    let exeName = 'hie';
-    switch (hieVariant) {
-      case 'haskell-ide-engine':
-        break;
-      case 'haskell-language-server':
-      case 'ghcide':
-        exeName = hieVariant;
-        break;
-    }
-    if (!await isHieInstalled(exeName) && hieExecutablePath === '') {
-      // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
-      let hieProjectUrl = '/haskell/haskell-ide-engine';
-      switch (hieVariant) {
-        case 'haskell-ide-engine':
-          break;
-        case 'haskell-language-server':
-          hieProjectUrl = '/haskell/haskell-language-server';
-          break;
-        case 'ghcide':
-          hieProjectUrl = '/digital-asset/ghcide';
-          break;
-      }
-      const notInstalledMsg: string =
-        exeName + ' executable missing, please make sure it is installed, see https://github.com' + hieProjectUrl + '.';
-      const forceStart: string = 'Force Start';
-      window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
-        if (option === forceStart) {
-          activateHieNoCheck(context, uri, folder);
-        }
-      });
-    } else {
-      activateHieNoCheck(context, uri, folder);
-    }
-  } catch (e) {
-    console.error(e);
-  }
+  // try {
+  //   const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+  //   const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
+  //   // Check if hie is installed.
+  //   let exeName = 'hie';
+  //   switch (hieVariant) {
+  //     case 'haskell-ide-engine':
+  //       break;
+  //     case 'haskell-language-server':
+  //     case 'ghcide':
+  //       exeName = hieVariant;
+  //       break;
+  //   }
+  //   if (!await isHieInstalled(exeName) && hieExecutablePath === '') {
+  //     // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
+  //     let hieProjectUrl = '/haskell/haskell-ide-engine';
+  //     switch (hieVariant) {
+  //       case 'haskell-ide-engine':
+  //         break;
+  //       case 'haskell-language-server':
+  //         hieProjectUrl = '/haskell/haskell-language-server';
+  //         break;
+  //       case 'ghcide':
+  //         hieProjectUrl = '/digital-asset/ghcide';
+  //         break;
+  //     }
+  //     const notInstalledMsg: string =
+  //       exeName + ' executable missing, please make sure it is installed, see https://github.com' + hieProjectUrl + '.';
+  //     const forceStart: string = 'Force Start';
+  //     window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
+  //       if (option === forceStart) {
+  //         activateHieNoCheck(context, uri, folder);
+  //       }
+  //     });
+  //   } else {
+  //     activateHieNoCheck(context, uri, folder);
+  //   }
+  // } catch (e) {
+  //   console.error(e);
+  // }
+  activateHieNoCheck(context, uri, folder);
 }
 
-function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
+async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
   // Stop right here, if HIE is disabled in the resource/workspace folder.
   const enableHIE = workspace.getConfiguration('languageServerHaskell', uri).enableHIE;
   if (!enableHIE) {
@@ -119,48 +297,34 @@ function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: Worksp
     docsBrowserRegistered = true;
   }
 
-  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
-  let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
   const logFile = workspace.getConfiguration('languageServerHaskell', uri).logFile;
 
-  // Substitute path variables with their corresponding locations.
-  if (hieExecutablePath !== '') {
-    hieExecutablePath = hieExecutablePath
-      .replace('${HOME}', os.homedir)
-      .replace('${home}', os.homedir)
-      .replace(/^~/, os.homedir);
-    if (folder) {
-      hieExecutablePath = hieExecutablePath
-        .replace('${workspaceFolder}', folder.uri.path)
-        .replace('${workspaceRoot}', folder.uri.path);
-    }
-  }
+  const releases: IRelease[] = await new Promise((resolve, reject) => {
+    let data: string = '';
+    const opts: https.RequestOptions = {
+      host: 'api.github.com',
+      path: '/repos/bubba/haskell-language-server/releases',
+      headers: userAgentHeader,
+    };
+    https.get(opts, (res) => {
+      res.on('data', (d) => (data += d));
+      res.on('error', reject);
+      res.on('close', () => {
+        resolve(JSON.parse(data));
+      });
+    });
+  });
 
-  // Set the executable, based on the settings.
-  let hieLaunchScript = 'hie'; // should get set below
-  switch (hieVariant) {
-    case 'haskell-ide-engine':
-      hieLaunchScript = 'hie-wrapper';
-      break;
-    case 'haskell-language-server':
-      hieLaunchScript = 'haskell-language-server-wrapper';
-      break;
-    case 'ghcide':
-      hieLaunchScript = 'ghcide';
-      break;
+  const serverExecutable = findLocalServer(context, uri, folder) ?? (await downloadServer(context, releases));
+  if (serverExecutable === null) {
+    return;
   }
-  if (hieExecutablePath !== '') {
-    hieLaunchScript = hieExecutablePath;
-  }
-
-  // If using a custom wrapper or specificed an executable path, the path is assumed to already
-  // be absolute.
-  const serverPath = hieLaunchScript;
 
   const runArgs: string[] = ['--lsp'];
   let debugArgs: string[] = ['--lsp'];
 
+  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
   // ghcide does not accept -d and -l params
   if (hieVariant !== 'ghcide') {
     if (logLevel === 'messages') {
@@ -175,38 +339,38 @@ function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: Worksp
   // If the extension is launched in debug mode then the debug server options are used,
   // otherwise the run options are used.
   const serverOptions: ServerOptions = {
-    run: { command: serverPath, transport: TransportKind.stdio, args: runArgs },
-    debug: { command: serverPath, transport: TransportKind.stdio, args: debugArgs }
+    run: { command: serverExecutable, transport: TransportKind.stdio, args: runArgs },
+    debug: { command: serverExecutable, transport: TransportKind.stdio, args: debugArgs },
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
-  const langName = 'Haskell' + (folder ? ` ( ${folder.name} )` : '');
+  const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
-  outputChannel.appendLine('[client] run command = "' + serverPath + ' ' + runArgs.join(' ') + '"');
-  outputChannel.appendLine('[client] debug command = "' + serverPath + ' ' + debugArgs.join(' ') + '"');
+  outputChannel.appendLine('[client] run command = "' + serverExecutable + ' ' + runArgs.join(' ') + '"');
+  outputChannel.appendLine('[client] debug command = "' + serverExecutable + ' ' + debugArgs.join(' ') + '"');
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
     documentSelector: [
       { scheme: 'file', language: 'haskell', pattern: pat },
-      { scheme: 'file', language: 'literate haskell', pattern: pat }
+      { scheme: 'file', language: 'literate haskell', pattern: pat },
     ],
     synchronize: {
       // Synchronize the setting section 'languageServerHaskell' to the server.
       configurationSection: 'languageServerHaskell',
       // Notify the server about file changes to '.clientrc files contain in the workspace.
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+      fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
     },
     diagnosticCollectionName: langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
     outputChannel,
     outputChannelName: langName,
     middleware: {
-      provideHover: DocsBrowser.hoverLinksMiddlewareHook
+      provideHover: DocsBrowser.hoverLinksMiddlewareHook,
     },
     // Set the current working directory, for HIE, to be the workspace folder.
-    workspaceFolder: folder
+    workspaceFolder: folder,
   };
 
   // Create the LSP client.
@@ -224,7 +388,7 @@ function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: Worksp
     context.subscriptions.push(RestartHie.registerCommand(clients));
     const showTypeCmd = ShowTypeCommand.registerCommand(clients);
     if (showTypeCmd !== null) {
-      showTypeCmd.forEach(x => context.subscriptions.push(x));
+      showTypeCmd.forEach((x) => context.subscriptions.push(x));
     }
     context.subscriptions.push(ImportIdentifier.registerCommand());
     registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
@@ -261,13 +425,12 @@ export function deactivate(): Thenable<void> {
 }
 
 /*
- * Check if HIE is installed.
+ * Checks if the executable is on the PATH
  */
-async function isHieInstalled(exeName: string): Promise<boolean> {
-  return new Promise<boolean>((resolve, reject) => {
-    const cmd: string = process.platform === 'win32' ? 'where ' + exeName : 'which ' + exeName;
-    child_process.exec(cmd, (error, stdout, stderr) => resolve(!error));
-  });
+function executableExists(exe: string): boolean {
+  const cmd: string = process.platform === 'win32' ? 'where' : 'which';
+  const out = child_process.spawnSync(cmd, [exe]);
+  return out.status === 0;
 }
 
 /*
@@ -280,9 +443,9 @@ async function registerHiePointCommand(name: string, command: string, context: E
       arguments: [
         {
           file: editor.document.uri.toString(),
-          pos: editor.selections[0].active
-        }
-      ]
+          pos: editor.selections[0].active,
+        },
+      ],
     };
     // Get the current file and workspace folder.
     const uri = editor.document.uri;
@@ -292,10 +455,10 @@ async function registerHiePointCommand(name: string, command: string, context: E
       const client = clients.get(folder.uri.toString());
       if (client !== undefined) {
         client.sendRequest('workspace/executeCommand', cmd).then(
-          hints => {
+          (hints) => {
             return true;
           },
-          e => {
+          (e) => {
             console.error(e);
           }
         );
