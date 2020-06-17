@@ -1,5 +1,6 @@
 'use strict';
 
+import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
@@ -81,4 +82,13 @@ function getWithRedirects(opts: https.RequestOptions, f: (res: http.IncomingMess
       f(res);
     }
   });
+}
+
+/*
+ * Checks if the executable is on the PATH
+ */
+export function executableExists(exe: string): boolean {
+  const cmd: string = process.platform === 'win32' ? 'where' : 'which';
+  const out = child_process.spawnSync(cmd, [exe]);
+  return out.status === 0;
 }

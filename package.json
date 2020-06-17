@@ -76,7 +76,7 @@
           "scope": "resource",
           "type": "number",
           "default": 100,
-          "description": "Controls the maximum number of problems produced by the server."
+          "description": "Controls the maximum number of problems produced by the server"
         },
         "languageServerHaskell.diagnosticsOnChange": {
           "scope": "resource",
@@ -114,23 +114,7 @@
             "none"
           ],
           "default": "brittany",
-          "description": "The tool to use for formatting requests."
-        },
-        "languageServerHaskell.showTypeForSelection.onHover": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
-        },
-        "languageServerHaskell.showTypeForSelection.command.location": {
-          "scope": "resource",
-          "type": "string",
-          "enum": [
-            "dropdown",
-            "channel"
-          ],
-          "default": "dropdown",
-          "description": "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
+          "description": "The tool to use for formatting requests"
         },
         "languageServerHaskell.trace.server": {
           "scope": "resource",
@@ -140,7 +124,7 @@
             "messages"
           ],
           "default": "off",
-          "description": "Traces the communication between VSCode and the languageServerHaskell service."
+          "description": "Traces the communication between VS Code and the language server."
         },
         "languageServerHaskell.logFile": {
           "scope": "resource",
@@ -157,63 +141,23 @@
             "ghcide"
           ],
           "default": "haskell-ide-engine",
-          "description": "Which haskell language server to use."
+          "description": "Which language server to use."
         },
         "languageServerHaskell.hieExecutablePath": {
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
+          "description": "Set the path to your language server executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "languageServerHaskell.enableHIE": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable HIE (useful for multi-root workspaces)."
+          "description": "Enable/disable the language server (useful for multi-root workspaces)."
         }
       }
     },
     "commands": [
-      {
-        "command": "hie.commands.demoteDef",
-        "title": "Haskell: Demote Definition",
-        "description": "Move a definition one level down"
-      },
-      {
-        "command": "hie.commands.liftOneLevel",
-        "title": "Haskell: Lift One Level",
-        "description": "Move definition one level up from where it is now"
-      },
-      {
-        "command": "hie.commands.liftTopLevel",
-        "title": "Haskell: Lift to Top Level",
-        "description": "Move a definition to the top level"
-      },
-      {
-        "command": "hie.commands.genApplicative",
-        "title": "Haskell: Generalize Applicative",
-        "description": "Generalize a monadic function to use applicative"
-      },
-      {
-        "command": "hie.commands.deleteDef",
-        "title": "Haskell: Delete Definition",
-        "description": "Deletes a definition"
-      },
-      {
-        "command": "hie.commands.insertType",
-        "title": "Haskell: Insert type",
-        "description": "Insert type for the expression"
-      },
-      {
-        "command": "hie.commands.showType",
-        "title": "Haskell: Show type",
-        "description": "Show type for the expression"
-      },
-      {
-        "command": "hie.commands.caseSplit",
-        "title": "Haskell: Split case",
-        "description": "Generate pattern matches for the identifier under the cursor"
-      },
       {
         "command": "hie.commands.importIdentifier",
         "title": "Haskell: Import identifier",
@@ -224,30 +168,7 @@
         "title": "Haskell: Restart Haskell LSP server",
         "description": "Restart the Haskell LSP server"
       }
-    ],
-    "keybindings": [
-      {
-        "command": "hie.commands.showType",
-        "key": "ctrl+alt+t",
-        "mac": "cmd+alt+t",
-        "when": "editorTextFocus"
-      }
-    ],
-    "menus": {
-      "editor/title": [
-        {
-          "when": "resourceLangId == haskell",
-          "command": "hie.commands.demoteDef"
-        }
-      ],
-      "editor/context": [
-        {
-          "when": "resourceLangId == haskell",
-          "command": "hie.commands.demoteDef",
-          "group": "HaRe@1"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "webpack --mode production",

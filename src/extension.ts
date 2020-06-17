@@ -1,21 +1,9 @@
 'use strict';
-import * as child_process from 'child_process';
-import * as fs from 'fs';
-import * as https from 'https';
 import * as os from 'os';
 import * as path from 'path';
-import * as url from 'url';
+import { ExtensionContext, OutputChannel, TextDocument, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import {
-  commands,
-  ExtensionContext,
-  OutputChannel,
-  TextDocument,
-  Uri,
-  window,
-  workspace,
-  WorkspaceFolder,
-} from 'vscode';
-import {
+  ExecutableOptions,
   LanguageClient,
   LanguageClientOptions,
   RevealOutputChannelOn,
@@ -23,28 +11,14 @@ import {
   TransportKind,
 } from 'vscode-languageclient';
 import { ImportIdentifier } from './commands/importIdentifier';
-import { InsertType } from './commands/insertType';
 import { RestartHie } from './commands/restartHie';
-import { ShowTypeCommand, ShowTypeHover } from './commands/showType';
 import { DocsBrowser } from './docsBrowser';
-import { downloadFile, userAgentHeader } from './download';
+import { downloadServer } from './hlsBinaries';
+import { executableExists } from './utils';
 
-let docsBrowserRegistered: boolean = false;
-let hieCommandsRegistered: boolean = false;
 const clients: Map<string, LanguageClient> = new Map();
 
-/** GitHub API release */
-interface IRelease {
-  assets: [IAsset];
-  tag_name: string;
-  prerelease: boolean;
-}
-/** GitHub API asset */
-interface IAsset {
-  browser_download_url: string;
-  name: string;
-}
-
+// This is the entrypoint to our extension
 export async function activate(context: ExtensionContext) {
   // Register HIE to check every time a text document gets opened, to
   // support multi-root workspaces.
@@ -62,56 +36,14 @@ export async function activate(context: ExtensionContext) {
       }
     }
   });
-}
 
-async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string | null> {
-  const callWrapper = (wrapper: string) => {
-    // Need to set the encoding to 'utf8' in order to get back a string
-    const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8', cwd: dir });
-    return !out.error ? out.stdout.trim() : null;
-  };
+  // Register editor commands for HIE, but only register the commands once at activation.
+  context.subscriptions.push(RestartHie.registerCommand(clients));
+  context.subscriptions.push(ImportIdentifier.registerCommand());
 
-  const localWrapper = ['haskell-language-server-wrapper', 'haskell-ide-engine-wrapper'].find(executableExists);
-  if (localWrapper) {
-    return callWrapper(localWrapper);
-  }
-
-  // Otherwise search to see if we previously downloaded the wrapper
-
-  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}`;
-  const downloadedWrapper = path.join(context.globalStoragePath, wrapperName);
-
-  if (executableExists(downloadedWrapper)) {
-    return callWrapper(downloadedWrapper);
-  }
-
-  // Otherwise download the wrapper
-
-  const githubOS = getGithubOS();
-  if (githubOS === null) {
-    // Don't have any binaries available for this platform
-    window.showErrorMessage(`Couldn't find any haskell-language-server-wrapper binaries for ${process.platform}`);
-    return null;
-  }
-
-  const assetName = `haskell-language-server-wrapper-${githubOS}.gz`;
-  const wrapperAsset = release.assets.find((x) => x.name === assetName);
-
-  if (!wrapperAsset) {
-    return null;
-  }
-
-  const wrapperUrl = url.parse(wrapperAsset.browser_download_url);
-  try {
-    await downloadFile('Downloading haskell-language-server-wrapper', wrapperUrl, downloadedWrapper);
-  } catch (e) {
-    if (e instanceof Error) {
-      window.showErrorMessage(e.message);
-    }
-    return null;
-  }
-
-  return callWrapper(downloadedWrapper);
+  // Set up the documentation browser.
+  const docsDisposable = DocsBrowser.registerDocsBrowser();
+  context.subscriptions.push(docsDisposable);
 }
 
 function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {
@@ -155,106 +87,13 @@ function findLocalServer(context: ExtensionContext, uri: Uri, folder?: Workspace
       break;
   }
 
-  for (const exe in exes) {
+  for (const exe of exes) {
     if (executableExists(exe)) {
       return exe;
     }
   }
 
   return null;
-}
-
-/** The OS label used by GitHub */
-function getGithubOS(): string | null {
-  function platformToGithubOS(x: string): string | null {
-    switch (x) {
-      case 'darwin':
-        return 'macOS';
-      case 'linux':
-        return 'Linux';
-      case 'win32':
-        return 'Windows';
-      default:
-        return null;
-    }
-  }
-
-  return platformToGithubOS(process.platform);
-}
-
-async function downloadServer(
-  context: ExtensionContext,
-  resource: Uri,
-  folder?: WorkspaceFolder
-): Promise<string | null> {
-  // We only download binaries for haskell-language-server at the moment
-  if (workspace.getConfiguration('languageServerHaskell', resource).hieVariant !== 'haskell-language-server') {
-    return null;
-  }
-
-  // fetch the latest release from GitHub
-  const releases: IRelease[] = await new Promise((resolve, reject) => {
-    let data: string = '';
-    const opts: https.RequestOptions = {
-      host: 'api.github.com',
-      path: '/repos/bubba/haskell-language-server/releases',
-      headers: userAgentHeader,
-    };
-    https.get(opts, (res) => {
-      res.on('data', (d) => (data += d));
-      res.on('error', reject);
-      res.on('close', () => {
-        resolve(JSON.parse(data));
-      });
-    });
-  });
-
-  const githubOS = getGithubOS();
-  if (githubOS === null) {
-    // Don't have any binaries available for this platform
-    window.showErrorMessage(`Couldn't find any haskell-language-server binaries for ${process.platform}`);
-    return null;
-  }
-
-  // const release = releases.find(x => !x.prerelease);
-  const release = releases[0];
-  const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
-
-  const ghcVersion = await getProjectGhcVersion(context, dir, release);
-  if (!ghcVersion) {
-    window.showErrorMessage("Couldn't figure out what GHC version the project is using");
-    // We couldn't figure out the right ghc version to download
-    return null;
-  }
-
-  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}.gz`;
-  const asset = release?.assets.find((x) => x.name === assetName);
-  if (!release || !asset) {
-    return null;
-  }
-  const binaryURL = url.parse(asset.browser_download_url);
-
-  if (!fs.existsSync(context.globalStoragePath)) {
-    fs.mkdirSync(context.globalStoragePath);
-  }
-
-  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}`;
-  const binaryDest = path.join(context.globalStoragePath, serverName);
-
-  if (fs.existsSync(binaryDest)) {
-    return binaryDest;
-  }
-
-  const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
-  try {
-    await downloadFile(title, binaryURL, binaryDest);
-    return binaryDest;
-  } catch (e) {
-    if (e instanceof Error) {
-      window.showErrorMessage(e.message);
-    }
-    return null;
-  }
 }
 
 async function activateHie(context: ExtensionContext, document: TextDocument) {
@@ -283,13 +122,6 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
   const enableHIE = workspace.getConfiguration('languageServerHaskell', uri).enableHIE;
   if (!enableHIE) {
     return;
-  }
-
-  // Set up the documentation browser.
-  if (!docsBrowserRegistered) {
-    const docsDisposable = DocsBrowser.registerDocsBrowser();
-    context.subscriptions.push(docsDisposable);
-    docsBrowserRegistered = true;
   }
 
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
@@ -327,18 +159,28 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
     }
   }
 
-  // If the extension is launched in debug mode then the debug server options are used,
-  // otherwise the run options are used.
+  // If we're operating on a standalone file (i.e. not in a folder) then we need
+  // to launch the server in a reasonable current directory. Otherwise the cradle
+  // guessing logic in hie-bios will be wrong!
+  const exeOptions: ExecutableOptions = {
+    cwd: folder ? undefined : path.dirname(uri.fsPath),
+  };
+
+  // If the VS Code extension is launched in debug mode then the debug server
+  // options are used, otherwise the run options are used.
   const serverOptions: ServerOptions = {
-    run: { command: serverExecutable, transport: TransportKind.stdio, args: runArgs },
-    debug: { command: serverExecutable, transport: TransportKind.stdio, args: debugArgs },
+    run: { command: serverExecutable, transport: TransportKind.stdio, args: runArgs, options: exeOptions },
+    debug: { command: serverExecutable, transport: TransportKind.stdio, args: debugArgs, options: exeOptions },
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
   const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
-  outputChannel.appendLine('[client] run command = "' + serverExecutable + ' ' + runArgs.join(' ') + '"');
-  outputChannel.appendLine('[client] debug command = "' + serverExecutable + ' ' + debugArgs.join(' ') + '"');
+  outputChannel.appendLine('[client] run command: "' + serverExecutable + ' ' + runArgs.join(' ') + '"');
+  outputChannel.appendLine('[client] debug command: "' + serverExecutable + ' ' + debugArgs.join(' ') + '"');
+
+  outputChannel.appendLine(`[client] server cwd: ${exeOptions.cwd}`);
+
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
@@ -350,8 +192,6 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
     synchronize: {
       // Synchronize the setting section 'languageServerHaskell' to the server.
       configurationSection: 'languageServerHaskell',
-      // Notify the server about file changes to '.clientrc files contain in the workspace.
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
     },
     diagnosticCollectionName: langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
@@ -360,7 +200,7 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
     },
-    // Set the current working directory, for HIE, to be the workspace folder.
+    // Launch the server in the directory of the workspace folder.
     workspaceFolder: folder,
   };
 
@@ -369,27 +209,6 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
 
   // Register ClientCapabilities for stuff like window/progress
   langClient.registerProposedFeatures();
-
-  if (workspace.getConfiguration('languageServerHaskell', uri).showTypeForSelection.onHover) {
-    context.subscriptions.push(ShowTypeHover.registerTypeHover(clients));
-  }
-  // Register editor commands for HIE, but only register the commands once.
-  if (!hieCommandsRegistered) {
-    context.subscriptions.push(InsertType.registerCommand(clients));
-    context.subscriptions.push(RestartHie.registerCommand(clients));
-    const showTypeCmd = ShowTypeCommand.registerCommand(clients);
-    if (showTypeCmd !== null) {
-      showTypeCmd.forEach((x) => context.subscriptions.push(x));
-    }
-    context.subscriptions.push(ImportIdentifier.registerCommand());
-    registerHiePointCommand('hie.commands.demoteDef', 'hare:demote', context);
-    registerHiePointCommand('hie.commands.liftOneLevel', 'hare:liftonelevel', context);
-    registerHiePointCommand('hie.commands.liftTopLevel', 'hare:lifttotoplevel', context);
-    registerHiePointCommand('hie.commands.deleteDef', 'hare:deletedef', context);
-    registerHiePointCommand('hie.commands.genApplicative', 'hare:genapplicative', context);
-    registerHiePointCommand('hie.commands.caseSplit', 'hare:casesplit', context);
-    hieCommandsRegistered = true;
-  }
 
   // If the client already has an LSP server, then don't start a new one.
   // We check this again, as there may be multiple parallel requests.
@@ -413,50 +232,6 @@ export function deactivate(): Thenable<void> {
     promises.push(client.stop());
   }
   return Promise.all(promises).then(() => undefined);
-}
-
-/*
- * Checks if the executable is on the PATH
- */
-function executableExists(exe: string): boolean {
-  const cmd: string = process.platform === 'win32' ? 'where' : 'which';
-  const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0;
-}
-
-/*
- * Create an editor command that calls an action on the active LSP server.
- */
-async function registerHiePointCommand(name: string, command: string, context: ExtensionContext) {
-  const editorCmd = commands.registerTextEditorCommand(name, (editor, edit) => {
-    const cmd = {
-      command,
-      arguments: [
-        {
-          file: editor.document.uri.toString(),
-          pos: editor.selections[0].active,
-        },
-      ],
-    };
-    // Get the current file and workspace folder.
-    const uri = editor.document.uri;
-    const folder = workspace.getWorkspaceFolder(uri);
-    // If there is a client registered for this workspace, use that client.
-    if (folder !== undefined && clients.has(folder.uri.toString())) {
-      const client = clients.get(folder.uri.toString());
-      if (client !== undefined) {
-        client.sendRequest('workspace/executeCommand', cmd).then(
-          (hints) => {
-            return true;
-          },
-          (e) => {
-            console.error(e);
-          }
-        );
-      }
-    }
-  });
-  context.subscriptions.push(editorCmd);
 }
 
 function showNotInstalledErrorMessage(uri: Uri) {
