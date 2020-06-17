@@ -3,8 +3,10 @@
 import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
+import { extname } from 'path';
 import * as url from 'url';
 import { ProgressLocation, window } from 'vscode';
+import { createGunzip } from 'zlib';
 
 /** When making http requests to github.com, use this header otherwise
  * the server will close the request
@@ -31,8 +33,16 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
         };
         getWithRedirects(opts, (res) => {
           const totalSize = parseInt(res.headers['content-length'] || '1', 10);
-          const stream = fs.createWriteStream(dest, { mode: 0o744 });
+          const fileStream = fs.createWriteStream(dest, { mode: 0o744 });
           let curSize = 0;
+
+          // Decompress it if it's a gzip
+          const needsUnzip = res.headers['content-type'] === 'application/gzip' || extname(srcUrl.path ?? '') === '.gz';
+          if (needsUnzip) {
+            res.pipe(createGunzip()).pipe(fileStream);
+          } else {
+            res.pipe(fileStream);
+          }
 
           function toMB(bytes: number) {
             return bytes / (1024 * 1024);
@@ -44,9 +54,7 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
             progress.report({ message: msg, increment: (chunk.length / totalSize) * 100 });
           });
           res.on('error', reject);
-          res.pipe(stream);
-          stream.on('close', resolve);
-          // stream.on('end', () => resolve(binaryDest));
+          fileStream.on('close', resolve);
         }).on('error', reject);
       });
       return p;

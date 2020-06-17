@@ -1,7 +1,7 @@
 {
   "name": "vscode-hie-server",
   "displayName": "Haskell Language Server",
-  "description": "Language Server Protocol for Haskell via HIE",
+  "description": "Haskell language support powered by HLS, ghcide or HIE",
   "version": "0.0.40",
   "license": "MIT",
   "publisher": "alanz",
@@ -221,8 +221,8 @@
       },
       {
         "command": "hie.commands.restartHie",
-        "title": "Haskell: Restart HIE",
-        "description": "Restart the Hie LSP server"
+        "title": "Haskell: Restart Haskell LSP server",
+        "description": "Restart the Haskell LSP server"
       }
     ],
     "keybindings": [
@@ -266,7 +266,7 @@
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^4.1.2",
     "@types/mocha": "^2.2.46",
-    "@types/node": "^8.10.59",
+    "@types/node": "^14.0.3",
     "@types/request-promise-native": "^1.0.17",
     "husky": "^0.14.3",
     "prettier": "^2.0.5",

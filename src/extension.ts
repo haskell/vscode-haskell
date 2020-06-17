@@ -48,6 +48,7 @@ interface IAsset {
 export async function activate(context: ExtensionContext) {
   // Register HIE to check every time a text document gets opened, to
   // support multi-root workspaces.
+
   workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateHie(context, document));
   workspace.textDocuments.forEach(async (document: TextDocument) => await activateHie(context, document));
 
@@ -63,10 +64,10 @@ export async function activate(context: ExtensionContext) {
   });
 }
 
-async function getProjectGhcVersion(context: ExtensionContext, release: IRelease): Promise<string | null> {
+async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string | null> {
   const callWrapper = (wrapper: string) => {
     // Need to set the encoding to 'utf8' in order to get back a string
-    const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8' });
+    const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8', cwd: dir });
     return !out.error ? out.stdout.trim() : null;
   };
 
@@ -92,7 +93,9 @@ async function getProjectGhcVersion(context: ExtensionContext, release: IRelease
     window.showErrorMessage(`Couldn't find any haskell-language-server-wrapper binaries for ${process.platform}`);
     return null;
   }
-  const wrapperAsset = release.assets.find((x) => x.name === `haskell-language-server-wrapper-${githubOS}`);
+
+  const assetName = `haskell-language-server-wrapper-${githubOS}.gz`;
+  const wrapperAsset = release.assets.find((x) => x.name === assetName);
 
   if (!wrapperAsset) {
     return null;
@@ -111,44 +114,51 @@ async function getProjectGhcVersion(context: ExtensionContext, release: IRelease
   return callWrapper(downloadedWrapper);
 }
 
-/** Searches the PATH for whatever is set in hieVariant as well as whatever's in hieExecutablePath */
-function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
-  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {
   let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
+  if (hieExecutablePath === '') {
+    return null;
+  }
 
   // Substitute path variables with their corresponding locations.
-  if (hieExecutablePath !== '') {
+  hieExecutablePath = hieExecutablePath
+    .replace('${HOME}', os.homedir)
+    .replace('${home}', os.homedir)
+    .replace(/^~/, os.homedir);
+  if (folder) {
     hieExecutablePath = hieExecutablePath
-      .replace('${HOME}', os.homedir)
-      .replace('${home}', os.homedir)
-      .replace(/^~/, os.homedir);
-    if (folder) {
-      hieExecutablePath = hieExecutablePath
-        .replace('${workspaceFolder}', folder.uri.path)
-        .replace('${workspaceRoot}', folder.uri.path);
-    }
-    return hieExecutablePath;
+      .replace('${workspaceFolder}', folder.uri.path)
+      .replace('${workspaceRoot}', folder.uri.path);
   }
+
+  if (!executableExists(hieExecutablePath)) {
+    throw new Error('Manual executable missing');
+  }
+  return hieExecutablePath;
+}
+
+/** Searches the PATH for whatever is set in hieVariant */
+function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
+  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
 
   // Set the executable, based on the settings.
-  let serverExecutable = 'hie'; // should get set below
+  let exes: string[] = []; // should get set below
   switch (hieVariant) {
     case 'haskell-ide-engine':
-      serverExecutable = 'hie-wrapper';
+      exes = ['hie-wrapper', 'hie'];
       break;
     case 'haskell-language-server':
-      serverExecutable = 'haskell-language-server-wrapper';
+      exes = ['haskell-language-server-wrapper', 'haskell-language-server'];
       break;
     case 'ghcide':
-      serverExecutable = 'ghcide';
+      exes = ['ghcide'];
       break;
   }
-  if (hieExecutablePath !== '') {
-    serverExecutable = hieExecutablePath;
-  }
 
-  if (executableExists(serverExecutable)) {
-    return serverExecutable;
+  for (const exe in exes) {
+    if (executableExists(exe)) {
+      return exe;
+    }
   }
 
   return null;
@@ -172,8 +182,32 @@ function getGithubOS(): string | null {
   return platformToGithubOS(process.platform);
 }
 
-async function downloadServer(context: ExtensionContext, releases: IRelease[]): Promise<string | null> {
+async function downloadServer(
+  context: ExtensionContext,
+  resource: Uri,
+  folder?: WorkspaceFolder
+): Promise<string | null> {
+  // We only download binaries for haskell-language-server at the moment
+  if (workspace.getConfiguration('languageServerHaskell', resource).hieVariant !== 'haskell-language-server') {
+    return null;
+  }
+
   // fetch the latest release from GitHub
+  const releases: IRelease[] = await new Promise((resolve, reject) => {
+    let data: string = '';
+    const opts: https.RequestOptions = {
+      host: 'api.github.com',
+      path: '/repos/bubba/haskell-language-server/releases',
+      headers: userAgentHeader,
+    };
+    https.get(opts, (res) => {
+      res.on('data', (d) => (data += d));
+      res.on('error', reject);
+      res.on('close', () => {
+        resolve(JSON.parse(data));
+      });
+    });
+  });
 
   const githubOS = getGithubOS();
   if (githubOS === null) {
@@ -184,15 +218,17 @@ async function downloadServer(context: ExtensionContext, releases: IRelease[]): 
 
   // const release = releases.find(x => !x.prerelease);
   const release = releases[0];
+  const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
 
-  const ghcVersion = await getProjectGhcVersion(context, release);
+  const ghcVersion = await getProjectGhcVersion(context, dir, release);
   if (!ghcVersion) {
     window.showErrorMessage("Couldn't figure out what GHC version the project is using");
     // We couldn't figure out the right ghc version to download
     return null;
   }
 
-  const asset = release?.assets.find((x) => x.name.includes(githubOS) && x.name.includes(ghcVersion));
+  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}.gz`;
+  const asset = release?.assets.find((x) => x.name === assetName);
   if (!release || !asset) {
     return null;
   }
@@ -239,47 +275,6 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
   if (folder && clients.has(folder.uri.toString())) {
     return;
   }
-
-  // try {
-  //   const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
-  //   const hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
-  //   // Check if hie is installed.
-  //   let exeName = 'hie';
-  //   switch (hieVariant) {
-  //     case 'haskell-ide-engine':
-  //       break;
-  //     case 'haskell-language-server':
-  //     case 'ghcide':
-  //       exeName = hieVariant;
-  //       break;
-  //   }
-  //   if (!await isHieInstalled(exeName) && hieExecutablePath === '') {
-  //     // TODO: Once haskell-ide-engine is on hackage/stackage, enable an option to install it via cabal/stack.
-  //     let hieProjectUrl = '/haskell/haskell-ide-engine';
-  //     switch (hieVariant) {
-  //       case 'haskell-ide-engine':
-  //         break;
-  //       case 'haskell-language-server':
-  //         hieProjectUrl = '/haskell/haskell-language-server';
-  //         break;
-  //       case 'ghcide':
-  //         hieProjectUrl = '/digital-asset/ghcide';
-  //         break;
-  //     }
-  //     const notInstalledMsg: string =
-  //       exeName + ' executable missing, please make sure it is installed, see https://github.com' + hieProjectUrl + '.';
-  //     const forceStart: string = 'Force Start';
-  //     window.showErrorMessage(notInstalledMsg, forceStart).then(option => {
-  //       if (option === forceStart) {
-  //         activateHieNoCheck(context, uri, folder);
-  //       }
-  //     });
-  //   } else {
-  //     activateHieNoCheck(context, uri, folder);
-  //   }
-  // } catch (e) {
-  //   console.error(e);
-  // }
   activateHieNoCheck(context, uri, folder);
 }
 
@@ -300,24 +295,20 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
   const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
   const logFile = workspace.getConfiguration('languageServerHaskell', uri).logFile;
 
-  const releases: IRelease[] = await new Promise((resolve, reject) => {
-    let data: string = '';
-    const opts: https.RequestOptions = {
-      host: 'api.github.com',
-      path: '/repos/bubba/haskell-language-server/releases',
-      headers: userAgentHeader,
-    };
-    https.get(opts, (res) => {
-      res.on('data', (d) => (data += d));
-      res.on('error', reject);
-      res.on('close', () => {
-        resolve(JSON.parse(data));
-      });
-    });
-  });
-
-  const serverExecutable = findLocalServer(context, uri, folder) ?? (await downloadServer(context, releases));
-  if (serverExecutable === null) {
+  let serverExecutable;
+  try {
+    serverExecutable =
+      findManualExecutable(uri, folder) ??
+      findLocalServer(context, uri, folder) ??
+      (await downloadServer(context, uri, folder));
+    if (serverExecutable === null) {
+      showNotInstalledErrorMessage(uri);
+      return;
+    }
+  } catch (e) {
+    if (e instanceof Error) {
+      window.showErrorMessage(e.message);
+    }
     return;
   }
 
@@ -466,4 +457,23 @@ async function registerHiePointCommand(name: string, command: string, context: E
     }
   });
   context.subscriptions.push(editorCmd);
+}
+
+function showNotInstalledErrorMessage(uri: Uri) {
+  const variant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+  let projectUrl = '';
+  switch (variant) {
+    case 'haskell-ide-engine':
+      projectUrl = '/haskell/haskell-ide-engine';
+      break;
+    case 'haskell-language-server':
+      projectUrl = '/haskell/haskell-language-server';
+      break;
+    case 'ghcide':
+      projectUrl = '/digital-asset/ghcide';
+      break;
+  }
+  const notInstalledMsg: string =
+    variant + ' executable missing, please make sure it is installed, see https://github.com' + projectUrl + '.';
+  window.showErrorMessage(notInstalledMsg);
 }
