@@ -2,6 +2,9 @@ import { dirname } from 'path';
 import {
   CancellationToken,
   commands,
+  CompletionContext,
+  CompletionItem,
+  CompletionList,
   Disposable,
   Hover,
   MarkdownString,
@@ -13,7 +16,7 @@ import {
   ViewColumn,
   window,
 } from 'vscode';
-import { ProvideHoverSignature } from 'vscode-languageclient';
+import { ProvideCompletionItemsSignature, ProvideHoverSignature } from 'vscode-languageclient';
 
 export namespace DocsBrowser {
   'use strict';
@@ -55,7 +58,32 @@ export namespace DocsBrowser {
     });
   }
 
-  function processLink(ms: MarkedString): MarkedString {
+  export function completionLinksMiddlewareHook(
+    document: TextDocument,
+    position: Position,
+    context: CompletionContext,
+    token: CancellationToken,
+    next: ProvideCompletionItemsSignature
+  ): ProviderResult<CompletionItem[] | CompletionList> {
+    const res = next(document, position, context, token);
+
+    function processCI(ci: CompletionItem): void {
+      if (ci.documentation) {
+        ci.documentation = processLink(ci.documentation);
+      }
+    }
+
+    return Promise.resolve(res).then((r) => {
+      if (r instanceof Array) {
+        r.forEach(processCI);
+      } else if (r) {
+        r.items.forEach(processCI);
+      }
+      return r;
+    });
+  }
+
+  function processLink(ms: MarkedString): string | MarkdownString {
     function transform(s: string): string {
       return s.replace(/\[(.+)\]\((file:.+\/doc\/.+\.html#?.*)\)/gi, (all, title, path) => {
         const encoded = encodeURIComponent(JSON.stringify({ title, path }));
@@ -64,15 +92,13 @@ export namespace DocsBrowser {
       });
     }
     if (typeof ms === 'string') {
-      const mstr = new MarkdownString(transform(ms));
-      mstr.isTrusted = true;
-      return mstr;
+      return transform(ms as string);
     } else if (ms instanceof MarkdownString) {
       const mstr = new MarkdownString(transform(ms.value));
       mstr.isTrusted = true;
       return mstr;
     } else {
-      return ms;
+      return ms.value;
     }
   }
 }

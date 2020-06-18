@@ -210,6 +210,7 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
     outputChannelName: langName,
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
+      provideCompletionItem: DocsBrowser.completionLinksMiddlewareHook,
     },
     // Launch the server in the directory of the workspace folder.
     workspaceFolder: folder,
