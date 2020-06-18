@@ -27,7 +27,7 @@ export namespace DocsBrowser {
       let panel;
       try {
         // Make sure to use Uri.parse here, as path will already have 'file:///' in it
-        panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Two, {
+        panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Beside, {
           localResourceRoots: [Uri.parse(documentationDirectory)],
           enableFindWidget: true,
         });
@@ -57,7 +57,7 @@ export namespace DocsBrowser {
 
   function processLink(ms: MarkedString): MarkedString {
     function transform(s: string): string {
-      return s.replace(/\[(.+)\]\((file:.+\/doc\/.+\.html#?.+)\)/gi, (all, title, path) => {
+      return s.replace(/\[(.+)\]\((file:.+\/doc\/.+\.html#?.*)\)/gi, (all, title, path) => {
         const encoded = encodeURIComponent(JSON.stringify({ title, path }));
         const cmd = 'command:haskell.showDocumentation?' + encoded;
         return `[${title}](${cmd})`;
