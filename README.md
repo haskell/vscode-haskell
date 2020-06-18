@@ -20,7 +20,7 @@ Language server client for haskell using the [HIE](https://github.com/haskell/ha
 * Diagnostics via HLint and GHC warnings/errors
 * Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
 * Type information and documentation (via hoogle) on hover
-* Jump to definition (`F12` or `Go to Definition` in command palette)
+* Jump to definition (`F12` or `Go to Definition` in command palette). Note that this only works for definitions within the current file.
 * List all top level definitions
 * Highlight references in document
 * Completion
@@ -147,11 +147,11 @@ HIE is now started for each workspace folder you have in your multi-root workspa
 
 ## Investigating and reporting problems
 
-1.  Go to extensions and right click `Haskell Language Server` and choose `Configure Extensions Settings`
-2.  Scroll down to `Language Server Haskell › Trace: Server` and set it to `verbose`
+1.  Go to extensions and right click `Haskell Language Server` and choose `Extensions Settings`
+2.  Scroll down to `Language Server Haskell › Trace: Server` and set it to `messages`
 3.  Restart vscode and reproduce your problem
 4.  Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
-5.  On the new Output panel that opens on the right side in the drop down menu choose `Haskell HIE (cabal)`
+5.  On the new Output panel that opens on the right side in the drop down menu choose `Haskell HIE (<your project>)`
 
 Now you will see the information which you can use to diagnose or report a problem
 
