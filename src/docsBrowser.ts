@@ -3,15 +3,15 @@ import {
   CancellationToken,
   commands,
   Disposable,
-  Hover as VHover,
+  Hover,
   MarkdownString,
   MarkedString,
-  Position as VPosition,
+  Position,
   ProviderResult,
   TextDocument,
   Uri,
   ViewColumn,
-  window
+  window,
 } from 'vscode';
 import { ProvideHoverSignature } from 'vscode-languageclient';
 
@@ -21,19 +21,18 @@ export namespace DocsBrowser {
   // registers the browser in VSCode infrastructure
   export function registerDocsBrowser(): Disposable {
     return commands.registerCommand('haskell.showDocumentation', ({ title, path }: { title: string; path: string }) => {
-      const uri = Uri.parse(path).with({ scheme: 'vscode-resource' });
-      const arr = uri.path.match(/([^\/]+)\.[^.]+$/);
+      const arr = path.match(/([^\/]+)\.[^.]+$/);
       const ttl = arr !== null && arr.length === 2 ? arr[1].replace(/-/gi, '.') : title;
-      const documentationDirectory = dirname(uri.path);
+      const documentationDirectory = dirname(path);
       let panel;
       try {
+        // Make sure to use Uri.parse here, as path will already have 'file:///' in it
         panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Two, {
-          localResourceRoots: [Uri.file(documentationDirectory)],
-          enableFindWidget: true
+          localResourceRoots: [Uri.parse(documentationDirectory)],
+          enableFindWidget: true,
         });
-
-        // tslint:disable-next-line:max-line-length
-        panel.webview.html = `<iframe src="${uri}" frameBorder="0" style="background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 0px;" />`;
+        const uri = panel.webview.asWebviewUri(Uri.parse(path));
+        panel.webview.html = `<iframe src="${uri}" frameBorder = "0" style = "background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 0px;" /> `;
       } catch (e) {
         window.showErrorMessage(e);
       }
@@ -43,12 +42,12 @@ export namespace DocsBrowser {
 
   export function hoverLinksMiddlewareHook(
     document: TextDocument,
-    position: VPosition,
+    position: Position,
     token: CancellationToken,
     next: ProvideHoverSignature
-  ): ProviderResult<VHover> {
+  ): ProviderResult<Hover> {
     const res = next(document, position, token);
-    return Promise.resolve(res).then(r => {
+    return Promise.resolve(res).then((r) => {
       if (r !== null && r !== undefined) {
         r.contents = r.contents.map(processLink);
       }
@@ -68,7 +67,7 @@ export namespace DocsBrowser {
       const mstr = new MarkdownString(transform(ms));
       mstr.isTrusted = true;
       return mstr;
-    } else if (typeof ms === 'object') {
+    } else if (ms instanceof MarkdownString) {
       const mstr = new MarkdownString(transform(ms.value));
       mstr.isTrusted = true;
       return mstr;
