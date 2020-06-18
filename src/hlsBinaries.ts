@@ -101,6 +101,11 @@ export async function downloadServer(
     });
   });
 
+  // Make sure to create this before getProjectGhcVersion
+  if (!fs.existsSync(context.globalStoragePath)) {
+    fs.mkdirSync(context.globalStoragePath);
+  }
+
   const githubOS = getGithubOS();
   if (githubOS === null) {
     // Don't have any binaries available for this platform
@@ -128,10 +133,6 @@ export async function downloadServer(
     return null;
   }
   const binaryURL = url.parse(asset.browser_download_url);
-
-  if (!fs.existsSync(context.globalStoragePath)) {
-    fs.mkdirSync(context.globalStoragePath);
-  }
 
   const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}`;
   const binaryDest = path.join(context.globalStoragePath, serverName);
