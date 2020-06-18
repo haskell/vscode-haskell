@@ -63,35 +63,30 @@ export async function activate(context: ExtensionContext) {
 }
 
 function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {
-  let hieExecutablePath = workspace.getConfiguration('languageServerHaskell', uri).hieExecutablePath;
-  if (hieExecutablePath === '') {
+  let exePath = workspace.getConfiguration('languageServerHaskell', uri).serverExecutablePath;
+  if (exePath === '') {
     return null;
   }
 
   // Substitute path variables with their corresponding locations.
-  hieExecutablePath = hieExecutablePath
-    .replace('${HOME}', os.homedir)
-    .replace('${home}', os.homedir)
-    .replace(/^~/, os.homedir);
+  exePath = exePath.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
   if (folder) {
-    hieExecutablePath = hieExecutablePath
-      .replace('${workspaceFolder}', folder.uri.path)
-      .replace('${workspaceRoot}', folder.uri.path);
+    exePath = exePath.replace('${workspaceFolder}', folder.uri.path).replace('${workspaceRoot}', folder.uri.path);
   }
 
-  if (!executableExists(hieExecutablePath)) {
+  if (!executableExists(exePath)) {
     throw new Error('Manual executable missing');
   }
-  return hieExecutablePath;
+  return exePath;
 }
 
-/** Searches the PATH for whatever is set in hieVariant */
+/** Searches the PATH for whatever is set in serverVariant */
 function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
-  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+  const serverVariant = workspace.getConfiguration('languageServerHaskell', uri).serverVariant;
 
   // Set the executable, based on the settings.
   let exes: string[] = []; // should get set below
-  switch (hieVariant) {
+  switch (serverVariant) {
     case 'haskell-ide-engine':
       exes = ['hie-wrapper', 'hie'];
       break;
@@ -163,9 +158,9 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
   const runArgs: string[] = ['--lsp'];
   let debugArgs: string[] = ['--lsp'];
 
-  const hieVariant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+  const serverVariant = workspace.getConfiguration('languageServerHaskell', uri).serverVariant;
   // ghcide does not accept -d and -l params
-  if (hieVariant !== 'ghcide') {
+  if (serverVariant !== 'ghcide') {
     if (logLevel === 'messages') {
       debugArgs = debugArgs.concat(['-d']);
     }
@@ -253,7 +248,7 @@ export function deactivate(): Thenable<void> {
 }
 
 function showNotInstalledErrorMessage(uri: Uri) {
-  const variant = workspace.getConfiguration('languageServerHaskell', uri).hieVariant;
+  const variant = workspace.getConfiguration('languageServerHaskell', uri).serverVariant;
   let projectUrl = '';
   switch (variant) {
     case 'haskell-ide-engine':

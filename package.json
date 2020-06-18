@@ -132,7 +132,7 @@
           "default": "",
           "description": "If set, redirects the logs to a file."
         },
-        "languageServerHaskell.hieVariant": {
+        "languageServerHaskell.serverVariant": {
           "scope": "resource",
           "type": "string",
           "enum": [
@@ -140,10 +140,10 @@
             "haskell-language-server",
             "ghcide"
           ],
-          "default": "haskell-ide-engine",
+          "default": "haskell-language-server",
           "description": "Which language server to use."
         },
-        "languageServerHaskell.hieExecutablePath": {
+        "languageServerHaskell.serverExecutablePath": {
           "scope": "resource",
           "type": "string",
           "default": "",

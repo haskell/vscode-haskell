@@ -80,7 +80,7 @@ export async function downloadServer(
   folder?: WorkspaceFolder
 ): Promise<string | null> {
   // We only download binaries for haskell-language-server at the moment
-  if (workspace.getConfiguration('languageServerHaskell', resource).hieVariant !== 'haskell-language-server') {
+  if (workspace.getConfiguration('languageServerHaskell', resource).serverVariant !== 'haskell-language-server') {
     return null;
   }
 

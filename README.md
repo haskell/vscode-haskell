@@ -9,29 +9,29 @@ Check the [requirements](#user-content-requirements) for dependencies.
 
 The language client requires you to manually install at least one of:
 
-* [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): It was the unique haskell LSP server supported by this extension until version `0.40.0`. It is stable and functional but it will be replaced sooner or later by the new Haskell Language Server (see below).
-* [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with the [main basic features](https://github.com/digital-asset/ghcide#features). Supported since the `0.40.0` version of the extension.
-* [Haskell language server](https://github.com/haskell/haskell-language-server#installation): The future successor of haskell-ide-engine. It is still under heavy development and it does not have all the features of haskell-ide-engine, yet, so use at your own risk! It is supported since the `0.40.0` version of the extension.
+- [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): It was the unique haskell LSP server supported by this extension until version `0.40.0`. It is stable and functional but it will be replaced sooner or later by the new Haskell Language Server (see below).
+- [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with the [main basic features](https://github.com/digital-asset/ghcide#features). Supported since the `0.40.0` version of the extension.
+- [Haskell language server](https://github.com/haskell/haskell-language-server#installation): The future successor of haskell-ide-engine. It is still under heavy development and it does not have all the features of haskell-ide-engine, yet, so use at your own risk! It is supported since the `0.40.0` version of the extension.
 
 ## Features
 
 Language server client for haskell using the [HIE](https://github.com/haskell/haskell-ide-engine) language server. Supports,
 
-* Diagnostics via HLint and GHC warnings/errors
-* Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
-* Type information and documentation (via hoogle) on hover
-* Jump to definition (`F12` or `Go to Definition` in command palette)
-* List all top level definitions
-* Highlight references in document
-* Completion
-* Formatting via [`brittany`](https://github.com/lspitzner/brittany) (`^ ⌥ B` or `Format Document` in command palette)
-* Renaming via [`HaRe`](https://github.com/alanz/HaRe) (`F2` or `Rename Symbol` in command palette)
-* [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
+- Diagnostics via HLint and GHC warnings/errors
+- Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
+- Type information and documentation (via hoogle) on hover
+- Jump to definition (`F12` or `Go to Definition` in command palette)
+- List all top level definitions
+- Highlight references in document
+- Completion
+- Formatting via [`brittany`](https://github.com/lspitzner/brittany) (`^ ⌥ B` or `Format Document` in command palette)
+- Renaming via [`HaRe`](https://github.com/alanz/HaRe) (`F2` or `Rename Symbol` in command palette)
+- [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 
 Additionally the language server itself features,
 
-* Supports plain GHC projects, cabal projects and stack projects
-* Fast due to caching of compile info
+- Supports plain GHC projects, cabal projects and stack projects
+- Fast due to caching of compile info
 
 The other two language servers ([ghcide](https://github.com/digital-asset/ghcide#features) and haskell-language-server) have a subset of the features described above.
 
@@ -66,9 +66,9 @@ The extension will look for the language server executable in `$PATH` and it wil
 with the appropiate params depending on the extension settings.
 However, not all extension settings can be applied to all the language servers:
 
-* `haskell-ide-engine`: It supports all of them.
-* `ghcide`: It does not support any of them.
-* `haskell-language-server`: For now it only supports the log related settings: `Log File` and `Trace:server`. The goal is to support the same settings as `haskell-ide-engine`.
+- `haskell-ide-engine`: It supports all of them.
+- `ghcide`: It does not support any of them.
+- `haskell-language-server`: For now it only supports the log related settings: `Log File` and `Trace:server`. The goal is to support the same settings as `haskell-ide-engine`.
 
 ### Enable/disable HIE
 
@@ -83,13 +83,13 @@ You can enable or disable the chosen haskell language server via configuration. 
 If your chosen haskell language server executable is not on your path, you can manually set it,
 
 ```json
-"languageServerHaskell.hieExecutablePath": "~/.local/bin/hie"
+"languageServerHaskell.serverExecutablePath": "~/.local/bin/hie"
 ```
 
 There are a few placeholders which will be expanded:
 
-* `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
-* `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
+- `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
+- `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
 ## Docs on Hover/Generating Hoogle DB
 
