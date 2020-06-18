@@ -1,7 +1,16 @@
 'use strict';
 import * as os from 'os';
 import * as path from 'path';
-import { ExtensionContext, OutputChannel, TextDocument, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import {
+  commands,
+  ExtensionContext,
+  OutputChannel,
+  TextDocument,
+  Uri,
+  window,
+  workspace,
+  WorkspaceFolder,
+} from 'vscode';
 import {
   ExecutableOptions,
   LanguageClient,
@@ -10,8 +19,8 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient';
+import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
-import { RestartHie } from './commands/restartHie';
 import { DocsBrowser } from './docsBrowser';
 import { downloadServer } from './hlsBinaries';
 import { executableExists } from './utils';
@@ -38,7 +47,14 @@ export async function activate(context: ExtensionContext) {
   });
 
   // Register editor commands for HIE, but only register the commands once at activation.
-  context.subscriptions.push(RestartHie.registerCommand(clients));
+  const restartCmd = commands.registerCommand(CommandNames.RestartHieCommandName, async () => {
+    for (const langClient of clients.values()) {
+      await langClient.stop();
+      langClient.start();
+    }
+  });
+  context.subscriptions.push(restartCmd);
+
   context.subscriptions.push(ImportIdentifier.registerCommand());
 
   // Set up the documentation browser.
@@ -220,6 +236,8 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
   langClient.start();
   if (folder) {
     clients.set(folder.uri.toString(), langClient);
+  } else {
+    clients.set(uri.toString(), langClient);
   }
 }
 
