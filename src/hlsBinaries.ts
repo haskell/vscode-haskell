@@ -129,7 +129,10 @@ export async function downloadServer(
 
   const assetName = `haskell-language-server-${githubOS}-${ghcVersion}.gz`;
   const asset = release?.assets.find((x) => x.name === assetName);
-  if (!release || !asset) {
+  if (!asset) {
+    window.showErrorMessage(
+      `Couldn't find any pre-built haskell-language-server binaries for ${githubOS} and ${ghcVersion}`
+    );
     return null;
   }
   const binaryURL = url.parse(asset.browser_download_url);
