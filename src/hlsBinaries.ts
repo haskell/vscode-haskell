@@ -20,6 +20,13 @@ interface IAsset {
   name: string;
 }
 
+// On Windows the executable needs to be stored somewhere with an .exe extension
+const exeExtension = process.platform === 'win32' ? '.exe' : '';
+
+/** Works out what the project's ghc version is, downloading haskell-language-server-wrapper
+ * if needed. Returns null if there was an error in either downloading the wrapper or
+ * in working out the ghc version
+ */
 async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string | null> {
   const callWrapper = (wrapper: string) => {
     // Need to set the encoding to 'utf8' in order to get back a string
@@ -27,14 +34,14 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
     return !out.error ? out.stdout.trim() : null;
   };
 
-  const localWrapper = ['haskell-language-server-wrapper', 'haskell-ide-engine-wrapper'].find(executableExists);
+  const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
   if (localWrapper) {
     return callWrapper(localWrapper);
   }
 
   // Otherwise search to see if we previously downloaded the wrapper
 
-  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}`;
+  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}${exeExtension}`;
   const downloadedWrapper = path.join(context.globalStoragePath, wrapperName);
 
   if (executableExists(downloadedWrapper)) {
@@ -50,7 +57,7 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
     return null;
   }
 
-  const assetName = `haskell-language-server-wrapper-${githubOS}.gz`;
+  const assetName = `haskell-language-server-wrapper-${githubOS}${exeExtension}.gz`;
   const wrapperAsset = release.assets.find((x) => x.name === assetName);
 
   if (!wrapperAsset) {
@@ -127,7 +134,7 @@ export async function downloadServer(
     return null;
   }
 
-  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}.gz`;
+  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExtension}.gz`;
   const asset = release?.assets.find((x) => x.name === assetName);
   if (!asset) {
     window.showErrorMessage(
@@ -137,7 +144,7 @@ export async function downloadServer(
   }
   const binaryURL = url.parse(asset.browser_download_url);
 
-  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}`;
+  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExtension}`;
   const binaryDest = path.join(context.globalStoragePath, serverName);
 
   if (fs.existsSync(binaryDest)) {
