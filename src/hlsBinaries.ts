@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as https from 'https';
 import * as path from 'path';
 import * as url from 'url';
-import { ExtensionContext, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import { ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, userAgentHeader } from './utils';
 
 /** GitHub API release */
@@ -29,9 +29,17 @@ const exeExtension = process.platform === 'win32' ? '.exe' : '';
  */
 async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string | null> {
   const callWrapper = (wrapper: string) => {
-    // Need to set the encoding to 'utf8' in order to get back a string
-    const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8', cwd: dir });
-    return !out.error ? out.stdout.trim() : null;
+    return window.withProgress(
+      {
+        location: ProgressLocation.Window,
+        title: 'Working out the project GHC version',
+      },
+      async () => {
+        // Need to set the encoding to 'utf8' in order to get back a string
+        const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8', cwd: dir });
+        return !out.error ? out.stdout.trim() : null;
+      }
+    );
   };
 
   const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
