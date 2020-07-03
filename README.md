@@ -1,89 +1,73 @@
-# Haskell Language Server Client
+# Haskell for Visual Studio Code
 
-Client interface to the Language Server Protocol server for Haskell, as provided by the [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine), [ghcide](https://github.com/digital-asset/ghcide) or the new [Haskell Language Server](https://github.com/haskell/haskell-language-server).
-Check the [requirements](#user-content-requirements) for dependencies.
-
-**It is still under development!** If you want to help, get started by reading [Contributing](https://github.com/alanz/vscode-hie-server/blob/master/Contributing.md) for more details.
-
-## Requirements
-
-The language client requires you to manually install at least one of:
-
-- [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): It was the unique haskell LSP server supported by this extension until version `0.40.0`. It is stable and functional but it will be replaced sooner or later by the new Haskell Language Server (see below).
-- [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with the [main basic features](https://github.com/digital-asset/ghcide#features). Supported since the `0.40.0` version of the extension.
-- [Haskell language server](https://github.com/haskell/haskell-language-server#installation): The future successor of haskell-ide-engine. It is still under heavy development and it does not have all the features of haskell-ide-engine, yet, so use at your own risk! It is supported since the `0.40.0` version of the extension.
+This is the Visual Studio Code extension for the [Haskell programming language](https://haskell.org), powered by the [Haskell Langauge Server](https://github.com/haskell/haskell-language-server).
 
 ## Features
 
-Language server client for haskell using the [HIE](https://github.com/haskell/haskell-ide-engine) language server. Supports,
-
-- Diagnostics via HLint and GHC warnings/errors
+- Warning and error diagnostics
 - Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
-- Type information and documentation (via hoogle) on hover
-- Jump to definition (`F12` or `Go to Definition` in command palette)
+- Type information and documentation on hover
+- Jump to definition (`F12` or `Go to Definition` in the command palette)
 - List all top level definitions
 - Highlight references in document
-- Completion
+- Code completion
 - Formatting via [`brittany`](https://github.com/lspitzner/brittany) (`^ ⌥ B` or `Format Document` in command palette)
-- Renaming via [`HaRe`](https://github.com/alanz/HaRe) (`F2` or `Rename Symbol` in command palette)
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 
-Additionally the language server itself features,
+## Requirements
 
-- Supports plain GHC projects, cabal projects and stack projects
-- Fast due to caching of compile info
-
-The other two language servers ([ghcide](https://github.com/digital-asset/ghcide#features) and haskell-language-server) have a subset of the features described above.
+- For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/).
+- For Cabal based projects, [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/).
+- For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
 
 ## Supported GHC versions
 
-vscode-hie-server depends on the chosen haskell language server to support different versions of GHC. At the moment of writing the following versions are supported using Haskell Ide Engine: 8.4, 8.6 and 8.8. ghcide and Haskell Language Server also have support for ghc 8.10. If your project uses any other GHC version it won't work.
+| GHC    | Linux | macOS | Windows |
+| ------ | ----- | ----- | ------- |
+| 8.10.1 | ✓     | ✓     | ✓       |
+| 8.8.3  | ✓     | ✓     |
+| 8.8.2  | ✓     | ✓     |
+| 8.6.5  | ✓     | ✓     | ✓       |
+| 8.6.4  | ✓     | ✓     | ✓       |
+
+## Language Servers
+
+This extension also supports several other language servers for Haskell, some which need to be manually installed:
+
+- [Haskell Language Server](https://github.com/haskell/haskell-language-server#installation): This is the default language server which will automatically be downloaded, so no installation should be needed. It builds upon ghcide by providing extra plugins and features.
+- [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with support for [basic features](https://github.com/digital-asset/ghcide#features).
+- [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): A stable and mature language server, but note that development has moved from this to the Haskell Language Server.
 
 ## Extension Settings
 
 You can disable HLint and also control the maximum number of reported problems,
 
 ```json
-"languageServerHaskell.hlintOn": true,
-"languageServerHaskell.maxNumberOfProblems": 100,
+"haskell.hlintOn": true,
+"haskell.maxNumberOfProblems": 100,
 ```
 
 If the liquid haskell executable is installed, enable using it to
 process haskell files on save.
 
 ```json
-"languageServerHaskell.liquidOn": true,
+"haskell.liquidOn": true,
 ```
 
-### HIE Variant
-
-Since `0.40` the extension has a selection over the three supported language servers:
-`haskell-ide-engine`, `ghcide` and `haskell-language-server`.
-The default one is `haskell-ide-engine`, although it will be changed by `haskell-language-server`
-when it will be stable enough.
-
-The extension will look for the language server executable in `$PATH` and it will call it
-with the appropiate params depending on the extension settings.
-However, not all extension settings can be applied to all the language servers:
-
-- `haskell-ide-engine`: It supports all of them.
-- `ghcide`: It does not support any of them.
-- `haskell-language-server`: For now it only supports the log related settings: `Log File` and `Trace:server`. The goal is to support the same settings as `haskell-ide-engine`.
-
-### Enable/disable HIE
+### Enable/disable server
 
 You can enable or disable the chosen haskell language server via configuration. This is sometimes useful at workspace level, because multi-root workspaces do not yet allow you to manage extensions at the folder level, which can be necessary.
 
 ```json
-"languageServerHaskell.enableHIE": true
+"haskell.enable": true
 ```
 
-### Path for hie executable
+### Path to server executable executable
 
-If your chosen haskell language server executable is not on your path, you can manually set it,
+If your server is manually installed and not on your path, you can also manually set the path to the executable.
 
 ```json
-"languageServerHaskell.serverExecutablePath": "~/.local/bin/hie"
+"haskell.serverExecutablePath": "~/.local/bin/hie"
 ```
 
 There are a few placeholders which will be expanded:
@@ -145,6 +129,16 @@ First, check out [what multi-root workspaces](https://code.visualstudio.com/docs
 
 HIE is now started for each workspace folder you have in your multi-root workspace, and several configurations are on a resource (i.e. folder) scope, instead of window (i.e. global) scope.
 
+## Downloaded language servers
+
+This extension will download the language server binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
+| Platform | Path |
+|----------|------|
+| macOS | `~/Library/Application\ Support/Code/User/globalStorage/alanz.vscode-hie-server/` |
+| Windows | `%APPDATA%\Code\User\globalStorage\alanz.vscode-hie-server` |
+| Linux | TODO |
+
+
 ## Investigating and reporting problems
 
 1.  Go to extensions and right click `Haskell Language Server` and choose `Configure Extensions Settings`
@@ -164,6 +158,9 @@ Now you will see the information which you can use to diagnose or report a probl
 * *Common issues*:
   * For now, the extension is not able to open a single haskell source file. You need to open a workspace or folder, configured to be built with cabal, stack or other hie-bios compatible program.
   * Check you don't have other haskell extensions active, they can interfere with each other.
+## Contributing
+
+If you want to help, get started by reading [Contributing](https://github.com/alanz/vscode-hie-server/blob/master/Contributing.md) for more details.
 
 ## Release Notes
 

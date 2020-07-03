@@ -63,7 +63,7 @@ export async function activate(context: ExtensionContext) {
 }
 
 function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {
-  let exePath = workspace.getConfiguration('languageServerHaskell', uri).serverExecutablePath;
+  let exePath = workspace.getConfiguration('haskell', uri).serverExecutablePath;
   if (exePath === '') {
     return null;
   }
@@ -82,7 +82,7 @@ function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null
 
 /** Searches the PATH for whatever is set in serverVariant */
 function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
-  const serverVariant = workspace.getConfiguration('languageServerHaskell', uri).serverVariant;
+  const serverVariant = workspace.getConfiguration('haskell', uri).languageServerVariant;
 
   // Set the executable, based on the settings.
   let exes: string[] = []; // should get set below
@@ -130,13 +130,13 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
 
 async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
   // Stop right here, if HIE is disabled in the resource/workspace folder.
-  const enableHIE = workspace.getConfiguration('languageServerHaskell', uri).enableHIE;
-  if (!enableHIE) {
+  const enable = workspace.getConfiguration('haskell', uri).enable;
+  if (!enable) {
     return;
   }
 
-  const logLevel = workspace.getConfiguration('languageServerHaskell', uri).trace.server;
-  const logFile = workspace.getConfiguration('languageServerHaskell', uri).logFile;
+  const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
+  const logFile = workspace.getConfiguration('haskell', uri).logFile;
 
   let serverExecutable;
   try {
@@ -158,7 +158,7 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
   const runArgs: string[] = ['--lsp'];
   let debugArgs: string[] = ['--lsp'];
 
-  const serverVariant = workspace.getConfiguration('languageServerHaskell', uri).serverVariant;
+  const serverVariant = workspace.getConfiguration('haskell', uri).languageServerVariant;
   // ghcide does not accept -d and -l params
   if (serverVariant !== 'ghcide') {
     if (logLevel === 'messages') {
@@ -201,8 +201,8 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
       { scheme: 'file', language: 'literate haskell', pattern: pat },
     ],
     synchronize: {
-      // Synchronize the setting section 'languageServerHaskell' to the server.
-      configurationSection: 'languageServerHaskell',
+      // Synchronize the setting section 'haskell' to the server.
+      configurationSection: 'haskell',
     },
     diagnosticCollectionName: langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
@@ -249,7 +249,7 @@ export function deactivate(): Thenable<void> {
 }
 
 function showNotInstalledErrorMessage(uri: Uri) {
-  const variant = workspace.getConfiguration('languageServerHaskell', uri).serverVariant;
+  const variant = workspace.getConfiguration('haskell', uri).languageServerVariant;
   let projectUrl = '';
   switch (variant) {
     case 'haskell-ide-engine':

@@ -1,8 +1,8 @@
 {
   "name": "vscode-hie-server",
-  "displayName": "Haskell Language Server",
-  "description": "Haskell language support powered by HLS, ghcide or HIE",
-  "version": "0.0.40",
+  "displayName": "Haskell",
+  "description": "Haskell language support powered by the Haskell Language Server, ghcide or HIE",
+  "version": "0.1.0",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {
@@ -28,7 +28,7 @@
     "Linters",
     "Other"
   ],
-  "icon": "images/HIE_logo_128.png",
+  "icon": "images/haskell-logo.png",
   "galleryBanner": {
     "color": "#22172A",
     "theme": "dark"
@@ -63,47 +63,47 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "Haskell Language Server",
+      "title": "Haskell",
       "properties": {
-        "languageServerHaskell.hlintOn": {
+        "haskell.hlintOn": {
           "title": "Hlint",
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "Get suggestions from hlint"
         },
-        "languageServerHaskell.maxNumberOfProblems": {
+        "haskell.maxNumberOfProblems": {
           "scope": "resource",
           "type": "number",
           "default": 100,
           "description": "Controls the maximum number of problems produced by the server"
         },
-        "languageServerHaskell.diagnosticsOnChange": {
+        "haskell.diagnosticsOnChange": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
         },
-        "languageServerHaskell.liquidOn": {
+        "haskell.liquidOn": {
           "scope": "resource",
           "type": "boolean",
           "default": false,
           "description": "Get diagnostics from liquid haskell"
         },
-        "languageServerHaskell.completionSnippetsOn": {
+        "haskell.completionSnippetsOn": {
           "title": "Completion Snippets",
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "Show snippets with type information when using code completion"
         },
-        "languageServerHaskell.formatOnImportOn": {
+        "haskell.formatOnImportOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "When adding an import, use the formatter on the result"
         },
-        "languageServerHaskell.formattingProvider": {
+        "haskell.formattingProvider": {
           "scope": "resource",
           "type": "string",
           "enum": [
@@ -116,7 +116,7 @@
           "default": "brittany",
           "description": "The tool to use for formatting requests"
         },
-        "languageServerHaskell.trace.server": {
+        "haskell.trace.server": {
           "scope": "resource",
           "type": "string",
           "enum": [
@@ -126,13 +126,13 @@
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
         },
-        "languageServerHaskell.logFile": {
+        "haskell.logFile": {
           "scope": "resource",
           "type": "string",
           "default": "",
           "description": "If set, redirects the logs to a file."
         },
-        "languageServerHaskell.serverVariant": {
+        "haskell.languageServerVariant": {
           "scope": "resource",
           "type": "string",
           "enum": [
@@ -143,13 +143,13 @@
           "default": "haskell-language-server",
           "description": "Which language server to use."
         },
-        "languageServerHaskell.serverExecutablePath": {
+        "haskell.serverExecutablePath": {
           "scope": "resource",
           "type": "string",
           "default": "",
           "description": "Set the path to your language server executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
         },
-        "languageServerHaskell.enableHIE": {
+        "haskell.enable": {
           "scope": "resource",
           "type": "boolean",
           "default": true,

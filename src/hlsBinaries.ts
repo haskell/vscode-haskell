@@ -27,7 +27,7 @@ const exeExtension = process.platform === 'win32' ? '.exe' : '';
  * if needed. Returns null if there was an error in either downloading the wrapper or
  * in working out the ghc version
  */
-async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string | null> {
+async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string> {
   const callWrapper = (wrapper: string) => {
     return window.withProgress(
       {
@@ -37,7 +37,10 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
       async () => {
         // Need to set the encoding to 'utf8' in order to get back a string
         const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8', cwd: dir });
-        return !out.error ? out.stdout.trim() : null;
+        if (out.error) {
+          throw out.error;
+        }
+        return out.stdout.trim();
       }
     );
   };
@@ -61,26 +64,18 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
   const githubOS = getGithubOS();
   if (githubOS === null) {
     // Don't have any binaries available for this platform
-    window.showErrorMessage(`Couldn't find any haskell-language-server-wrapper binaries for ${process.platform}`);
-    return null;
+    throw Error(`Couldn't find any haskell-language-server-wrapper binaries for ${process.platform}`);
   }
 
   const assetName = `haskell-language-server-wrapper-${githubOS}${exeExtension}.gz`;
   const wrapperAsset = release.assets.find((x) => x.name === assetName);
 
   if (!wrapperAsset) {
-    return null;
+    throw Error(`Couldn't find any ${assetName} binaries for release ${release.tag_name}`);
   }
 
   const wrapperUrl = url.parse(wrapperAsset.browser_download_url);
-  try {
-    await downloadFile('Downloading haskell-language-server-wrapper', wrapperUrl, downloadedWrapper);
-  } catch (e) {
-    if (e instanceof Error) {
-      window.showErrorMessage(e.message);
-    }
-    return null;
-  }
+  await downloadFile('Downloading haskell-language-server-wrapper', wrapperUrl, downloadedWrapper);
 
   return callWrapper(downloadedWrapper);
 }
@@ -95,7 +90,7 @@ export async function downloadServer(
   folder?: WorkspaceFolder
 ): Promise<string | null> {
   // We only download binaries for haskell-language-server at the moment
-  if (workspace.getConfiguration('languageServerHaskell', resource).serverVariant !== 'haskell-language-server') {
+  if (workspace.getConfiguration('haskell', resource).languageServerVariant !== 'haskell-language-server') {
     return null;
   }
 
@@ -135,8 +130,10 @@ export async function downloadServer(
   }
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
 
-  const ghcVersion = await getProjectGhcVersion(context, dir, release);
-  if (!ghcVersion) {
+  let ghcVersion: string;
+  try {
+    ghcVersion = await getProjectGhcVersion(context, dir, release);
+  } catch (error) {
     // We couldn't figure out the right ghc version to download
     window.showErrorMessage("Couldn't figure out what GHC version the project is using");
     return null;
