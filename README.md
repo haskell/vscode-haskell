@@ -4,14 +4,14 @@ This is the Visual Studio Code extension for the [Haskell programming language](
 
 ## Features
 
-- Warning and error diagnostics
+- Warning and error diagnostics from GHC
 - Code actions and quick-fixes via [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb)
 - Type information and documentation on hover
-- Jump to definition (`F12` or `Go to Definition` in the command palette)
-- List all top level definitions
+- Jump to definition
+- Document symbols
 - Highlight references in document
 - Code completion
-- Formatting via [`brittany`](https://github.com/lspitzner/brittany) (`^ ⌥ B` or `Format Document` in command palette)
+- Formatting via Brittany, Floskell, Ormolu or Stylish Haskell
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 
 ## Requirements
@@ -75,35 +75,37 @@ There are a few placeholders which will be expanded:
 - `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 - `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
-## Docs on Hover/Generating Hoogle DB
+## Local documentation
 
-For the most current documentation on this, see [Docs on Hover/Completion](https://github.com/haskell/haskell-ide-engine#docs-on-hovercompletion).
+Haskell Language Server can display Haddock documentation on hover and in code completion for your code if you have built your project with haddock enabled.
 
-HIE supports fetching docs from haddock on hover. It will fallback on using a hoogle db(generally located in ~/.hoogle on linux)
-if no haddock documentation is found.
-
-To generate haddock documentation for stack projects:
+For stack projects, in your project directory run
 
 ```bash
-$ cd your-project-directory
 $ stack haddock --keep-going
 ```
 
-To enable documentation generation for cabal projects, add the following to your ~/.cabal/config
+For cabal projects, run
+
+```bash
+$ cabal build --haddock
+```
+
+Or alternatively add the following to your `~/.cabal/config` or `cabal.config[.local]`
 
 ```json
 documentation: True
 ```
 
-To generate a hoogle database that hie can use
+### Haskell IDE Engine and Hoogle
+
+If you are using Haskell IDE Engine as the language server, it pulls in documentation via Hoogle. After installing Hoogle via `cabal install hoogle` or `stack install hoogle`, generate the database with:
 
 ```bash
-$ cd haskell-ide-engine
-$ stack --stack-yaml=<stack.yaml you used to build hie> exec hoogle generate
+$ hoogle generate
 ```
 
-For now `ghcide`and `haskell-language-server` have not that fallback to the hoogle database, so
-you should generate haddock documentation as described above.
+Haskell IDE Engine
 
 ## Manual Installation
 
@@ -141,11 +143,11 @@ This extension will download the language server binaries to a specific location
 
 ## Investigating and reporting problems
 
-1.  Go to extensions and right click `Haskell Language Server` and choose `Configure Extensions Settings`
+1.  Go to extensions and right click `Haskell` and choose `Configure Extensions Settings`
 2.  Scroll down to `Language Server Haskell › Trace: Server` and set it to `verbose`
 3.  Restart vscode and reproduce your problem
 4.  Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
-5.  On the new Output panel that opens on the right side in the drop down menu choose `Haskell HIE (cabal)`
+5.  On the new Output panel that opens on the right side in the drop down menu choose `Haskell`
 
 Now you will see the information which you can use to diagnose or report a problem
 

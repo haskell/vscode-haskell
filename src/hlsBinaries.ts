@@ -40,6 +40,9 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
         if (out.error) {
           throw out.error;
         }
+        if (out.status !== 0) {
+          throw Error(`${wrapper} --project-ghc-version exited with exit code ${out.status}:\n${out.stderr}`);
+        }
         return out.stdout.trim();
       }
     );
@@ -135,7 +138,7 @@ export async function downloadServer(
     ghcVersion = await getProjectGhcVersion(context, dir, release);
   } catch (error) {
     // We couldn't figure out the right ghc version to download
-    window.showErrorMessage("Couldn't figure out what GHC version the project is using");
+    window.showErrorMessage(`Couldn't figure out what GHC version the project is using:\n${error.message}`);
     return null;
   }
 
