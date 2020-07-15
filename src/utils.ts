@@ -15,8 +15,17 @@ import { createGunzip } from 'zlib';
 export const userAgentHeader = { 'User-Agent': 'vscode-hie-server' };
 
 export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQuery, dest: string): Promise<void> {
+  // If it already is downloaded just use that
   if (fs.existsSync(dest)) {
     return;
+  }
+
+  // Download it to a .tmp location first, then rename it!
+  // This way if the download fails halfway through or something then we know
+  // to delete it and try again
+  const downloadDest = dest + '.download';
+  if (fs.existsSync(downloadDest)) {
+    fs.unlinkSync(downloadDest);
   }
 
   const downloadHieTask = window.withProgress(
@@ -34,7 +43,7 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
         };
         getWithRedirects(opts, (res) => {
           const totalSize = parseInt(res.headers['content-length'] || '1', 10);
-          const fileStream = fs.createWriteStream(dest, { mode: 0o744 });
+          const fileStream = fs.createWriteStream(downloadDest, { mode: 0o744 });
           let curSize = 0;
 
           // Decompress it if it's a gzip
@@ -58,14 +67,16 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
           fileStream.on('close', resolve);
         }).on('error', reject);
       });
-      return p;
+      await p;
+      // Finally rename it to the actual dest
+      fs.renameSync(downloadDest, dest);
     }
   );
 
   try {
     return downloadHieTask;
   } catch (e) {
-    fs.unlinkSync(dest);
+    fs.unlinkSync(downloadDest);
     throw new Error(`Failed to download ${url.format(srcUrl)}`);
   }
 }

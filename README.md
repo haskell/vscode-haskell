@@ -17,7 +17,7 @@ This is the Visual Studio Code extension for the [Haskell programming language](
 ## Requirements
 
 - For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/).
-- For Cabal based projects, [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/).
+- For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/).
 - For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
 
 ## Supported GHC versions
@@ -79,13 +79,13 @@ There are a few placeholders which will be expanded:
 
 Haskell Language Server can display Haddock documentation on hover and in code completion for your code if you have built your project with haddock enabled.
 
-For stack projects, in your project directory run
+For Stack projects, in your project directory run
 
 ```bash
 $ stack haddock --keep-going
 ```
 
-For cabal projects, run
+For Cabal projects, run
 
 ```bash
 $ cabal build --haddock

@@ -155,10 +155,6 @@ export async function downloadServer(
   const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExtension}`;
   const binaryDest = path.join(context.globalStoragePath, serverName);
 
-  if (fs.existsSync(binaryDest)) {
-    return binaryDest;
-  }
-
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
   try {
     await downloadFile(title, binaryURL, binaryDest);
