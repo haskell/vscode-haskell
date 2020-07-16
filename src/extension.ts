@@ -22,7 +22,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { downloadServer } from './hlsBinaries';
+import { downloadHaskellLanguageServer } from './hlsBinaries';
 import { executableExists } from './utils';
 
 const clients: Map<string, LanguageClient> = new Map();
@@ -140,13 +140,19 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
 
   let serverExecutable;
   try {
-    serverExecutable =
-      findManualExecutable(uri, folder) ??
-      findLocalServer(context, uri, folder) ??
-      (await downloadServer(context, uri, folder));
+    // Try and find local installations first
+    serverExecutable = findManualExecutable(uri, folder) ?? findLocalServer(context, uri, folder);
     if (serverExecutable === null) {
-      showNotInstalledErrorMessage(uri);
-      return;
+      // If not, then try to download haskell-language-server binaries if it's selected
+      if (workspace.getConfiguration('haskell', uri).languageServerVariant === 'haskell-language-server') {
+        serverExecutable = await downloadHaskellLanguageServer(context, uri, folder);
+        if (!serverExecutable) {
+          return;
+        }
+      } else {
+        showNotInstalledErrorMessage(uri);
+        return;
+      }
     }
   } catch (e) {
     if (e instanceof Error) {

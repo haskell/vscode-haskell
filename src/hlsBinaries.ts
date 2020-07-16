@@ -1,11 +1,9 @@
-'use strict';
-
 import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as path from 'path';
 import * as url from 'url';
-import { ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, userAgentHeader } from './utils';
 
 /** GitHub API release */
@@ -22,6 +20,43 @@ interface IAsset {
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExtension = process.platform === 'win32' ? '.exe' : '';
+
+class MissingToolError extends Error {
+  public readonly tool: string;
+  constructor(tool: string) {
+    let prettyTool: string;
+    switch (tool) {
+      case 'stack':
+        prettyTool = 'Stack';
+        break;
+      case 'cabal':
+        prettyTool = 'Cabal';
+        break;
+      case 'ghc':
+        prettyTool = 'GHC';
+        break;
+      default:
+        prettyTool = tool;
+        break;
+    }
+    super(`Project requires ${prettyTool} but it isn't installed`);
+    this.tool = prettyTool;
+  }
+
+  public installLink(): Uri | null {
+    switch (this.tool) {
+      case 'Stack':
+        return Uri.parse('https://docs.haskellstack.org/en/stable/install_and_upgrade/');
+      case 'Cabal':
+      case 'GHC':
+        return process.platform === 'win32'
+          ? Uri.parse('https://www.haskell.org/platform/index.html#windows')
+          : Uri.parse('https://www.haskell.org/ghcup/');
+      default:
+        return null;
+    }
+  }
+}
 
 /** Works out what the project's ghc version is, downloading haskell-language-server-wrapper
  * if needed. Returns null if there was an error in either downloading the wrapper or
@@ -41,7 +76,15 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
           throw out.error;
         }
         if (out.status !== 0) {
-          throw Error(`${wrapper} --project-ghc-version exited with exit code ${out.status}:\n${out.stderr}`);
+          const regex = /Cradle requires (.+) but couldn't find it/;
+          const res = regex.exec(out.stderr);
+          if (res) {
+            throw new MissingToolError(res[1]);
+          }
+
+          throw Error(
+            `${wrapper} --project-ghc-version exited with exit code ${out.status}:\n${out.stdout}\n${out.stderr}`
+          );
         }
         return out.stdout.trim();
       }
@@ -87,16 +130,11 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
  * Downloads the latest haskell-language-server binaries from GitHub releases.
  * Returns null if it can't find any that match.
  */
-export async function downloadServer(
+export async function downloadHaskellLanguageServer(
   context: ExtensionContext,
   resource: Uri,
   folder?: WorkspaceFolder
 ): Promise<string | null> {
-  // We only download binaries for haskell-language-server at the moment
-  if (workspace.getConfiguration('haskell', resource).languageServerVariant !== 'haskell-language-server') {
-    return null;
-  }
-
   // Fetch the latest release from GitHub
   const releases: IRelease[] = await new Promise((resolve, reject) => {
     let data: string = '';
@@ -137,8 +175,19 @@ export async function downloadServer(
   try {
     ghcVersion = await getProjectGhcVersion(context, dir, release);
   } catch (error) {
-    // We couldn't figure out the right ghc version to download
-    window.showErrorMessage(`Couldn't figure out what GHC version the project is using:\n${error.message}`);
+    if (error instanceof MissingToolError) {
+      const link = error.installLink();
+      if (link) {
+        if (await window.showErrorMessage(error.message, `Install ${error.tool}`)) {
+          env.openExternal(link);
+        }
+      } else {
+        await window.showErrorMessage(error.message);
+      }
+    } else {
+      // We couldn't figure out the right ghc version to download
+      window.showErrorMessage(`Couldn't figure out what GHC version the project is using:\n${error.message}`);
+    }
     return null;
   }
 
