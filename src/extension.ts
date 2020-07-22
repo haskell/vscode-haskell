@@ -52,7 +52,7 @@ export async function activate(context: ExtensionContext) {
   });
 
   // Register editor commands for HIE, but only register the commands once at activation.
-  const restartCmd = commands.registerCommand(CommandNames.RestartHieCommandName, async () => {
+  const restartCmd = commands.registerCommand(CommandNames.RestartServerCommandName, async () => {
     for (const langClient of clients.values()) {
       await langClient?.stop();
       langClient?.start();
