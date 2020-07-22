@@ -1,6 +1,6 @@
 # Haskell for Visual Studio Code
 
-This is the Visual Studio Code extension for the [Haskell programming language](https://haskell.org), powered by the [Haskell Langauge Server](https://github.com/haskell/haskell-language-server).
+This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Langauge Server](https://github.com/haskell/haskell-language-server).
 
 ## Features
 
@@ -12,30 +12,16 @@ This is the Visual Studio Code extension for the [Haskell programming language](
 - Code completion
 - Formatting via Brittany, Floskell, Ormolu or Stylish Haskell
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
-<!-- Add this back when hlint support is merged into hls
-- Code actions and quick-fixes via `hlint` and [`apply-refact`](https://github.com/mpickering/apply-refact) (click the lightbulb) -->
 
 ## Requirements
 
-- For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/).
-- For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/).
+- For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
+- For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
-
-## Supported GHC versions
-
-Note that these are the versions of GHC that there are binaries of haskell-language-server for. Building from source may support more versions!
-
-| GHC    | Linux | macOS | Windows |
-| ------ | ----- | ----- | ------- |
-| 8.10.1 | ✓     | ✓     | ✓       |
-| 8.8.3  | ✓     | ✓     |         |
-| 8.8.2  | ✓     | ✓     |         |
-| 8.6.5  | ✓     | ✓     | ✓       |
-| 8.6.4  | ✓     | ✓     | ✓       |
 
 ## Language Servers
 
-This extension is powered by the Haskell Language Server by default, but it also supports several others, some which need to be manually installed:
+Whilst this extension is powered by the Haskell Language Server by default, it also supports several others which can be manually installed:
 
 - [Haskell Language Server](https://github.com/haskell/haskell-language-server#installation): This is the default language server which will automatically be downloaded, so it does not need manual installation. It builds upon ghcide by providing extra plugins and features.
 - [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with support for [basic features](https://github.com/digital-asset/ghcide#features).
@@ -95,6 +81,31 @@ Or alternatively add the following to your `~/.cabal/config` or `cabal.config[.l
 documentation: True
 ```
 
+## Haskell Language Server specifics
+
+### Downloaded binaries
+
+This extension will download `haskell-language-server` binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
+| Platform | Path |
+|----------|------|
+| macOS | `~/Library/Application\ Support/Code/User/globalStorage/alanz.vscode-hie-server/` |
+| Windows | `%APPDATA%\Code\User\globalStorage\alanz.vscode-hie-server` |
+| Linux | `$HOME/.config/Code/User/settings.json` |
+
+Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
+
+### Supported GHC versions
+
+These are the versions of GHC that there are binaries of `haskell-language-server` for. Building from source may support more versions!
+
+| GHC    | Linux | macOS | Windows |
+| ------ | ----- | ----- | ------- |
+| 8.10.1 | ✓     | ✓     | ✓       |
+| 8.8.3  | ✓     | ✓     |         |
+| 8.8.2  | ✓     | ✓     |         |
+| 8.6.5  | ✓     | ✓     | ✓       |
+| 8.6.4  | ✓     | ✓     | ✓       |
+
 ## Haskell IDE Engine specifics
 
 If you are using Haskell IDE Engine as your language server, there are a number of additional configuration options.
@@ -120,17 +131,6 @@ $ hoogle generate
 First, check out [what multi-root workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) are. The idea of using multi-root workspaces, is to be able to work on several different Haskell projects, where the GHC version or stackage LTS could differ, and have it work smoothly.
 
 The language server is now started for each workspace folder you have in your multi-root workspace, and several configurations are on a resource (i.e. folder) scope, instead of window (i.e. global) scope.
-
-## Downloaded language servers
-
-This extension will download the language server binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
-| Platform | Path |
-|----------|------|
-| macOS | `~/Library/Application\ Support/Code/User/globalStorage/alanz.vscode-hie-server/` |
-| Windows | `%APPDATA%\Code\User\globalStorage\alanz.vscode-hie-server` |
-| Linux | TODO |
-
-Note that if `haskell-language-server-wrapper` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
 
 ## Investigating and reporting problems
 
