@@ -142,7 +142,7 @@ export async function downloadHaskellLanguageServer(
     let data: string = '';
     const opts: https.RequestOptions = {
       host: 'api.github.com',
-      path: '/repos/bubba/haskell-language-server/releases',
+      path: '/repos/haskell/haskell-language-server/releases',
       headers: userAgentHeader,
     };
     https.get(opts, (res) => {
