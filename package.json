@@ -11,6 +11,8 @@
   "keywords": [
     "language",
     "haskell",
+    "cabal",
+    "stack",
     "lsp",
     "multi-root ready"
   ],
@@ -175,7 +177,6 @@
     "compile": "webpack --mode none",
     "watch": "webpack --mode none --watch --info-verbosity verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "tsc -p . && node ./node_modules/vscode/bin/test",
     "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "precommit": "pretty-quick --staged",
@@ -186,7 +187,6 @@
     "@types/js-yaml": "^3.12.3",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^4.1.2",
-    "@types/mocha": "^2.2.46",
     "@types/node": "^14.0.3",
     "@types/request-promise-native": "^1.0.17",
     "husky": "^0.14.3",
