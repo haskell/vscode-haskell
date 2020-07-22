@@ -130,9 +130,7 @@ This extension will download the language server binaries to a specific location
 | Windows | `%APPDATA%\Code\User\globalStorage\alanz.vscode-hie-server` |
 | Linux | TODO |
 
-
 Note that if `haskell-language-server-wrapper` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
-
 
 ## Investigating and reporting problems
 
@@ -146,13 +144,13 @@ Please include the output when filing any issues on the relevant language server
 
 ### Troubleshooting
 
-* Usually the error or unexpected behaviour is already reported in the haskell language server [used by the extension](#hie-variant). Finding the issue in its issue tracker could be useful to help resolve it. Sometimes even it includes a workaround for the issue.
-* Haskell language servers issue trackers:
-  * haskell-ide-engine (the default haskell language server): https://github.com/haskell/haskell-ide-engine/issues
-  * haskell-language-server: https://github.com/haskell/haskell-language-server/issues
-* *Common issues*:
-  * For now, the extension is not able to open a single haskell source file. You need to open a workspace or folder, configured to be built with cabal, stack or other hie-bios compatible program.
-  * Check you don't have other haskell extensions active, they can interfere with each other.
+- Usually the error or unexpected behaviour is already reported in the haskell language server [used by the extension](#hie-variant). Finding the issue in its issue tracker could be useful to help resolve it. Sometimes even it includes a workaround for the issue.
+- Haskell language servers issue trackers:
+  - haskell-ide-engine (the default haskell language server): https://github.com/haskell/haskell-ide-engine/issues
+  - haskell-language-server: https://github.com/haskell/haskell-language-server/issues
+- _Common issues_:
+  - For now, the extension is not able to open a single haskell source file. You need to open a workspace or folder, configured to be built with cabal, stack or other hie-bios compatible program.
+  - Check you don't have other haskell extensions active, they can interfere with each other.
 
 ## Contributing
 
