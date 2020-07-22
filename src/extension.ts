@@ -25,17 +25,22 @@ import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
 import { executableExists } from './utils';
 
-const clients: Map<string, LanguageClient> = new Map();
+// The current map of documents & folders to language servers.
+// It may be null to indicate that we are in the process of launching a server,
+// in which case don't try to launch another one for that uri
+const clients: Map<string, LanguageClient | null> = new Map();
 
 // This is the entrypoint to our extension
 export async function activate(context: ExtensionContext) {
-  // Register HIE to check every time a text document gets opened, to
-  // support multi-root workspaces.
+  // (Possibly) launch the language server every time a document is opened, so
+  // it works across multiple workspace folders. Eventually, haskell-lsp should
+  // just support
+  // https://microsoft.github.io/language-server-protocol/specifications/specification-3-15/#workspace_workspaceFolders
+  // and then we can just launch one server
+  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activeServer(context, document));
+  workspace.textDocuments.forEach(async (document: TextDocument) => await activeServer(context, document));
 
-  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateHie(context, document));
-  workspace.textDocuments.forEach(async (document: TextDocument) => await activateHie(context, document));
-
-  // Stop HIE from any workspace folders that are removed.
+  // Stop the server from any workspace folders that are removed.
   workspace.onDidChangeWorkspaceFolders((event) => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
@@ -49,8 +54,8 @@ export async function activate(context: ExtensionContext) {
   // Register editor commands for HIE, but only register the commands once at activation.
   const restartCmd = commands.registerCommand(CommandNames.RestartHieCommandName, async () => {
     for (const langClient of clients.values()) {
-      await langClient.stop();
-      langClient.start();
+      await langClient?.stop();
+      langClient?.start();
     }
   });
   context.subscriptions.push(restartCmd);
@@ -107,7 +112,7 @@ function findLocalServer(context: ExtensionContext, uri: Uri, folder?: Workspace
   return null;
 }
 
-async function activateHie(context: ExtensionContext, document: TextDocument) {
+async function activeServer(context: ExtensionContext, document: TextDocument) {
   // We are only interested in Haskell files.
   if (
     (document.languageId !== 'haskell' &&
@@ -121,15 +126,20 @@ async function activateHie(context: ExtensionContext, document: TextDocument) {
   const uri = document.uri;
   const folder = workspace.getWorkspaceFolder(uri);
 
-  // If the client already has an LSP server for this folder, then don't start a new one.
-  if (folder && clients.has(folder.uri.toString())) {
-    return;
-  }
-  activateHieNoCheck(context, uri, folder);
+  activateServerForFolder(context, uri, folder);
 }
 
-async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
-  // Stop right here, if HIE is disabled in the resource/workspace folder.
+async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
+  const clientsKey = folder ? folder.uri.toString() : uri.toString();
+
+  // If the client already has an LSP server for this uri/folder, then don't start a new one.
+  if (clients.has(clientsKey)) {
+    return;
+  }
+  // Set the key to null to prevent multiple servers being launched at once
+  clients.set(clientsKey, null);
+
+  // Stop right here, if Haskell is disabled in the resource/workspace folder.
   const enable = workspace.getConfiguration('haskell', uri).enable;
   if (!enable) {
     return;
@@ -223,35 +233,27 @@ async function activateHieNoCheck(context: ExtensionContext, uri: Uri, folder?: 
   };
 
   // Create the LSP client.
-  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions, true);
+  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions);
 
   // Register ClientCapabilities for stuff like window/progress
   langClient.registerProposedFeatures();
 
-  // If the client already has an LSP server, then don't start a new one.
-  // We check this again, as there may be multiple parallel requests.
-  if (folder && clients.has(folder.uri.toString())) {
-    return;
-  }
-
   // Finally start the client and add it to the list of clients.
   langClient.start();
-  if (folder) {
-    clients.set(folder.uri.toString(), langClient);
-  } else {
-    clients.set(uri.toString(), langClient);
-  }
+  clients.set(clientsKey, langClient);
 }
 
 /*
  * Deactivate each of the LSP servers.
  */
-export function deactivate(): Thenable<void> {
+export async function deactivate() {
   const promises: Array<Thenable<void>> = [];
   for (const client of clients.values()) {
-    promises.push(client.stop());
+    if (client) {
+      promises.push(client.stop());
+    }
   }
-  return Promise.all(promises).then(() => undefined);
+  await Promise.all(promises);
 }
 
 function showNotInstalledErrorMessage(uri: Uri) {

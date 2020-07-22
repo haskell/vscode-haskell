@@ -2,8 +2,7 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as path from 'path';
-import * as url from 'url';
-import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import { env, ExtensionContext, ProgressLocation, Uri, window, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, userAgentHeader } from './utils';
 
 /** GitHub API release */
@@ -120,8 +119,11 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
     throw Error(`Couldn't find any ${assetName} binaries for release ${release.tag_name}`);
   }
 
-  const wrapperUrl = url.parse(wrapperAsset.browser_download_url);
-  await downloadFile('Downloading haskell-language-server-wrapper', wrapperUrl, downloadedWrapper);
+  await downloadFile(
+    'Downloading haskell-language-server-wrapper',
+    wrapperAsset.browser_download_url,
+    downloadedWrapper
+  );
 
   return callWrapper(downloadedWrapper);
 }
@@ -199,14 +201,13 @@ export async function downloadHaskellLanguageServer(
     );
     return null;
   }
-  const binaryURL = url.parse(asset.browser_download_url);
 
   const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExtension}`;
   const binaryDest = path.join(context.globalStoragePath, serverName);
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
   try {
-    await downloadFile(title, binaryURL, binaryDest);
+    await downloadFile(title, asset.browser_download_url, binaryDest);
     return binaryDest;
   } catch (e) {
     if (e instanceof Error) {

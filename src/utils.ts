@@ -14,7 +14,25 @@ import { createGunzip } from 'zlib';
  */
 export const userAgentHeader = { 'User-Agent': 'vscode-hie-server' };
 
-export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQuery, dest: string): Promise<void> {
+/** downloadFile may get called twice on the same src and destination:
+ * When this happens, we should only download the file once but return two
+ * promises that wait on the same download. This map keeps track of which
+ * files are currently being downloaded and we short circuit any calls to
+ * downloadFile which have a hit in this map by returning the promise stored
+ * here.
+ * Note that we have to use a double nested map since array/pointer/object
+ * equality is by reference, not value in Map. And we are using a tuple of
+ * [src, dest] as the key.
+ */
+const inFlightDownloads = new Map<string, Map<string, Thenable<void>>>();
+
+export async function downloadFile(titleMsg: string, src: string, dest: string): Promise<void> {
+  // Check to see if we're already in the process of downloading the same thing
+  const inFlightDownload = inFlightDownloads.get(src)?.get(dest);
+  if (inFlightDownload) {
+    return inFlightDownload;
+  }
+
   // If it already is downloaded just use that
   if (fs.existsSync(dest)) {
     return;
@@ -28,7 +46,7 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
     fs.unlinkSync(downloadDest);
   }
 
-  const downloadHieTask = window.withProgress(
+  const downloadTask = window.withProgress(
     {
       location: ProgressLocation.Notification,
       title: titleMsg,
@@ -36,9 +54,12 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
     },
     async (progress) => {
       const p = new Promise<void>((resolve, reject) => {
+        const srcUrl = url.parse(src);
         const opts: https.RequestOptions = {
           host: srcUrl.host,
           path: srcUrl.path,
+          protocol: srcUrl.protocol,
+          port: srcUrl.port,
           headers: userAgentHeader,
         };
         getWithRedirects(opts, (res) => {
@@ -67,17 +88,27 @@ export async function downloadFile(titleMsg: string, srcUrl: url.UrlWithStringQu
           fileStream.on('close', resolve);
         }).on('error', reject);
       });
-      await p;
-      // Finally rename it to the actual dest
-      fs.renameSync(downloadDest, dest);
+      try {
+        await p;
+        // Finally rename it to the actual dest
+        fs.renameSync(downloadDest, dest);
+      } finally {
+        // And remember to remove it from the list of current downloads
+        inFlightDownloads.get(src)?.delete(dest);
+      }
     }
   );
 
   try {
-    return downloadHieTask;
+    if (inFlightDownloads.has(src)) {
+      inFlightDownloads.get(src)?.set(dest, downloadTask);
+    } else {
+      inFlightDownloads.set(src, new Map([[dest, downloadTask]]));
+    }
+    return downloadTask;
   } catch (e) {
     fs.unlinkSync(downloadDest);
-    throw new Error(`Failed to download ${url.format(srcUrl)}`);
+    throw new Error(`Failed to download ${url}`);
   }
 }
 
