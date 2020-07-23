@@ -2,7 +2,7 @@
   "name": "vscode-hie-server",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server, ghcide or HIE",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "publisher": "alanz",
   "engines": {

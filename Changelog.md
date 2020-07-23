@@ -1,3 +1,7 @@
+### 0.1.1
+
+- Fix the restart server and import identifier commands
+
 ### 0.1.0
 
 `vscode-hie-server`/`Haskell Language Server` is now just Haskell, and will soon
