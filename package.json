@@ -161,12 +161,12 @@
     },
     "commands": [
       {
-        "command": "hie.commands.importIdentifier",
+        "command": "haskell.commands.importIdentifier",
         "title": "Haskell: Import identifier",
         "description": "Imports a function or type based on a Hoogle search"
       },
       {
-        "command": "hie.commands.restartHie",
+        "command": "haskell.commands.restartServer",
         "title": "Haskell: Restart Haskell LSP server",
         "description": "Restart the Haskell LSP server"
       }
