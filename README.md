@@ -83,7 +83,7 @@ This extension will download `haskell-language-server` binaries to a specific lo
 |----------|------|
 | macOS | `~/Library/Application\ Support/Code/User/globalStorage/alanz.vscode-hie-server/` |
 | Windows | `%APPDATA%\Code\User\globalStorage\alanz.vscode-hie-server` |
-| Linux | `$HOME/.config/Code/User/settings.json` |
+| Linux | `$HOME/.config/Code/User/globalStorage/alanz.vscode-hie-server` |
 
 Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
 
