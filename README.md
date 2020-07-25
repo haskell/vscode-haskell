@@ -12,6 +12,10 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - Code completion
 - Formatting via Brittany, Floskell, Ormolu or Stylish Haskell
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
+- Code evaluation (Haskell Language Server)
+
+   ![Eval](https://i.imgur.com/bh992sT.gif)
+
 
 ## Requirements
 
@@ -52,29 +56,29 @@ There are a few placeholders which will be expanded:
 - `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 - `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
-## Local documentation
-
-Haskell Language Server can display Haddock documentation on hover and in code completion for your code if you have built your project with haddock enabled.
-
-For Stack projects, in your project directory run
-
-```bash
-$ stack haddock --keep-going
-```
-
-For Cabal projects, run
-
-```bash
-$ cabal build --haddock
-```
-
-Or alternatively add the following to your `~/.cabal/config` or `cabal.config[.local]`
-
-```json
-documentation: True
-```
-
 ## Haskell Language Server specifics
+
+### Local documentation
+
+Haskell Language Server can display Haddock documentation on hover and completions if the project and
+its dependencies have been built with the `-haddock` GHC flag.
+
+  - For cabal:
+      - Add to your global config file (e.g. `~/.cabal/config`):
+        ```
+        program-default-options
+          ghc-options: -haddock
+        ```
+      - Or, for a single project, run `cabal configure --ghc-options=-haddock`
+
+  - For stack, add to global `$STACK_ROOT\config.yaml`, or project's `stack.yaml`:
+    ```
+    ghc-options:
+      "$everything": -haddock
+    ```
+  Note that this flag will cause compilation errors if a dependency contains invalid Haddock markup,
+  until GHC 8.12 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
+  instead.
 
 ### Downloaded binaries
 
@@ -102,6 +106,28 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 ## Haskell IDE Engine specifics
 
 If you are using Haskell IDE Engine as your language server, there are a number of additional configuration options.
+
+### Local documentation
+
+Haskell Language Server can display Haddock documentation on hover and in code completion for your code if you have built your project with haddock enabled.
+
+For Stack projects, in your project directory run
+
+```bash
+$ stack haddock --keep-going
+```
+
+For Cabal projects, run
+
+```bash
+$ cabal build --haddock
+```
+
+Or alternatively add the following to your `~/.cabal/config` or `cabal.config[.local]`
+
+```json
+documentation: True
+```
 
 ### Liquid Haskell
 
