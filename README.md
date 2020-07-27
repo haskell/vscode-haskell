@@ -81,9 +81,9 @@ documentation: True
 This extension will download `haskell-language-server` binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
 | Platform | Path |
 |----------|------|
-| macOS | `~/Library/Application\ Support/Code/User/globalStorage/alanz.vscode-hie-server/` |
-| Windows | `%APPDATA%\Code\User\globalStorage\alanz.vscode-hie-server` |
-| Linux | `$HOME/.config/Code/User/globalStorage/alanz.vscode-hie-server` |
+| macOS | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/` |
+| Windows | `%APPDATA%\Code\User\globalStorage\haskell.haskell` |
+| Linux | `$HOME/.config/Code/User/globalStorage/haskell.haskell` |
 
 Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
 
@@ -147,8 +147,8 @@ Please include the output when filing any issues on the relevant language server
 
 ## Contributing
 
-If you want to help, get started by reading [Contributing](https://github.com/alanz/vscode-hie-server/blob/master/Contributing.md) for more details.
+If you want to help, get started by reading [Contributing](https://github.com/haskell/vscode-haskell/blob/master/Contributing.md) for more details.
 
 ## Release Notes
 
-See the [Changelog](https://github.com/alanz/vscode-hie-server/blob/master/Changelog.md) for more details.
+See the [Changelog](https://github.com/haskell/vscode-haskell/blob/master/Changelog.md) for more details.

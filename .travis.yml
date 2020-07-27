@@ -45,7 +45,7 @@ deploy:
     script: vsce publish -p $VS_CODE
     skip_cleanup: true
     on: # Publish on all builds on master branch.
-      repo: alanz/vscode-hie-server
+      repo: haskell/vscode-haskell
       branch: master
       tags: true
       condition: $TRAVIS_OS_NAME = linux
@@ -54,7 +54,7 @@ deploy:
 #   file: "*.vsix"
 #   skip_cleanup: true
 #   on: # Due to a limitation with releases, we can only deploy them on tags.
-#     repo: alanz/vscode-hie-server
+#     repo: haskell/vscode-haskell
 #     branch: master
 #     tags: true
 #     condition: $TRAVIS_OS_NAME = linux

@@ -1,10 +1,10 @@
 {
-  "name": "vscode-hie-server",
+  "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server, ghcide or HIE",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "license": "MIT",
-  "publisher": "alanz",
+  "publisher": "haskell",
   "engines": {
     "vscode": "^1.39.0"
   },
@@ -16,13 +16,13 @@
     "lsp",
     "multi-root ready"
   ],
-  "homepage": "https://github.com/alanz/vscode-hie-server",
+  "homepage": "https://github.com/haskell/vscode-haskell",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alanz/vscode-hie-server.git"
+    "url": "https://github.com/haskell/vscode-haskell.git"
   },
   "bugs": {
-    "url": "https://github.com/alanz/vscode-hie-server/issues"
+    "url": "https://github.com/haskell/vscode-haskell/issues"
   },
   "categories": [
     "Programming Languages",
