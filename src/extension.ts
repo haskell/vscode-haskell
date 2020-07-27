@@ -171,18 +171,17 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     return;
   }
 
-  const runArgs: string[] = ['--lsp'];
-  let debugArgs: string[] = ['--lsp'];
+  let args: string[] = ['--lsp'];
 
   const serverVariant = workspace.getConfiguration('haskell', uri).languageServerVariant;
   // ghcide does not accept -d and -l params
   if (serverVariant !== 'ghcide') {
     if (logLevel === 'messages') {
-      debugArgs = debugArgs.concat(['-d']);
+      args = args.concat(['-d']);
     }
 
     if (logFile !== '') {
-      debugArgs = debugArgs.concat(['-l', logFile]);
+      args = args.concat(['-l', logFile]);
     }
   }
 
@@ -193,18 +192,18 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     cwd: folder ? undefined : path.dirname(uri.fsPath),
   };
 
-  // If the VS Code extension is launched in debug mode then the debug server
-  // options are used, otherwise the run options are used.
+  // For our intents and purposes, the server should be launched the same way in
+  // both debug and run mode.
   const serverOptions: ServerOptions = {
-    run: { command: serverExecutable, transport: TransportKind.stdio, args: runArgs, options: exeOptions },
-    debug: { command: serverExecutable, transport: TransportKind.stdio, args: debugArgs, options: exeOptions },
+    run: { command: serverExecutable, transport: TransportKind.stdio, args, options: exeOptions },
+    debug: { command: serverExecutable, transport: TransportKind.stdio, args, options: exeOptions },
   };
 
   // Set a unique name per workspace folder (useful for multi-root workspaces).
   const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
-  outputChannel.appendLine('[client] run command: "' + serverExecutable + ' ' + runArgs.join(' ') + '"');
-  outputChannel.appendLine('[client] debug command: "' + serverExecutable + ' ' + debugArgs.join(' ') + '"');
+  outputChannel.appendLine('[client] run command: "' + serverExecutable + ' ' + args.join(' ') + '"');
+  outputChannel.appendLine('[client] debug command: "' + serverExecutable + ' ' + args.join(' ') + '"');
 
   outputChannel.appendLine(`[client] server cwd: ${exeOptions.cwd}`);
 
