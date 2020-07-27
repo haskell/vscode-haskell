@@ -7,14 +7,15 @@ Run `npm install` in the project root to install the development dependencies.
 You can also package up the extension with
 
 - `npm install -g vsce` to get the Extension Manager,
-- `vsce package` which creates an extension package at `vscode-hie-server-<version>.vsix`.
+- `npm install` to build the extension
+- `vsce package` which creates an extension package at `haskell-<version>.vsix`.
 
 _Note:_ that if you get errors running `vsce package`, it might help running `tsc -p ./` directly, since that gives the actual error output of the TypeScript compilation.
 
 ## Developing inside VS Code
 
-- Launch VS Code, press `File` > `Open Folder`, open the `vscode-hie-server` folder;
-- press `F5` to open a new window with the `vscode-hie-server` loaded (this will overwrite existing ones, e.g. from the marketplace);
+- Launch VS Code, press `File` > `Open Folder`, open the `vscode-haskell` folder;
+- press `F5` to open a new window with the `vscode-haskell` loaded (this will overwrite existing ones, e.g. from the marketplace);
 - open a Haskell file with the **new** editor to test the LSP client;
 
 You are now ready to make changes and debug. You can,
