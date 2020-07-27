@@ -1,6 +1,6 @@
 # Haskell for Visual Studio Code
 
-This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Langauge Server](https://github.com/haskell/haskell-language-server).
+This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
 
 ## Features
 
