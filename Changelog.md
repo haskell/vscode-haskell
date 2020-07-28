@@ -1,3 +1,9 @@
+### 1.0.0
+
+- vscode-haskell now lives under the Haskell organisation
+- Can now download zip archived binaries, which the Windows binaries are now distributed as
+- Improve README (@pepeiborra @jaspervdj)
+
 ### 0.1.1
 
 - Fix the restart server and import identifier commands
