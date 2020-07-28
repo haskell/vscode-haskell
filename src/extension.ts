@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import {
   commands,
+  env,
   ExtensionContext,
   OutputChannel,
   TextDocument,
@@ -24,7 +25,6 @@ import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
 import { executableExists } from './utils';
-import { env } from 'process';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -32,13 +32,20 @@ import { env } from 'process';
 const clients: Map<string, LanguageClient | null> = new Map();
 
 async function showMigrationMessage() {
-  if (await window.showWarningMessage('The vscode-hie-server extension has now moved to the Haskell')) {
-    env.openExternal('');
+  if (
+    await window.showWarningMessage(
+      'The vscode-hie-server extension has now moved to the Haskell extension. Please consider uninstalling and installing the new one!',
+      'Show me'
+    )
+  ) {
+    env.openExternal(Uri.parse('https://marketplace.visualstudio.com/items?itemName=haskell.haskell'));
   }
 }
 
 // This is the entrypoint to our extension
 export async function activate(context: ExtensionContext) {
+  showMigrationMessage();
+
   // (Possibly) launch the language server every time a document is opened, so
   // it works across multiple workspace folders. Eventually, haskell-lsp should
   // just support

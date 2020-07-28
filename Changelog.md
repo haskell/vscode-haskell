@@ -1,8 +1,7 @@
-### 1.0.0
+### 0.1.2
 
-- vscode-haskell now lives under the Haskell organisation
-- Can now download zip archived binaries, which the Windows binaries are now distributed as
-- Improve README (@pepeiborra @jaspervdj)
+- vscode-hie-server now lives under [a new extension](https://marketplace.visualstudio.com/items?itemName=haskell.haskell),
+  please migrate when you can!
 
 ### 0.1.1
 
