@@ -34,7 +34,7 @@ const clients: Map<string, LanguageClient | null> = new Map();
 async function showMigrationMessage() {
   if (
     await window.showWarningMessage(
-      'The vscode-hie-server extension has now moved to the Haskell extension. Please consider uninstalling and installing the new one!',
+      'The vscode-hie-server extension has now moved to the Haskell extension. Please uninstall this extension and migrate to the new one when possible',
       'Show me'
     )
   ) {
