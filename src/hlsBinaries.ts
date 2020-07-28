@@ -1,6 +1,7 @@
 import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
+import * as os from 'os';
 import * as path from 'path';
 import { env, ExtensionContext, ProgressLocation, Uri, window, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, userAgentHeader } from './utils';
@@ -18,7 +19,7 @@ interface IAsset {
 }
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
-const exeExtension = process.platform === 'win32' ? '.exe' : '';
+const exeExt = process.platform === 'win32' ? '.exe' : '';
 
 class MissingToolError extends Error {
   public readonly tool: string;
@@ -53,6 +54,17 @@ class MissingToolError extends Error {
           : Uri.parse('https://www.haskell.org/ghcup/');
       default:
         return null;
+    }
+  }
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class NoBinariesError extends Error {
+  constructor(hlsVersion: string, ghcVersion?: string) {
+    if (ghcVersion) {
+      super(`haskell-language-server ${hlsVersion} for GHC ${ghcVersion} is not available on ${os.type()}`);
+    } else {
+      super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}`);
     }
   }
 }
@@ -97,7 +109,7 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
 
   // Otherwise search to see if we previously downloaded the wrapper
 
-  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}${exeExtension}`;
+  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}${exeExt}`;
   const downloadedWrapper = path.join(context.globalStoragePath, wrapperName);
 
   if (executableExists(downloadedWrapper)) {
@@ -109,14 +121,14 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
   const githubOS = getGithubOS();
   if (githubOS === null) {
     // Don't have any binaries available for this platform
-    throw Error(`Couldn't find any haskell-language-server-wrapper binaries for ${process.platform}`);
+    throw new NoBinariesError(release.tag_name);
   }
 
-  const assetName = `haskell-language-server-wrapper-${githubOS}${exeExtension}.gz`;
-  const wrapperAsset = release.assets.find((x) => x.name === assetName);
+  const assetName = `haskell-language-server-wrapper-${githubOS}${exeExt}`;
+  const wrapperAsset = release.assets.find((x) => x.name.startsWith(assetName));
 
   if (!wrapperAsset) {
-    throw Error(`Couldn't find any ${assetName} binaries for release ${release.tag_name}`);
+    throw new NoBinariesError(release.tag_name);
   }
 
   await downloadFile(
@@ -186,6 +198,8 @@ export async function downloadHaskellLanguageServer(
       } else {
         await window.showErrorMessage(error.message);
       }
+    } else if (error instanceof NoBinariesError) {
+      window.showInformationMessage(error.message);
     } else {
       // We couldn't figure out the right ghc version to download
       window.showErrorMessage(`Couldn't figure out what GHC version the project is using:\n${error.message}`);
@@ -193,16 +207,16 @@ export async function downloadHaskellLanguageServer(
     return null;
   }
 
-  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExtension}.gz`;
-  const asset = release?.assets.find((x) => x.name === assetName);
+  // When searching for binaries, use startsWith because the compression may differ
+  // between .zip and .gz
+  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExt}`;
+  const asset = release?.assets.find((x) => x.name.startsWith(assetName));
   if (!asset) {
-    window.showErrorMessage(
-      `Couldn't find any pre-built haskell-language-server binaries for ${githubOS} and ${ghcVersion}`
-    );
+    window.showInformationMessage(new NoBinariesError(release.tag_name, ghcVersion).message);
     return null;
   }
 
-  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExtension}`;
+  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
   const binaryDest = path.join(context.globalStoragePath, serverName);
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
