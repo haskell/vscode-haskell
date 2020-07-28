@@ -7,6 +7,7 @@ import * as https from 'https';
 import { extname } from 'path';
 import * as url from 'url';
 import { ProgressLocation, window } from 'vscode';
+import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
 
 /** When making http requests to github.com, use this header otherwise
@@ -67,10 +68,39 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
           const fileStream = fs.createWriteStream(downloadDest, { mode: 0o744 });
           let curSize = 0;
 
-          // Decompress it if it's a gzip
-          const needsUnzip = res.headers['content-type'] === 'application/gzip' || extname(srcUrl.path ?? '') === '.gz';
-          if (needsUnzip) {
-            res.pipe(createGunzip()).pipe(fileStream);
+          // Decompress it if it's a gzip or zip
+          const needsGunzip =
+            res.headers['content-type'] === 'application/gzip' || extname(srcUrl.path ?? '') === '.gz';
+          const needsUnzip = res.headers['content-type'] === 'application/zip' || extname(srcUrl.path ?? '') === '.zip';
+          if (needsGunzip) {
+            const gunzip = createGunzip();
+            gunzip.on('error', reject);
+            res.pipe(gunzip).pipe(fileStream);
+          } else if (needsUnzip) {
+            const zipDest = downloadDest + '.zip';
+            const zipFs = fs.createWriteStream(zipDest);
+            zipFs.on('error', reject);
+            zipFs.on('close', () => {
+              yazul.open(zipDest, (err, zipfile) => {
+                if (err) {
+                  throw err;
+                }
+                if (!zipfile) {
+                  throw Error("Couldn't decompress zip");
+                }
+
+                // We only expect *one* file inside each zip
+                zipfile.on('entry', (entry: yazul.Entry) => {
+                  zipfile.openReadStream(entry, (err2, readStream) => {
+                    if (err2) {
+                      throw err2;
+                    }
+                    readStream?.pipe(fileStream);
+                  });
+                });
+              });
+            });
+            res.pipe(zipFs);
           } else {
             res.pipe(fileStream);
           }
