@@ -1,5 +1,7 @@
 # Haskell for Visual Studio Code
 
+[![](https://vsmarketplacebadge.apphb.com/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
+
 This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
 
 ## Features
@@ -14,8 +16,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 - Code evaluation (Haskell Language Server)
 
-   ![Eval](https://i.imgur.com/bh992sT.gif)
-
+  ![Eval](https://i.imgur.com/bh992sT.gif)
 
 ## Requirements
 
@@ -63,19 +64,20 @@ There are a few placeholders which will be expanded:
 Haskell Language Server can display Haddock documentation on hover and completions if the project and
 its dependencies have been built with the `-haddock` GHC flag.
 
-  - For cabal:
-      - Add to your global config file (e.g. `~/.cabal/config`):
-        ```
-        program-default-options
-          ghc-options: -haddock
-        ```
-      - Or, for a single project, run `cabal configure --ghc-options=-haddock`
+- For cabal:
 
-  - For stack, add to global `$STACK_ROOT\config.yaml`, or project's `stack.yaml`:
+  - Add to your global config file (e.g. `~/.cabal/config`):
     ```
-    ghc-options:
-      "$everything": -haddock
+    program-default-options
+      ghc-options: -haddock
     ```
+  - Or, for a single project, run `cabal configure --ghc-options=-haddock`
+
+- For stack, add to global `$STACK_ROOT\config.yaml`, or project's `stack.yaml`:
+  ```
+  ghc-options:
+    "$everything": -haddock
+  ```
   Note that this flag will cause compilation errors if a dependency contains invalid Haddock markup,
   until GHC 8.12 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
   instead.
