@@ -80,7 +80,7 @@ function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null
   }
 
   if (!executableExists(exePath)) {
-    throw new Error('Manual executable missing');
+    throw new Error(`serverExecutablePath is set to ${exePath} but it doesn't exist and is not on the PATH`);
   }
   return exePath;
 }
