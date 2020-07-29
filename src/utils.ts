@@ -160,7 +160,8 @@ function getWithRedirects(opts: https.RequestOptions, f: (res: http.IncomingMess
  * Checks if the executable is on the PATH
  */
 export function executableExists(exe: string): boolean {
-  const cmd: string = process.platform === 'win32' ? 'where' : 'which';
+  const isWindows = process.platform === 'win32';
+  const cmd: string = isWindows ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0;
+  return out.status === 0 || (isWindows && fs.existsSync(exe));
 }
