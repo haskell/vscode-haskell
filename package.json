@@ -115,7 +115,7 @@
             "stylish-haskell",
             "none"
           ],
-          "default": "brittany",
+          "default": "ormolu",
           "description": "The tool to use for formatting requests"
         },
         "haskell.trace.server": {
