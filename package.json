@@ -149,7 +149,7 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Set the path to your language server executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
+          "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
         },
         "haskell.enable": {
           "scope": "resource",
