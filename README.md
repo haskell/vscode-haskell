@@ -85,11 +85,12 @@ its dependencies have been built with the `-haddock` GHC flag.
 ### Downloaded binaries
 
 This extension will download `haskell-language-server` binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
-| Platform | Path |
-|----------|------|
-| macOS | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/` |
-| Windows | `%APPDATA%\Code\User\globalStorage\haskell.haskell` |
-| Linux | `$HOME/.config/Code/User/globalStorage/haskell.haskell` |
+
+| Platform | Path                                                                      |
+|----------|---------------------------------------------------------------------------|
+| macOS    | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/` |
+| Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell`                       |
+| Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell`                   |
 
 Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
 
