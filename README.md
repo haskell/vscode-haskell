@@ -1,3 +1,7 @@
+# Legacy notice
+
+This is the old home for the Haskell VS Code extension. It now lives under [the Haskell organisation publisher here.](https://marketplace.visualstudio.com/items?itemName=haskell.haskell) Please use this newer extension as this one (alanz.vscode-hie-server) will no longer receive updates.
+
 # Haskell for Visual Studio Code
 
 This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Langauge Server](https://github.com/haskell/haskell-language-server).
