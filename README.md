@@ -87,7 +87,7 @@ its dependencies have been built with the `-haddock` GHC flag.
 This extension will download `haskell-language-server` binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
 
 | Platform | Path                                                                      |
-|----------|---------------------------------------------------------------------------|
+| -------- | ------------------------------------------------------------------------- |
 | macOS    | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/` |
 | Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell`                       |
 | Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell`                   |
@@ -101,6 +101,7 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | GHC    | Linux | macOS | Windows |
 | ------ | ----- | ----- | ------- |
 | 8.10.1 | ✓     | ✓     | ✓       |
+| 8.8.4  | ✓     | ✓     |         |
 | 8.8.3  | ✓     | ✓     |         |
 | 8.8.2  | ✓     | ✓     |         |
 | 8.6.5  | ✓     | ✓     | ✓       |
