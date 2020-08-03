@@ -1,3 +1,12 @@
+### 1.0.1
+
+- Switch the default formatter to Ormolu to match haskell-language-server
+- Fix `haskell.serverExecutablePath` not working with absolute paths on Windows
+  (@winestone)
+- Improve the help text and error message when `haskell.serverExecutablePath`
+  is not found
+- Fix the rendering of the markdown table in the README (@Darren8098)
+
 ### 1.0.0
 
 - vscode-haskell now lives under the Haskell organisation
