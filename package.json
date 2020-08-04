@@ -150,12 +150,6 @@
           "type": "string",
           "default": "",
           "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
-        },
-        "haskell.enable": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable the language server (useful for multi-root workspaces)."
         }
       }
     },
