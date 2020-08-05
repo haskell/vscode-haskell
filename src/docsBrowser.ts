@@ -85,11 +85,13 @@ export namespace DocsBrowser {
 
   function processLink(ms: MarkedString): string | MarkdownString {
     function transform(s: string): string {
-      return s.replace(/\[(.+)\]\((file:.+\/doc\/.+\.html#?.*)\)/gi, (all, title, path) => {
-        const encoded = encodeURIComponent(JSON.stringify({ title, path }));
-        const cmd = 'command:haskell.showDocumentation?' + encoded;
-        return `[${title}](${cmd})`;
-      });
+      // normalize slashes from windows paths and replace file url with show doc command
+      return s.replace(/\\/gi, '/')
+        .replace(/\[(.+)\]\((file:.+\/doc\/.+\.html#?.*)\)/gi, (all, title, path) => {
+          const encoded = encodeURIComponent(JSON.stringify({ title, path }));
+          const cmd = 'command:haskell.showDocumentation?' + encoded;
+          return `[${title}](${cmd})`;
+        });
     }
     if (typeof ms === 'string') {
       return transform(ms as string);
