@@ -139,12 +139,6 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   // Set the key to null to prevent multiple servers being launched at once
   clients.set(clientsKey, null);
 
-  // Stop right here, if Haskell is disabled in the resource/workspace folder.
-  const enable = workspace.getConfiguration('haskell', uri).enable;
-  if (!enable) {
-    return;
-  }
-
   const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
   const logFile = workspace.getConfiguration('haskell', uri).logFile;
 

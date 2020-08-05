@@ -36,14 +36,6 @@ You can choose which language server to use from the "Haskell > Language Server 
 
 ## Configuration options
 
-### Enable/disable server
-
-You can enable or disable the chosen haskell language server via configuration. This is sometimes useful at workspace level, because multi-root workspaces do not yet allow you to manage extensions at the folder level, which can be necessary.
-
-```json
-"haskell.enable": true
-```
-
 ### Path to server executable executable
 
 If your server is manually installed and not on your path, you can also manually set the path to the executable.
