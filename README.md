@@ -159,6 +159,8 @@ Please include the output when filing any issues on the relevant language server
 
 ### Troubleshooting
 
+- Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
+Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
 - Usually the error or unexpected behaviour is already reported in the haskell language server [used by the extension](#hie-variant). Finding the issue in its issue tracker could be useful to help resolve it. Sometimes even it includes a workaround for the issue.
 - Haskell language servers issue trackers:
   - haskell-ide-engine (the default haskell language server): https://github.com/haskell/haskell-ide-engine/issues
