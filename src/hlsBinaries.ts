@@ -157,13 +157,17 @@ export async function downloadHaskellLanguageServer(
       path: '/repos/haskell/haskell-language-server/releases',
       headers: userAgentHeader,
     };
-    https.get(opts, (res) => {
-      res.on('data', (d) => (data += d));
-      res.on('error', reject);
-      res.on('close', () => {
-        resolve(JSON.parse(data));
+    https
+      .get(opts, (res) => {
+        res.on('data', (d) => (data += d));
+        res.on('error', reject);
+        res.on('close', () => {
+          resolve(JSON.parse(data));
+        });
+      })
+      .on('error', (e) => {
+        reject(new Error(`Couldn't get the latest haskell-language-server releases from GitHub:\n${e.message}`));
       });
-    });
   });
 
   // Make sure to create this before getProjectGhcVersion
