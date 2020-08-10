@@ -1,3 +1,10 @@
+### 1.1.0
+
+- Add Fourmolu as a plugin formatter provider (@georgefst)
+- Remove the `haskell.enable` configuration option, since VS Code now allows
+  you to disable extensions on a per workspace basis
+- Display errors when fetching from the GitHub API properly
+
 ### 1.0.1
 
 - Switch the default formatter to Ormolu to match haskell-language-server

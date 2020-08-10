@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server, ghcide or HIE",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
