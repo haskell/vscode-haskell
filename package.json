@@ -1,251 +1,208 @@
 {
-  "name": "vscode-hie-server",
-  "displayName": "Haskell Language Server",
-  "description": "Language Server Protocol for Haskell via HIE",
-  "version": "0.0.40",
+  "name": "haskell",
+  "displayName": "Haskell",
+  "description": "Haskell language support powered by the Haskell Language Server, ghcide or HIE",
+  "version": "1.0.1",
   "license": "MIT",
-  "publisher": "alanz",
+  "publisher": "haskell",
   "engines": {
     "vscode": "^1.39.0"
   },
-  "keywords": ["language", "haskell", "lsp", "multi-root ready"],
-  "homepage": "https://github.com/alanz/vscode-hie-server",
+  "keywords": [
+    "language",
+    "haskell",
+    "cabal",
+    "stack",
+    "lsp",
+    "multi-root ready"
+  ],
+  "homepage": "https://github.com/haskell/vscode-haskell",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alanz/vscode-hie-server.git"
+    "url": "https://github.com/haskell/vscode-haskell.git"
   },
   "bugs": {
-    "url": "https://github.com/alanz/vscode-hie-server/issues"
+    "url": "https://github.com/haskell/vscode-haskell/issues"
   },
-  "categories": ["Programming Languages", "Formatters", "Linters", "Other"],
-  "icon": "images/HIE_logo_128.png",
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Linters",
+    "Other"
+  ],
+  "icon": "images/haskell-logo.png",
   "galleryBanner": {
     "color": "#22172A",
     "theme": "dark"
   },
-  "activationEvents": ["onLanguage:haskell", "onLanguage:literate haskell"],
+  "activationEvents": [
+    "onLanguage:haskell",
+    "onLanguage:literate haskell"
+  ],
   "main": "./dist/extension",
   "contributes": {
     "languages": [
       {
         "id": "haskell",
-        "aliases": ["Haskell", "haskell"],
-        "extensions": [".hs"]
+        "aliases": [
+          "Haskell",
+          "haskell"
+        ],
+        "extensions": [
+          ".hs"
+        ]
       },
       {
         "id": "literate haskell",
-        "aliases": ["Literate Haskell", "literate Haskell"],
-        "extensions": [".lhs"]
+        "aliases": [
+          "Literate Haskell",
+          "literate Haskell"
+        ],
+        "extensions": [
+          ".lhs"
+        ]
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "Haskell Language Server",
+      "title": "Haskell",
       "properties": {
-        "languageServerHaskell.hlintOn": {
+        "haskell.hlintOn": {
           "title": "Hlint",
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "Get suggestions from hlint"
         },
-        "languageServerHaskell.maxNumberOfProblems": {
+        "haskell.maxNumberOfProblems": {
           "scope": "resource",
           "type": "number",
           "default": 100,
-          "description": "Controls the maximum number of problems produced by the server."
+          "description": "Controls the maximum number of problems produced by the server"
         },
-        "languageServerHaskell.diagnosticsOnChange": {
+        "haskell.diagnosticsOnChange": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description":
-            "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
+          "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
         },
-        "languageServerHaskell.liquidOn": {
+        "haskell.liquidOn": {
           "scope": "resource",
           "type": "boolean",
           "default": false,
           "description": "Get diagnostics from liquid haskell"
         },
-        "languageServerHaskell.completionSnippetsOn": {
+        "haskell.completionSnippetsOn": {
           "title": "Completion Snippets",
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "Show snippets with type information when using code completion"
         },
-        "languageServerHaskell.formatOnImportOn": {
+        "haskell.formatOnImportOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "When adding an import, use the formatter on the result"
         },
-        "languageServerHaskell.formattingProvider": {
+        "haskell.formattingProvider": {
           "scope": "resource",
           "type": "string",
-          "enum": ["brittany", "floskell", "fourmolu", "ormolu", "none"],
-          "default": "brittany",
-          "description": "The tool to use for formatting requests."
+          "enum": [
+            "brittany",
+            "floskell",
+            "fourmolu",
+            "ormolu",
+            "stylish-haskell",
+            "none"
+          ],
+          "default": "ormolu",
+          "description": "The formatter to use when formatting a document or range"
         },
-        "languageServerHaskell.showTypeForSelection.onHover": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description":
-            "If true, when an expression is selected, the hover tooltip will attempt to display the type of the entire expression - rather than just the term under the cursor."
-        },
-        "languageServerHaskell.showTypeForSelection.command.location": {
-          "scope": "resource",
-          "type": "string",
-          "enum": ["dropdown", "channel"],
-          "default": "dropdown",
-          "description":
-            "Determines where the type information for selected text will be shown when the `showType` command is triggered (distinct from automatically showing this information when hover is triggered).\ndropdown: in a dropdown\nchannel: will be revealed in an output channel"
-        },
-        "languageServerHaskell.trace.server": {
+        "haskell.trace.server": {
           "scope": "resource",
           "type": "string",
-          "enum": ["off", "messages"],
+          "enum": [
+            "off",
+            "messages"
+          ],
           "default": "off",
-          "description": "Traces the communication between VSCode and the languageServerHaskell service."
+          "description": "Traces the communication between VS Code and the language server."
         },
-        "languageServerHaskell.logFile": {
+        "haskell.logFile": {
           "scope": "resource",
           "type": "string",
           "default": "",
           "description": "If set, redirects the logs to a file."
         },
-        "languageServerHaskell.hieVariant": {
+        "haskell.languageServerVariant": {
           "scope": "resource",
           "type": "string",
-          "enum": ["haskell-ide-engine", "haskell-language-server", "ghcide"],
-          "default": "haskell-ide-engine",
-          "description": "Which haskell language server to use."
+          "enum": [
+            "haskell-ide-engine",
+            "haskell-language-server",
+            "ghcide"
+          ],
+          "default": "haskell-language-server",
+          "description": "Which language server to use."
         },
-        "languageServerHaskell.hieExecutablePath": {
+        "haskell.serverExecutablePath": {
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description":
-            "Set the path to your hie executable, if it's not already on your $PATH. Works with ~, ${HOME} and ${workspaceFolder}."
-        },
-        "languageServerHaskell.enableHIE": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enable/disable HIE (useful for multi-root workspaces)."
+          "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
         }
       }
     },
     "commands": [
       {
-        "command": "hie.commands.demoteDef",
-        "title": "Haskell: Demote Definition",
-        "description": "Move a definition one level down"
-      },
-      {
-        "command": "hie.commands.liftOneLevel",
-        "title": "Haskell: Lift One Level",
-        "description": "Move definition one level up from where it is now"
-      },
-      {
-        "command": "hie.commands.liftTopLevel",
-        "title": "Haskell: Lift to Top Level",
-        "description": "Move a definition to the top level"
-      },
-      {
-        "command": "hie.commands.genApplicative",
-        "title": "Haskell: Generalize Applicative",
-        "description": "Generalize a monadic function to use applicative"
-      },
-      {
-        "command": "hie.commands.deleteDef",
-        "title": "Haskell: Delete Definition",
-        "description": "Deletes a definition"
-      },
-      {
-        "command": "hie.commands.insertType",
-        "title": "Haskell: Insert type",
-        "description": "Insert type for the expression"
-      },
-      {
-        "command": "hie.commands.showType",
-        "title": "Haskell: Show type",
-        "description": "Show type for the expression"
-      },
-      {
-        "command": "hie.commands.caseSplit",
-        "title": "Haskell: Split case",
-        "description": "Generate pattern matches for the identifier under the cursor"
-      },
-      {
-        "command": "hie.commands.importIdentifier",
+        "command": "haskell.commands.importIdentifier",
         "title": "Haskell: Import identifier",
         "description": "Imports a function or type based on a Hoogle search"
       },
       {
-        "command": "hie.commands.restartHie",
-        "title": "Haskell: Restart HIE",
-        "description": "Restart the Hie LSP server"
+        "command": "haskell.commands.restartServer",
+        "title": "Haskell: Restart Haskell LSP server",
+        "description": "Restart the Haskell LSP server"
       }
-    ],
-    "keybindings": [
-      {
-        "command": "hie.commands.showType",
-        "key": "ctrl+alt+t",
-        "mac": "cmd+alt+t",
-        "when": "editorTextFocus"
-      }
-    ],
-    "menus": {
-      "editor/title": [
-        {
-          "when": "resourceLangId == haskell",
-          "command": "hie.commands.demoteDef"
-        }
-      ],
-      "editor/context": [
-        {
-          "when": "resourceLangId == haskell",
-          "command": "hie.commands.demoteDef",
-          "group": "HaRe@1"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
     "compile": "webpack --mode none",
     "watch": "webpack --mode none --watch --info-verbosity verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "tsc -p . && node ./node_modules/vscode/bin/test",
     "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
-    "precommit": "pretty-quick --staged",
-    "push-tag":
-      "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
+    "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.17",
     "@types/js-yaml": "^3.12.3",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^4.1.2",
-    "@types/mocha": "^2.2.46",
-    "@types/node": "^8.10.59",
+    "@types/node": "^14.0.3",
     "@types/request-promise-native": "^1.0.17",
-    "husky": "^0.14.3",
-    "prettier": "1.11.1",
-    "pretty-quick": "^1.11.1",
+    "@types/yauzl": "^2.9.1",
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1",
     "ts-loader": "^6.2.2",
     "tslint": "^5.20.1",
     "tslint-loader": "^3.5.4",
-    "typescript": "^3.8.3",
+    "typescript": "^3.9.5",
     "vscode": "^1.1.36",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   },
-  "extensionDependencies": ["justusadam.language-haskell"],
+  "extensionDependencies": [
+    "justusadam.language-haskell"
+  ],
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "extend": ">=3.0.2",
@@ -254,6 +211,7 @@
     "lru-cache": "^4.1.5",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
-    "vscode-languageclient": "6.1.3"
+    "vscode-languageclient": "6.1.3",
+    "yauzl": "^2.10.0"
   }
 }
