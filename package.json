@@ -111,12 +111,13 @@
           "enum": [
             "brittany",
             "floskell",
+            "fourmolu",
             "ormolu",
             "stylish-haskell",
             "none"
           ],
           "default": "ormolu",
-          "description": "The tool to use for formatting requests"
+          "description": "The formatter to use when formatting a document or range"
         },
         "haskell.trace.server": {
           "scope": "resource",
