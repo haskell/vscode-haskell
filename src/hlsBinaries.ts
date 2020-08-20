@@ -195,6 +195,8 @@ export async function downloadHaskellLanguageServer(
   } catch (error) {
     if (error instanceof MissingToolError) {
       const link = error.installLink();
+      console.log(`PATH: ${process.env.PATH}`);
+      window.showErrorMessage(`PATH: ${process.env.PATH}`);
       if (link) {
         if (await window.showErrorMessage(error.message, `Install ${error.tool}`)) {
           env.openExternal(link);
