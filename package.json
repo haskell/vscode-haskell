@@ -171,7 +171,6 @@
     "vscode:prepublish": "webpack --mode production",
     "compile": "webpack --mode none",
     "watch": "webpack --mode none --watch --info-verbosity verbose",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "tslint": "tslint -p tsconfig.json -c tslint.json --format stylish 'src/**/*.ts'",
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version"
