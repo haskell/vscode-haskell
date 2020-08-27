@@ -20,6 +20,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient';
 import { CommandNames } from './commands/constants';
+import { HLintApply } from './commands/HLintApply';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
@@ -65,6 +66,9 @@ export async function activate(context: ExtensionContext) {
   // Set up the documentation browser.
   const docsDisposable = DocsBrowser.registerDocsBrowser();
   context.subscriptions.push(docsDisposable);
+
+  // Add the HLint commands
+  HLintApply.registerCommands(clients, context);
 }
 
 function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {
