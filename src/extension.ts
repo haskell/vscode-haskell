@@ -65,6 +65,9 @@ export async function activate(context: ExtensionContext) {
   // Set up the documentation browser.
   const docsDisposable = DocsBrowser.registerDocsBrowser();
   context.subscriptions.push(docsDisposable);
+
+  const openInAppDisposable = DocsBrowser.registerDocsOpenInBrowser();
+  context.subscriptions.push(openInAppDisposable);
 }
 
 function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {

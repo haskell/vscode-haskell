@@ -1,3 +1,4 @@
+import openPath = require('open');
 import { dirname } from 'path';
 import {
   CancellationToken,
@@ -33,13 +34,37 @@ export namespace DocsBrowser {
         panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Beside, {
           localResourceRoots: [Uri.parse(documentationDirectory)],
           enableFindWidget: true,
+          // TODO: a separate PR (window's content not destroyed when goes out of sight)
+          // retainContextWhenHidden: true,
+          enableCommandUris: true,
         });
         const uri = panel.webview.asWebviewUri(Uri.parse(path));
-        panel.webview.html = `<iframe src="${uri}" frameBorder = "0" style = "background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 0px;" /> `;
+        const encodedPath = encodeURIComponent(JSON.stringify(path));
+        // TODO : better markup / divs?
+        panel.webview.html = `<table>
+          <tr><td><a href="command:haskell.openDocumentationInBrowser?${encodedPath}">Open In Browser</a></td></tr>
+          <tr><td><iframe src="${uri}" frameBorder = "0" style = "background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 30px;"/></td></tr>
+        </table>`;
       } catch (e) {
         window.showErrorMessage(e);
       }
       return panel;
+    });
+  }
+
+  export function registerDocsOpenInBrowser(): Disposable {
+    return commands.registerCommand('haskell.openDocumentationInBrowser', async (path: string) => {
+      try {
+        // when opened in default program, file URL ignores the # anchor tag at shows from the top
+        // (at least on Windows) so must specify the browser explicitly
+        // TODO : move chrome to the settings
+
+        // open file in browser and close the webview in VS code
+        await openPath(path, { app: 'chrome' });
+        commands.executeCommand('workbench.action.closeActiveEditor');
+      } catch (e) {
+        window.showErrorMessage(e);
+      }
     });
   }
 
