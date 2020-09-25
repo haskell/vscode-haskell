@@ -1,4 +1,3 @@
-import openPath = require('open');
 import { dirname } from 'path';
 import {
   CancellationToken,
@@ -7,6 +6,7 @@ import {
   CompletionItem,
   CompletionList,
   Disposable,
+  env,
   Hover,
   MarkdownString,
   MarkedString,
@@ -60,7 +60,7 @@ export namespace DocsBrowser {
         // TODO : move chrome to the settings
 
         // open file in browser and close the webview in VS code
-        await openPath(path, { app: 'chrome' });
+        await env.openExternal(Uri.parse(path));
         commands.executeCommand('workbench.action.closeActiveEditor');
       } catch (e) {
         window.showErrorMessage(e);
