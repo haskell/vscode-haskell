@@ -180,7 +180,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
     }
   }
   // Not all users want to upgrade right away, in that case prompt
-  const updateBehaviour = workspace.getConfiguration('haskell').get('hlsUpdateBehavior') as UpdateBehaviour;
+  const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
 
   if (updateBehaviour === 'never-check') {
     return readCachedReleaseData();
@@ -253,7 +253,7 @@ export async function downloadHaskellLanguageServer(
   const release = await getLatestReleaseMetadata(context);
   if (!release) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
-    const updateBehaviour = workspace.getConfiguration('haskell').get('hlsUpdateBehavior') as UpdateBehaviour;
+    const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
     if (updateBehaviour === 'never-check') {
       message += ' (and checking for newer versions is disabled)';
     }

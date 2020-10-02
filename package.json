@@ -152,7 +152,7 @@
           "default": "",
           "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
         },
-        "haskell.hlsUpdateBehavior": {
+        "haskell.updateBehavior": {
           "scope": "machine",
           "type": "string",
           "enum": [
