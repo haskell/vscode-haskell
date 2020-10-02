@@ -157,13 +157,15 @@
           "type": "string",
           "enum": [
             "keep-up-to-date",
-            "prompt"
+            "prompt",
+            "never-check"
           ],
           "enumDescriptions": [
             "Always download the latest available version when it is published",
-            "Prompt before downloading a newer version"
+            "Prompt before upgrading to a newer version",
+            "Don't check for newer versions"
           ],
-          "default": true,
+          "default": "keep-up-to-date",
           "markdownDescription": "Only applicable with `#haskell.languageServerVariant#` set to `haskell-language-server`. Determine what to do when a new version of the language server is available."
         }
       }

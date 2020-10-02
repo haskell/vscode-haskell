@@ -20,7 +20,7 @@ interface IAsset {
   name: string;
 }
 
-type UpdateBehaviour = 'keep-up-to-date' | 'prompt';
+type UpdateBehaviour = 'keep-up-to-date' | 'prompt' | 'never-check';
 
 const assetValidator: validate.Validator<IAsset> = validate.object({
   browser_download_url: validate.string(),
@@ -179,14 +179,18 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
       throw err;
     }
   }
+  // Not all users want to upgrade right away, in that case prompt
+  const updateBehaviour = workspace.getConfiguration('haskell').get('hlsUpdateBehavior') as UpdateBehaviour;
+
+  if (updateBehaviour === 'never-check') {
+    return readCachedReleaseData();
+  }
 
   try {
     const releaseInfo = await httpsGetSilently(opts);
     const latestInfoParsed =
       validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).find((x) => !x.prerelease) || null;
 
-    // Not all users want to upgrade right away, in that case prompt
-    const updateBehaviour = workspace.getConfiguration('haskell').get('hlsUpdateBehavior') as UpdateBehaviour;
     if (updateBehaviour === 'prompt') {
       const cachedInfoParsed = await readCachedReleaseData();
 
@@ -248,7 +252,12 @@ export async function downloadHaskellLanguageServer(
   // Fetch the latest release from GitHub or from cache
   const release = await getLatestReleaseMetadata(context);
   if (!release) {
-    window.showErrorMessage("Couldn't find any pre-built haskell-language-server binaries");
+    let message = "Couldn't find any pre-built haskell-language-server binaries";
+    const updateBehaviour = workspace.getConfiguration('haskell').get('hlsUpdateBehavior') as UpdateBehaviour;
+    if (updateBehaviour === 'never-check') {
+      message += ' (and checking for newer versions is disabled)';
+    }
+    window.showErrorMessage(message);
     return null;
   }
 

@@ -6,6 +6,7 @@ import * as http from 'http';
 import * as https from 'https';
 import { extname } from 'path';
 import * as url from 'url';
+import { promisify } from 'util';
 import { ProgressLocation, window } from 'vscode';
 import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
@@ -48,6 +49,13 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
       })
       .on('error', reject);
   });
+}
+
+async function ignoreFileNotExists(err: NodeJS.ErrnoException): Promise<void> {
+  if (err.code === 'ENOENT') {
+    return;
+  }
+  throw err;
 }
 
 export async function downloadFile(titleMsg: string, src: string, dest: string): Promise<void> {
@@ -158,10 +166,10 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
     } else {
       inFlightDownloads.set(src, new Map([[dest, downloadTask]]));
     }
-    return downloadTask;
+    return await downloadTask;
   } catch (e) {
-    fs.unlinkSync(downloadDest);
-    throw new Error(`Failed to download ${url}`);
+    await promisify(fs.unlink)(downloadDest).catch(ignoreFileNotExists);
+    throw new Error(`Failed to download ${src}:\n${e.message}`);
   }
 }
 
