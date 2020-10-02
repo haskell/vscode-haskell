@@ -24,6 +24,7 @@ function success<T>(t: T): ValidationResult<T> {
     value: t,
   };
 }
+
 function failure<T>(errors: IValidationError[]): ValidationResult<T> {
   return {
     success: false,
@@ -100,33 +101,24 @@ export function object<S>(schema: { [P in keyof S]: Validator<S[P]> }): Validato
     }
 
     if (!validationFailed) {
-      return {
-        success: true,
-        // when we get here, all properties in S have been validated and assigned, so
-        // this type assertion is okay.
-        value: scrutinee as { [P in keyof S]: S[P] },
-      };
+      // when we get here, all properties in S have been validated and assigned, so
+      // this type assertion is okay.
+      return success(scrutinee as { [P in keyof S]: S[P] });
     }
 
-    return {
-      success: false,
-      errors,
-    };
+    return failure(errors);
   };
 }
 
 export function array<S>(memberValidator: Validator<S>): Validator<S[]> {
   return (scrutinee) => {
     if (!(scrutinee instanceof Array)) {
-      return {
-        success: false,
-        errors: [
-          {
-            path: [],
-            message: 'expected an array',
-          },
-        ],
-      };
+      return failure([
+        {
+          path: [],
+          message: 'expected an array',
+        },
+      ]);
     }
 
     const errors: IValidationError[] = [];
@@ -147,26 +139,17 @@ export function array<S>(memberValidator: Validator<S>): Validator<S[]> {
     }
 
     if (!validationFailed) {
-      return {
-        success: true,
-        value: scrutinee,
-      };
+      return success(scrutinee);
     }
 
-    return {
-      success: false,
-      errors,
-    };
+    return failure(errors);
   };
 }
 
 export function optional<T>(validator: Validator<T>): Validator<T | null> {
   return (scrutinee) => {
     if (scrutinee === null) {
-      return {
-        success: true,
-        value: null,
-      };
+      return success(null);
     }
     return validator(scrutinee);
   };
