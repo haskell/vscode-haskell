@@ -6,10 +6,11 @@ import * as path from 'path';
 import { promisify } from 'util';
 import { env, ExtensionContext, ProgressLocation, Uri, window, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, httpsGetSilently } from './utils';
+import * as validate from './validation';
 
 /** GitHub API release */
 interface IRelease {
-  assets: [IAsset];
+  assets: IAsset[];
   tag_name: string;
   prerelease: boolean;
 }
@@ -18,6 +19,21 @@ interface IAsset {
   browser_download_url: string;
   name: string;
 }
+
+const assetValidator: validate.Validator<IAsset> = validate.object({
+  browser_download_url: validate.string(),
+  name: validate.string(),
+});
+
+const releaseValidator: validate.Validator<IRelease> = validate.object({
+  assets: validate.array(assetValidator),
+  tag_name: validate.string(),
+  prerelease: validate.boolean(),
+});
+
+const githubReleaseApiValidator: validate.Validator<IRelease[]> = validate.array(releaseValidator);
+
+const cachedReleaseValidator: validate.Validator<IRelease | null> = validate.optional(releaseValidator);
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
@@ -141,7 +157,7 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
   return callWrapper(downloadedWrapper);
 }
 
-async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | undefined> {
+async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | null> {
   const opts: https.RequestOptions = {
     host: 'api.github.com',
     path: '/repos/haskell/haskell-language-server/releases',
@@ -150,7 +166,8 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
 
   try {
     const releaseInfo = await httpsGetSilently(opts);
-    const latestInfoParsed = (JSON.parse(releaseInfo) as IRelease[]).find((x) => !x.prerelease);
+    const latestInfoParsed =
+      validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).find((x) => !x.prerelease) || null;
 
     // Cache the latest successfully fetched release information
     await promisify(fs.writeFile)(offlineCache, JSON.stringify(latestInfoParsed), { encoding: 'utf-8' });
@@ -160,7 +177,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
     try {
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
 
-      const cachedInfoParsed = JSON.parse(cachedInfo);
+      const cachedInfoParsed = validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
       window.showWarningMessage(
         `Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead:\n${githubError.message}`
       );
