@@ -4,7 +4,7 @@ import * as https from 'https';
 import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
-import { env, ExtensionContext, ProgressLocation, Uri, window, WorkspaceFolder } from 'vscode';
+import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, httpsGetSilently } from './utils';
 import * as validate from './validation';
 
@@ -19,6 +19,8 @@ interface IAsset {
   browser_download_url: string;
   name: string;
 }
+
+type UpdateBehaviour = 'keep-up-to-date' | 'prompt';
 
 const assetValidator: validate.Validator<IAsset> = validate.object({
   browser_download_url: validate.string(),
@@ -162,12 +164,48 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
     host: 'api.github.com',
     path: '/repos/haskell/haskell-language-server/releases',
   };
-  const offlineCache = path.join(context.globalStoragePath, 'latestRelease.cache.json');
+
+  const offlineCache = path.join(context.globalStoragePath, 'latestApprovedRelease.cache.json');
+
+  async function readCachedReleaseData(): Promise<IRelease | null> {
+    try {
+      const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
+      return validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
+    } catch (err) {
+      // If file doesn't exist, return null, otherwise consider it a failure
+      if (err.code === 'ENOENT') {
+        return null;
+      }
+      throw err;
+    }
+  }
 
   try {
     const releaseInfo = await httpsGetSilently(opts);
     const latestInfoParsed =
       validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).find((x) => !x.prerelease) || null;
+
+    // Not all users want to upgrade right away, in that case prompt
+    const updateBehaviour = workspace.getConfiguration('haskell').get('hlsUpdateBehavior') as UpdateBehaviour;
+    if (updateBehaviour === 'prompt') {
+      const cachedInfoParsed = await readCachedReleaseData();
+
+      if (
+        latestInfoParsed !== null &&
+        (cachedInfoParsed === null || latestInfoParsed.tag_name !== cachedInfoParsed.tag_name)
+      ) {
+        const promptMessage =
+          cachedInfoParsed === null
+            ? 'No version of the haskell-language-server is installed, would you like to install it now?'
+            : 'A new version of the haskell-language-server is available, would you like to upgrade now?';
+
+        const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
+        if (decision !== 'Download') {
+          // If not upgrade, bail and don't overwrite cached version information
+          return cachedInfoParsed;
+        }
+      }
+    }
 
     // Cache the latest successfully fetched release information
     await promisify(fs.writeFile)(offlineCache, JSON.stringify(latestInfoParsed), { encoding: 'utf-8' });
@@ -175,9 +213,8 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
   } catch (githubError) {
     // Attempt to read from the latest cached file
     try {
-      const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
+      const cachedInfoParsed = await readCachedReleaseData();
 
-      const cachedInfoParsed = validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
       window.showWarningMessage(
         `Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead:\n${githubError.message}`
       );

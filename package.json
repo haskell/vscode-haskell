@@ -151,6 +151,20 @@
           "type": "string",
           "default": "",
           "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
+        },
+        "haskell.hlsUpdateBehavior": {
+          "scope": "machine",
+          "type": "string",
+          "enum": [
+            "keep-up-to-date",
+            "prompt"
+          ],
+          "enumDescriptions": [
+            "Always download the latest available version when it is published",
+            "Prompt before downloading a newer version"
+          ],
+          "default": true,
+          "markdownDescription": "Only applicable with `#haskell.languageServerVariant#` set to `haskell-language-server`. Determine what to do when a new version of the language server is available."
         }
       }
     },
