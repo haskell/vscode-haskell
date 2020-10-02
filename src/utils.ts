@@ -13,7 +13,7 @@ import { createGunzip } from 'zlib';
 /** When making http requests to github.com, use this header otherwise
  * the server will close the request
  */
-export const userAgentHeader = { 'User-Agent': 'vscode-haskell' };
+const userAgentHeader = { 'User-Agent': 'vscode-haskell' };
 
 /** downloadFile may get called twice on the same src and destination:
  * When this happens, we should only download the file once but return two
@@ -26,6 +26,29 @@ export const userAgentHeader = { 'User-Agent': 'vscode-haskell' };
  * [src, dest] as the key.
  */
 const inFlightDownloads = new Map<string, Map<string, Thenable<void>>>();
+
+export async function httpsGetSilently(options: https.RequestOptions): Promise<string> {
+  const opts: https.RequestOptions = {
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+      ...userAgentHeader,
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    let data: string = '';
+    https
+      .get(opts, (res) => {
+        res.on('data', (d) => (data += d));
+        res.on('error', reject);
+        res.on('close', () => {
+          resolve(data);
+        });
+      })
+      .on('error', reject);
+  });
+}
 
 export async function downloadFile(titleMsg: string, src: string, dest: string): Promise<void> {
   // Check to see if we're already in the process of downloading the same thing

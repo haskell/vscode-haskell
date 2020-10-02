@@ -3,8 +3,9 @@ import * as fs from 'fs';
 import * as https from 'https';
 import * as os from 'os';
 import * as path from 'path';
+import { promisify } from 'util';
 import { env, ExtensionContext, ProgressLocation, Uri, window, WorkspaceFolder } from 'vscode';
-import { downloadFile, executableExists, userAgentHeader } from './utils';
+import { downloadFile, executableExists, httpsGetSilently } from './utils';
 
 /** GitHub API release */
 interface IRelease {
@@ -140,6 +141,35 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
   return callWrapper(downloadedWrapper);
 }
 
+async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | undefined> {
+  const opts: https.RequestOptions = {
+    host: 'api.github.com',
+    path: '/repos/haskell/haskell-language-server/releases',
+  };
+  const offlineCache = path.join(context.globalStoragePath, 'latestRelease.cache.json');
+
+  try {
+    const releaseInfo = await httpsGetSilently(opts);
+    const latestInfoParsed = (JSON.parse(releaseInfo) as IRelease[]).find((x) => !x.prerelease);
+
+    // Cache the latest successfully fetched release information
+    await promisify(fs.writeFile)(offlineCache, JSON.stringify(latestInfoParsed), { encoding: 'utf-8' });
+    return latestInfoParsed;
+  } catch (githubError) {
+    // Attempt to read from the latest cached file
+    try {
+      const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
+
+      const cachedInfoParsed = JSON.parse(cachedInfo);
+      window.showWarningMessage(
+        `Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead:\n${githubError.message}`
+      );
+      return cachedInfoParsed;
+    } catch (fileError) {
+      throw new Error(`Couldn't get the latest haskell-language-server releases from GitHub:\n${githubError.message}`);
+    }
+  }
+}
 /**
  * Downloads the latest haskell-language-server binaries from GitHub releases.
  * Returns null if it can't find any that match.
@@ -149,27 +179,6 @@ export async function downloadHaskellLanguageServer(
   resource: Uri,
   folder?: WorkspaceFolder
 ): Promise<string | null> {
-  // Fetch the latest release from GitHub
-  const releases: IRelease[] = await new Promise((resolve, reject) => {
-    let data: string = '';
-    const opts: https.RequestOptions = {
-      host: 'api.github.com',
-      path: '/repos/haskell/haskell-language-server/releases',
-      headers: userAgentHeader,
-    };
-    https
-      .get(opts, (res) => {
-        res.on('data', (d) => (data += d));
-        res.on('error', reject);
-        res.on('close', () => {
-          resolve(JSON.parse(data));
-        });
-      })
-      .on('error', (e) => {
-        reject(new Error(`Couldn't get the latest haskell-language-server releases from GitHub:\n${e.message}`));
-      });
-  });
-
   // Make sure to create this before getProjectGhcVersion
   if (!fs.existsSync(context.globalStoragePath)) {
     fs.mkdirSync(context.globalStoragePath);
@@ -182,13 +191,15 @@ export async function downloadHaskellLanguageServer(
     return null;
   }
 
-  const release = releases.find((x) => !x.prerelease);
+  // Fetch the latest release from GitHub or from cache
+  const release = await getLatestReleaseMetadata(context);
   if (!release) {
     window.showErrorMessage("Couldn't find any pre-built haskell-language-server binaries");
     return null;
   }
-  const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
 
+  // Figure out the ghc version to use or advertise an installation link for missing components
+  const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
   try {
     ghcVersion = await getProjectGhcVersion(context, dir, release);
@@ -224,15 +235,8 @@ export async function downloadHaskellLanguageServer(
   const binaryDest = path.join(context.globalStoragePath, serverName);
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
-  try {
-    await downloadFile(title, asset.browser_download_url, binaryDest);
-    return binaryDest;
-  } catch (e) {
-    if (e instanceof Error) {
-      window.showErrorMessage(e.message);
-    }
-    return null;
-  }
+  await downloadFile(title, asset.browser_download_url, binaryDest);
+  return binaryDest;
 }
 
 /** Get the OS label used by GitHub for the current platform */
