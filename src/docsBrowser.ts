@@ -43,7 +43,7 @@ export namespace DocsBrowser {
           const encoded = encodeURIComponent(JSON.stringify({ hackageUri }));
           const hackageCmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
 
-          panel.webview.html = `<div><a href="${hackageCmd}">Reopen on Hackage (beta)</a></div>
+          panel.webview.html = `<div><a href="${hackageCmd}">Reopen on Hackage</a></div>
           <div><iframe src="${uri}" frameBorder = "0" style = "background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 30px;"/></div>`;
         } catch (e) {
           await window.showErrorMessage(e);
