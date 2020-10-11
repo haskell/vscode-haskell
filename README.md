@@ -30,7 +30,7 @@ Whilst this extension is powered by the Haskell Language Server by default, it a
 
 - [Haskell Language Server](https://github.com/haskell/haskell-language-server#installation): This is the default language server which will automatically be downloaded, so it does not need manual installation. It builds upon ghcide by providing extra plugins and features.
 - [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with support for [basic features](https://github.com/digital-asset/ghcide#features).
-- [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): A stable and mature language server, but note that development has moved from this to the Haskell Language Server.
+- [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): A legacy language server, you probably shouldn't use this one. Haskell Language Server replaces it instead.
 
 You can choose which language server to use from the "Haskell > Language Server Variant" configuration option.
 
@@ -100,48 +100,6 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | 8.6.5  | ✓     | ✓     | ✓       |
 | 8.6.4  | ✓     | ✓     | ✓       |
 
-## Haskell IDE Engine specifics
-
-If you are using Haskell IDE Engine as your language server, there are a number of additional configuration options.
-
-### Local documentation
-
-Haskell Language Server can display Haddock documentation on hover and in code completion for your code if you have built your project with haddock enabled.
-
-For Stack projects, in your project directory run
-
-```bash
-$ stack haddock --keep-going
-```
-
-For Cabal projects, run
-
-```bash
-$ cabal build --haddock
-```
-
-Or alternatively add the following to your `~/.cabal/config` or `cabal.config[.local]`
-
-```json
-documentation: True
-```
-
-### Liquid Haskell
-
-If Liquid Haskell is installed, haskell-ide-engine can be configured to run the `liquidhaskell` executable on save and display diagnostics:
-
-```json
-"haskell.liquidOn": true,
-```
-
-### Hoogle
-
-HIE pulls in documentation via Hoogle. After installing Hoogle via `cabal install hoogle` or `stack install hoogle`, generate the database with:
-
-```bash
-$ hoogle generate
-```
-
 ## Using multi-root workspaces
 
 First, check out [what multi-root workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) are. The idea of using multi-root workspaces, is to be able to work on several different Haskell projects, where the GHC version or stackage LTS could differ, and have it work smoothly.
@@ -161,11 +119,11 @@ Please include the output when filing any issues on the relevant language server
 ### Troubleshooting
 
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
-Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
+  Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
 - Usually the error or unexpected behaviour is already reported in the haskell language server [used by the extension](#hie-variant). Finding the issue in its issue tracker could be useful to help resolve it. Sometimes even it includes a workaround for the issue.
 - Haskell language servers issue trackers:
-  - haskell-ide-engine (the default haskell language server): https://github.com/haskell/haskell-ide-engine/issues
   - haskell-language-server: https://github.com/haskell/haskell-language-server/issues
+  - ghcide: https://github.com/haskell/ghcide/issues
 - _Common issues_:
   - For now, the extension is not able to open a single haskell source file. You need to open a workspace or folder, configured to be built with cabal, stack or other hie-bios compatible program.
   - Check you don't have other haskell extensions active, they can interfere with each other.
