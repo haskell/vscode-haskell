@@ -42,9 +42,7 @@ before_deploy:
 #      c) Make sure `Display value in build log` is turned OFF!
 deploy:
   - provider: script # Deploy to VS Code Market Place (only on tags!).
-    script: |
-      vsce publish -p $VS_CODE
-      npx ovsx publish -p $OPEN_VSX_ACCESS_TOKEN
+    script: vsce publish -p $VS_CODE
     skip_cleanup: true
     on: # Publish on all builds on master branch.
       repo: haskell/vscode-haskell
