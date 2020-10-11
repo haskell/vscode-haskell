@@ -1,3 +1,10 @@
+### 1.2.0
+
+- Add option to open local documentation on Hackage (@DunetsNM)
+- Add `haskell.updateBehaviour` option to configure when to check for updates
+  (@WorldSEnder)
+- Use locally installed servers on connection failure (@WorldSEnder)
+
 ### 1.1.0
 
 - Add Fourmolu as a plugin formatter provider (@georgefst)
