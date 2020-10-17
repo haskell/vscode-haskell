@@ -5,9 +5,10 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 import { extname } from 'path';
+import * as proxyagent from 'proxy-agent';
 import * as url from 'url';
 import { promisify } from 'util';
-import { ProgressLocation, window } from 'vscode';
+import { ProgressLocation, window, workspace } from 'vscode';
 import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
 
@@ -87,12 +88,14 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
     async (progress) => {
       const p = new Promise<void>((resolve, reject) => {
         const srcUrl = url.parse(src);
+        const proxyUri = workspace.getConfiguration('haskell').languageServerDownloadProxy;
         const opts: https.RequestOptions = {
           host: srcUrl.host,
           path: srcUrl.path,
           protocol: srcUrl.protocol,
           port: srcUrl.port,
           headers: userAgentHeader,
+          agent: proxyUri ? ((new proxyagent(proxyUri) as Partial<http.Agent>) as http.Agent) : undefined,
         };
         getWithRedirects(opts, (res) => {
           const totalSize = parseInt(res.headers['content-length'] || '1', 10);
@@ -180,7 +183,15 @@ function getWithRedirects(opts: https.RequestOptions, f: (res: http.IncomingMess
         console.error('301/302 without a location header');
         return;
       }
-      https.get(res.headers.location, f);
+      if (opts.agent) {
+        const optsRedirect: https.RequestOptions = {
+          headers: opts.headers,
+          agent: opts.agent,
+        };
+        https.get(res.headers.location, optsRedirect, f);
+      } else {
+        https.get(res.headers.location, f);
+      }
     } else {
       f(res);
     }
