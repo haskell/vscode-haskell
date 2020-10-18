@@ -146,6 +146,12 @@
           "default": "haskell-language-server",
           "description": "Which language server to use."
         },
+        "haskell.languageServerReleasesPath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "https://api.github.com/repos/haskell/haskell-language-server/releases",
+          "description": "a path to a json file"
+        },
         "haskell.serverExecutablePath": {
           "scope": "resource",
           "type": "string",
