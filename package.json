@@ -150,7 +150,7 @@
           "scope": "resource",
           "type": "string",
           "default": "https://api.github.com/repos/haskell/haskell-language-server/releases",
-          "description": "a path to a json file"
+          "description": "An optional path to override where to check for haskell-language-server releases"
         },
         "haskell.languageServerDownloadProxy": {
           "scope": "resource",
