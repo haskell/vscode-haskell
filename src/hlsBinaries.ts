@@ -161,11 +161,18 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
 }
 
 async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | null> {
-  const releasesUrl = url.parse(workspace.getConfiguration('haskell').languageServerReleasesPath);
-  const opts: https.RequestOptions = {
-    host: releasesUrl.host,
-    path: releasesUrl.path,
-  };
+  const releasesUrl = workspace.getConfiguration('haskell').languageServerReleasesPath
+    ? url.parse(workspace.getConfiguration('haskell').languageServerReleasesPath)
+    : undefined;
+  const opts: https.RequestOptions = releasesUrl
+    ? {
+        host: releasesUrl.host,
+        path: releasesUrl.path,
+      }
+    : {
+        host: 'api.github.com',
+        path: '/repos/haskell/haskell-language-server/releases',
+      };
 
   const offlineCache = path.join(context.globalStoragePath, 'latestApprovedRelease.cache.json');
 
