@@ -102,7 +102,18 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
     async (progress) => {
       const p = new Promise<void>((resolve, reject) => {
         const srcUrl = url.parse(src);
-        const proxyUri = workspace.getConfiguration('haskell').languageServerDownloadProxy;
+        let proxyUri: string | undefined = workspace.getConfiguration('haskell').languageServerDownloadProxy;
+        const vscodeProxyUri: string | undefined =
+          workspace.getConfiguration('http').proxySupport === 'on'
+            ? workspace.getConfiguration('http').proxy
+            : undefined;
+        const systemHTTPProxy = process.env.HTTP_PROXY;
+        const systemHTTPSProxy = process.env.HTTPS_PROXY;
+        for (const item of [proxyUri, vscodeProxyUri, systemHTTPProxy, systemHTTPSProxy]) {
+          if (item !== '' || item !== undefined) {
+            proxyUri = item;
+          }
+        }
         const opts: https.RequestOptions = {
           host: srcUrl.host,
           path: srcUrl.path,
