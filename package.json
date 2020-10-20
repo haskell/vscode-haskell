@@ -149,7 +149,7 @@
         "haskell.languageServerReleasesPath": {
           "scope": "resource",
           "type": "string",
-          "default": "https://api.github.com/repos/haskell/haskell-language-server/releases",
+          "default": "",
           "description": "An optional path to override where to check for haskell-language-server releases"
         },
         "haskell.serverExecutablePath": {
