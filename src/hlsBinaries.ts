@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as https from 'https';
 import * as os from 'os';
 import * as path from 'path';
+import * as url from 'url';
 import { promisify } from 'util';
 import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import { downloadFile, executableExists, httpsGetSilently } from './utils';
@@ -160,10 +161,18 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
 }
 
 async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | null> {
-  const opts: https.RequestOptions = {
-    host: 'api.github.com',
-    path: '/repos/haskell/haskell-language-server/releases',
-  };
+  const releasesUrl = workspace.getConfiguration('haskell').languageServerReleasesPath
+    ? url.parse(workspace.getConfiguration('haskell').languageServerReleasesPath)
+    : undefined;
+  const opts: https.RequestOptions = releasesUrl
+    ? {
+        host: releasesUrl.host,
+        path: releasesUrl.path,
+      }
+    : {
+        host: 'api.github.com',
+        path: '/repos/haskell/haskell-language-server/releases',
+      };
 
   const offlineCache = path.join(context.globalStoragePath, 'latestApprovedRelease.cache.json');
 

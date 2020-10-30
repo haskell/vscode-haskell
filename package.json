@@ -146,6 +146,12 @@
           "default": "haskell-language-server",
           "description": "Which language server to use."
         },
+        "haskell.languageServerReleasesPath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description": "An optional path to override where to check for haskell-language-server releases"
+        },
         "haskell.serverExecutablePath": {
           "scope": "resource",
           "type": "string",

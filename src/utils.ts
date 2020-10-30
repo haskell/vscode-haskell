@@ -41,11 +41,25 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
     let data: string = '';
     https
       .get(opts, (res) => {
-        res.on('data', (d) => (data += d));
-        res.on('error', reject);
-        res.on('close', () => {
-          resolve(data);
-        });
+        if (res.statusCode === 301 || res.statusCode === 302) {
+          if (!res.headers.location) {
+            console.error('301/302 without a location header');
+            return;
+          }
+          https.get(res.headers.location, (resAfterRedirect) => {
+            resAfterRedirect.on('data', (d) => (data += d));
+            resAfterRedirect.on('error', reject);
+            resAfterRedirect.on('close', () => {
+              resolve(data);
+            });
+          });
+        } else {
+          res.on('data', (d) => (data += d));
+          res.on('error', reject);
+          res.on('close', () => {
+            resolve(data);
+          });
+        }
       })
       .on('error', reject);
   });
