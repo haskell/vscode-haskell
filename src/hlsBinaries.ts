@@ -161,8 +161,8 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
 }
 
 async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | null> {
-  const releasesUrl = workspace.getConfiguration('haskell').languageServerReleasesPath
-    ? url.parse(workspace.getConfiguration('haskell').languageServerReleasesPath)
+  const releasesUrl = workspace.getConfiguration('haskell').releasesURL
+    ? url.parse(workspace.getConfiguration('haskell').releasesURL)
     : undefined;
   const opts: https.RequestOptions = releasesUrl
     ? {

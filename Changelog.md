@@ -1,3 +1,7 @@
+### 1.3.0
+
+- Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads (@soiamsoNG)
+
 ### 1.2.0
 
 - Add option to open local documentation on Hackage (@DunetsNM)
