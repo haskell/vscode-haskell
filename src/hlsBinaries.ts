@@ -81,10 +81,14 @@ class MissingToolError extends Error {
 // tslint:disable-next-line: max-classes-per-file
 class NoBinariesError extends Error {
   constructor(hlsVersion: string, ghcVersion?: string) {
+    const supportedReleasesLink =
+      '[See the list of supported versions here](https://github.com/haskell/vscode-haskell#supported-ghc-versions)';
     if (ghcVersion) {
-      super(`haskell-language-server ${hlsVersion} for GHC ${ghcVersion} is not available on ${os.type()}`);
+      super(`haskell-language-server ${hlsVersion} for GHC ${ghcVersion} is not available on ${os.type()}.
+      ${supportedReleasesLink}`);
     } else {
-      super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}`);
+      super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}.
+      ${supportedReleasesLink}`);
     }
   }
 }
