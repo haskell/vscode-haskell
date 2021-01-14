@@ -14,9 +14,9 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - Code completion
 - Formatting via Brittany, Floskell, Ormolu or Stylish Haskell
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
-- Code evaluation (Haskell Language Server)
+- Code evaluation (Haskell Language Server), see ([Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md))
 
-  ![Eval](https://i.imgur.com/bh992sT.gif)
+   ![Eval Demo](https://raw.githubusercontent.com/haskell/haskell-language-server/master/plugins/hls-eval-plugin/demo.gif)
 
 ## Requirements
 
