@@ -158,6 +158,12 @@
           "default": "",
           "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
         },
+        "haskell.ignoreStandalone": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Don't spawn language servers for stand-alone files (i.e. files that don't belong to any folder)"
+        },
         "haskell.updateBehavior": {
           "scope": "machine",
           "type": "string",
