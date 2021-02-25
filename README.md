@@ -92,14 +92,16 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 
 | GHC    | Linux | macOS | Windows |
 | ------ | ----- | ----- | ------- |
+| 8.10.4 | ✓     | ✓     | ✓       |
 | 8.10.3 | ✓     | ✓     | ✓       |
 | 8.10.2 | ✓     | ✓     | ✓       |
-| 8.10.1 | ✓     | ✓     | ✓       |
 | 8.8.4  | ✓     | ✓     | ✓       |
 | 8.8.3  | ✓     | ✓     |         |
 | 8.8.2  | ✓     | ✓     |         |
 | 8.6.5  | ✓     | ✓     | ✓       |
 | 8.6.4  | ✓     | ✓     | ✓       |
+
+The exact list of binaries can be checked in the last release of haskell-language-server: https://github.com/haskell/haskell-language-server/releases/latest
 
 ## Using multi-root workspaces
 
