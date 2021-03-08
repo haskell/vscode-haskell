@@ -69,6 +69,7 @@
       "properties": {
         "haskell.hlintOn": {
           "title": "Hlint",
+          "markdownDeprecationMessage": "**Deprecated**: Please use `#haskell.plugin.hlint.globalOn#` instead.",
           "scope": "resource",
           "type": "boolean",
           "default": true,
@@ -171,109 +172,138 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables the plugin entirely"
+          "description": "Enables explicit imports plugin"
         },
         "haskell.plugin.importLens.codeActionsOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin code actions"
+          "description": "Enables explicit imports code actions"
         },
         "haskell.plugin.importLens.codeLensOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin code lenses"
-        },
-        "haskell.plugin.importLens.diagnosticsOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables plugin diagnostics"
-        },
-        "haskell.plugin.importLens.hoverOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables plugin info on hover"
-        },
-        "haskell.plugin.importLens.symbolsOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables specific symbols of the plugin"
-        },
-        "haskell.plugin.importLens.formattingOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables the plugin formatting capacity"
-        },
-        "haskell.plugin.importLens.completionOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables plugin completions"
-        },
-        "haskell.plugin.importLens.renameOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables plugin renaming capacity"
+          "description": "Enables explicit imports code lenses"
         },
         "haskell.plugin.hlint.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables the plugin entirely"
+          "description": "Enables hlint plugin"
         },
         "haskell.plugin.hlint.codeActionsOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin code actions"
-        },
-        "haskell.plugin.hlint.codeLensOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables or disables plugin code lenses"
+          "description": "Enables hlint code actions (apply hints)"
         },
         "haskell.plugin.hlint.diagnosticsOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin diagnostics"
+          "description": "Enables hlint diagnostics"
         },
-        "haskell.plugin.hlint.hoverOn": {
+        "haskell.plugin.eval.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin info on hover"
+          "description": "Enables eval plugin"
         },
-        "haskell.plugin.hlint.symbolsOn": {
+        "haskell.plugin.moduleName.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables specific symbols of the plugin"
+          "description": "Enables module name plugin"
         },
-        "haskell.plugin.hlint.formattingOn": {
+        "haskell.plugin.splice.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables the plugin formatting capacity"
+          "description": "Enables splice plugin (expand template haskell definitions)"
         },
-        "haskell.plugin.hlint.completionOn": {
+        "haskell.plugin.haddockComments.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin completions"
+          "description": "Enables haddock comments plugin"
         },
-        "haskell.plugin.hlint.renameOn": {
+        "haskell.plugin.class.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables or disables plugin renaming capacity"
+          "description": "Enables type class plugin"
+        },
+        "haskell.plugin.retrie.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables retrie plugin"
+        },
+        "haskell.plugin.tactic.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables haddock comments plugin"
+        },
+        "haskell.plugin.tactic.config.max_use_ctor_actions": {
+          "title": "Max number of constructors",
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Maximum number of `Use constructor <x>` code actions that can appear"
+        },
+        "haskell.plugin.tactic.config.features": {
+          "scope": "resource",
+          "type": "Object",
+          "default": true,
+          "markdownDescription": "Features set used by tactic plugin"
+        },
+        "haskell.plugin.pragmas.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables pragmas plugin"
+        },
+        "haskell.plugin.pragmas.codeActionsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables pragmas code actions"
+        },
+        "haskell.plugin.pragmas.completionOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables pragmas completions"
+        },
+        "haskell.plugin.ghcide-type-lenses.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables pragmas plugin"
+        },
+        "haskell.plugin.ghcide-type-lenses.codeLensOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables pragmas code actions"
+        },
+        "haskell.plugin.ghcide-type-lenses.config.mode": {
+          "scope": "resource",
+          "type": "string",
+          "default": true,
+          "description": "Control how type lenses are shown",
+          "enum": [
+            "always",
+            "exported",
+            "diagnostics"
+          ],
+          "enumDescriptions": [
+            "Always displays type lenses of global bindings",
+            "Only display type lenses of exported global bindings",
+            "Follows error messages produced by GHC about missing signatures"
+          ]
         }
       }
     },
