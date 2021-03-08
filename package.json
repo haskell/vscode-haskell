@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server and ghcide",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -30,7 +30,7 @@
     "Linters",
     "Other"
   ],
-  "icon": "images/haskell-logo.png",
+  "icon": "images/hls-logo.png",
   "galleryBanner": {
     "color": "#22172A",
     "theme": "dark"
@@ -86,12 +86,6 @@
           "default": true,
           "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
         },
-        "haskell.liquidOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description": "Get diagnostics from liquid haskell"
-        },
         "haskell.completionSnippetsOn": {
           "title": "Completion Snippets",
           "scope": "resource",
@@ -117,7 +111,7 @@
             "none"
           ],
           "default": "ormolu",
-          "description": "The formatter to use when formatting a document or range"
+          "description": "The formatter to use when formatting a document or range. Ensure the plugin is enabled."
         },
         "haskell.trace.server": {
           "scope": "resource",
@@ -139,7 +133,6 @@
           "scope": "resource",
           "type": "string",
           "enum": [
-            "haskell-ide-engine",
             "haskell-language-server",
             "ghcide"
           ],
@@ -173,6 +166,114 @@
           ],
           "default": "keep-up-to-date",
           "markdownDescription": "Only applicable with `#haskell.languageServerVariant#` set to `haskell-language-server`. Determine what to do when a new version of the language server is available."
+        },
+        "haskell.plugin.importLens.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables the plugin entirely"
+        },
+        "haskell.plugin.importLens.codeActionsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin code actions"
+        },
+        "haskell.plugin.importLens.codeLensOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin code lenses"
+        },
+        "haskell.plugin.importLens.diagnosticsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin diagnostics"
+        },
+        "haskell.plugin.importLens.hoverOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin info on hover"
+        },
+        "haskell.plugin.importLens.symbolsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables specific symbols of the plugin"
+        },
+        "haskell.plugin.importLens.formattingOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables the plugin formatting capacity"
+        },
+        "haskell.plugin.importLens.completionOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin completions"
+        },
+        "haskell.plugin.importLens.renameOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin renaming capacity"
+        },
+        "haskell.plugin.hlint.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables the plugin entirely"
+        },
+        "haskell.plugin.hlint.codeActionsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin code actions"
+        },
+        "haskell.plugin.hlint.codeLensOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin code lenses"
+        },
+        "haskell.plugin.hlint.diagnosticsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin diagnostics"
+        },
+        "haskell.plugin.hlint.hoverOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin info on hover"
+        },
+        "haskell.plugin.hlint.symbolsOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables specific symbols of the plugin"
+        },
+        "haskell.plugin.hlint.formattingOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables the plugin formatting capacity"
+        },
+        "haskell.plugin.hlint.completionOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin completions"
+        },
+        "haskell.plugin.hlint.renameOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables plugin renaming capacity"
         }
       }
     },
