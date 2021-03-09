@@ -244,7 +244,7 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables haddock comments plugin"
+          "description": "Enables wingman(tactic) plugin"
         },
         "haskell.plugin.tactic.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
@@ -257,7 +257,7 @@
           "scope": "resource",
           "type": "Object",
           "default": true,
-          "markdownDescription": "Features set used by tactic plugin"
+          "markdownDescription": "Features set used by wingman(tactic) plugin"
         },
         "haskell.plugin.pragmas.globalOn": {
           "scope": "resource",
@@ -281,13 +281,7 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables pragmas plugin"
-        },
-        "haskell.plugin.ghcide-type-lenses.codeLensOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables pragmas code actions"
+          "description": "Enables type lenses plugin"
         },
         "haskell.plugin.ghcide-type-lenses.config.mode": {
           "scope": "resource",
