@@ -168,12 +168,6 @@
           "default": "keep-up-to-date",
           "markdownDescription": "Only applicable with `#haskell.languageServerVariant#` set to `haskell-language-server`. Determine what to do when a new version of the language server is available."
         },
-        "haskell.plugin.importLens.globalOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables explicit imports plugin"
-        },
         "haskell.plugin.importLens.codeActionsOn": {
           "scope": "resource",
           "type": "boolean",
@@ -185,12 +179,6 @@
           "type": "boolean",
           "default": true,
           "description": "Enables explicit imports code lenses"
-        },
-        "haskell.plugin.hlint.globalOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables hlint plugin"
         },
         "haskell.plugin.hlint.codeActionsOn": {
           "scope": "resource",
@@ -258,12 +246,6 @@
           "type": "Object",
           "default": true,
           "markdownDescription": "Features set used by wingman(tactic) plugin"
-        },
-        "haskell.plugin.pragmas.globalOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Enables pragmas plugin"
         },
         "haskell.plugin.pragmas.codeActionsOn": {
           "scope": "resource",
