@@ -1,5 +1,4 @@
 {
-  "defaultSeverity": "error",
   "extends": ["tslint:recommended"],
   "jsRules": {},
   "rules": {
@@ -12,7 +11,7 @@
     "no-unused-expression": true,
     "class-name": true,
     "promise-function-async": true,
-    "quotemark": [true, "single", "avoid-template"],
+    "quotemark": [true, "single", "avoid-template", "avoid-escape"],
     "trailing-comma": [
       false,
       {

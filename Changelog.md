@@ -1,11 +1,70 @@
+### 1.3.0
+
+- Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads (@soiamsoNG)
+
+### 1.2.0
+
+- Add option to open local documentation on Hackage (@DunetsNM)
+- Add `haskell.updateBehaviour` option to configure when to check for updates
+  (@WorldSEnder)
+- Use locally installed servers on connection failure (@WorldSEnder)
+
+### 1.1.0
+
+- Add Fourmolu as a plugin formatter provider (@georgefst)
+- Remove the `haskell.enable` configuration option, since VS Code now allows
+  you to disable extensions on a per workspace basis
+- Display errors when fetching from the GitHub API properly
+
+### 1.0.1
+
+- Switch the default formatter to Ormolu to match haskell-language-server
+- Fix `haskell.serverExecutablePath` not working with absolute paths on Windows
+  (@winestone)
+- Improve the help text and error message when `haskell.serverExecutablePath`
+  is not found
+- Fix the rendering of the markdown table in the README (@Darren8098)
+
+### 1.0.0
+
+- vscode-haskell now lives under the Haskell organisation
+- Can now download zip archived binaries, which the Windows binaries are now distributed as
+- Improve README (@pepeiborra @jaspervdj)
+
+### 0.1.1
+
+- Fix the restart server and import identifier commands
+
+### 0.1.0
+
+`vscode-hie-server`/`Haskell Language Server` is now just Haskell, and will soon
+be published under the Haskell organisation as `haskell-vscode`.
+This release makes haskell-language-server the default langauge server of choice
+and automatically downloads and installs binaries. Installation from source is
+still supported though and any binaries located on your PATH for the selected
+langauge server will be used instead.
+
+#### Important!
+
+As part of this, your configuration may be reset as the keys move from
+`languageServerHaskell.completionSnippetsOn` to `haskell.completionSnippetsOn`.
+
+- Fix the document and source browser
+- Remove obselete commands that are no longer supported by any of the language
+  servers
+  - Show type command
+  - Insert type command
+  - HaRe commands
+  - Case split commands
+
 ### 0.0.40
 
 Change the way the backend is configured, simplifying it.
 
-* remove wrapper scripts (hie-vscode.sh/hie-vscode.bat)
-* dropdown choice between `haskell-ide-engine`, `haskell-language-server` or
+- remove wrapper scripts (hie-vscode.sh/hie-vscode.bat)
+- dropdown choice between `haskell-ide-engine`, `haskell-language-server` or
   `ghcide` in the `hieVariant` setting.
-* this can be overridden by an explicit `hieExecutablePath`, as before.
+- this can be overridden by an explicit `hieExecutablePath`, as before.
 
 ### 0.0.39
 
@@ -19,125 +78,125 @@ Bump dependencies
 
 Trying again, working 0.0.35
 
-* Add Restart command (@gdziadkiewicz)
-* Add Ormolu as a formatter option (@DavSanchez)
-* Update README
+- Add Restart command (@gdziadkiewicz)
+- Add Ormolu as a formatter option (@DavSanchez)
+- Update README
 
 ### 0.0.36
 
-* Roll back to 0.0.34
+- Roll back to 0.0.34
 
 ### 0.0.35
 
-* Add Restart command (@gdziadkiewicz)
-* Add Ormolu as a formatter option (@DavSanchez)
-* Update README
+- Add Restart command (@gdziadkiewicz)
+- Add Ormolu as a formatter option (@DavSanchez)
+- Update README
 
 ### 0.0.34
 
-* Remove --lsp parameter from hie-vscode.bat
+- Remove --lsp parameter from hie-vscode.bat
 
 ### 0.0.33
 
-* Introduced configuration setting `noLspParam`, default `false` to control
+- Introduced configuration setting `noLspParam`, default `false` to control
   setting the `--lsp` flag for the hie server. So by default we will set the
   command line argument for the server, but it can be turned off.
 
 ### 0.0.32
 
-* Re-enable the `--lsp` flag for the hie server
-* Update some deps for security vulnerabilities
+- Re-enable the `--lsp` flag for the hie server
+- Update some deps for security vulnerabilities
 
 ### 0.0.31
 
-* Log to stderr (vscode output) by default, add option for logfile (@bubba)
+- Log to stderr (vscode output) by default, add option for logfile (@bubba)
 
 ### 0.0.30
 
-* Bundle using webpack (@chrismwendt)
-* Bump protocol version to 3.15 prerelease (@alanz)
+- Bundle using webpack (@chrismwendt)
+- Bump protocol version to 3.15 prerelease (@alanz)
   This allows working progress reporting from hie.
-* Update casesplit plugin (@Avi-D-coder)
+- Update casesplit plugin (@Avi-D-coder)
 
 ### 0.0.29
 
-* bump protocol version to 3.15 (prerelease) (@alanz)
-* upgrade deps, including avoiding vulnerabilities on lodash (@alanz)
-* warn about compile time and wrapped hie (@janat08)
+- bump protocol version to 3.15 (prerelease) (@alanz)
+- upgrade deps, including avoiding vulnerabilities on lodash (@alanz)
+- warn about compile time and wrapped hie (@janat08)
 
 ### 0.0.28
 
-* remove unused `lsp` flag (@bubba)
-* do not start `hie` if `hie-wrapper` crashes (@bubba)
-* Expose diagnosticsOnChange option for settings (Frederik Ramcke)
-* Avoid CVE on `extend` package
-* Enable displaying window progress (@bubba)
+- remove unused `lsp` flag (@bubba)
+- do not start `hie` if `hie-wrapper` crashes (@bubba)
+- Expose diagnosticsOnChange option for settings (Frederik Ramcke)
+- Avoid CVE on `extend` package
+- Enable displaying window progress (@bubba)
 
 ### 0.0.27
 
-* Re-enable search feature for documentation (@anonimitoraf)
+- Re-enable search feature for documentation (@anonimitoraf)
   Accesed via `ctrl-f`.
 
 ### 0.0.26
 
-* Show documentation content using Webview API (@EdAllonby)
-* npm audit fix (@alanz)
+- Show documentation content using Webview API (@EdAllonby)
+- npm audit fix (@alanz)
 
 ### 0.0.25
 
-* Add vsce dependency to "Contributing" document (@EdAllonby)
-* Add formatterProvider config (@bubba)
-* Bugfix for stack version on windows (@beauzeaux)
-* Update settings to match hie version 0.7.0.0 (@alanz)
-* npm audit fix (@bubba)
+- Add vsce dependency to "Contributing" document (@EdAllonby)
+- Add formatterProvider config (@bubba)
+- Bugfix for stack version on windows (@beauzeaux)
+- Update settings to match hie version 0.7.0.0 (@alanz)
+- npm audit fix (@bubba)
 
 ### 0.0.24
 
-* Add snippet config option (@bubba)
+- Add snippet config option (@bubba)
 
 ### 0.0.23
 
-* Fix multi-process issue, where vscode would launch multiple hie instances.
+- Fix multi-process issue, where vscode would launch multiple hie instances.
   By @kfigiela
 
 ### 0.0.22
 
-* Add configuration option to enable liquid haskell processing. This
+- Add configuration option to enable liquid haskell processing. This
   is a preview feature of hie from
   ca2d3eaa19da8ec9d55521b461d8e2e8cffee697 on 2019-09-05.
 
 ### 0.0.21
 
-* Remove languageServerHaskell.useHieWrapper, We now use hie-wrapper
+- Remove languageServerHaskell.useHieWrapper, We now use hie-wrapper
   by default.
-* Update the vscode-languageclient to v4.4.0
-* Fix #98 Import identifier insertion line `moduleLine` is now the
+- Update the vscode-languageclient to v4.4.0
+- Fix #98 Import identifier insertion line `moduleLine` is now the
   first line that is (trimmed) `where` or ends with `where` or ends
   with `)where`. (@mpilgrem)
 
 ### 0.0.20
 
-* Add the case-split function (@txsmith). Required hie >= 0.2.1.0
-* Update the vscode-languageclient to v4.2.0 (@Bubba)
-* Use the hie-wrapper executable now installed with hie to choose the
+- Add the case-split function (@txsmith). Required hie >= 0.2.1.0
+- Update the vscode-languageclient to v4.2.0 (@Bubba)
+- Use the hie-wrapper executable now installed with hie to choose the
   right version of hie to use for the given project.
 
 ### 0.0.19
 
-* Fix hie launch on windows with logging off (#90). Thanks @Tehnix.
+- Fix hie launch on windows with logging off (#90). Thanks @Tehnix.
 
 ### 0.0.18
 
-* Support GHC 8.4.3 in the wrapper file
-* The `languageServerHaskell.trace.server` parameter now affects
+- Support GHC 8.4.3 in the wrapper file
+- The `languageServerHaskell.trace.server` parameter now affects
   `/tmp/hie.log`, as well as ghc-mod `--vomit` output.
-* Add an Import identifier command, by @chrismwendt
+- Add an Import identifier command, by @chrismwendt
 
 ### 0.0.17
 
-* Support GHC 8.4.2 in the wrapper file
-* Update dependencies to avoid security vulnerability.
-* Use os.tmpdir() for the hie.log file
+- Support GHC 8.4.2 in the wrapper file
+- Update dependencies to avoid security vulnerability.
+- Use os.tmpdir() for the hie.log file
 
 ### 0.0.15
 
