@@ -232,7 +232,7 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables wingman(tactic) plugin"
+          "description": "Enables wingman (tactic) plugin"
         },
         "haskell.plugin.tactic.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
@@ -245,7 +245,7 @@
           "scope": "resource",
           "type": "Object",
           "default": true,
-          "markdownDescription": "Features set used by wingman(tactic) plugin"
+          "markdownDescription": "Features set used by wingman (tactic) plugin"
         },
         "haskell.plugin.pragmas.codeActionsOn": {
           "scope": "resource",
