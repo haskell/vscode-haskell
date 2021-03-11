@@ -1,6 +1,6 @@
 # Haskell for Visual Studio Code
 
-[![](https://vsmarketplacebadge.apphb.com/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
+[![vsmarketplacebadge](https://vsmarketplacebadge.apphb.com/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
 
 This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
 
@@ -12,27 +12,37 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - Document symbols
 - Highlight references in document
 - Code completion
-- Formatting via Brittany, Floskell, Ormolu or Stylish Haskell
+- Formatting via Brittany, Floskell, Fourmolu, Ormolu or Stylish Haskell
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 - Code evaluation (Haskell Language Server), see ([Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md))
 
-   ![Eval Demo](https://raw.githubusercontent.com/haskell/haskell-language-server/master/plugins/hls-eval-plugin/demo.gif)
+  ![Eval Demo](https://raw.githubusercontent.com/haskell/haskell-language-server/master/plugins/hls-eval-plugin/demo.gif)
+
+- Integration with [retrie](https://hackage.haskell.org/package/retrie)
+
+  ![Retrie Demo](https://i.imgur.com/Ev7B87k.gif)
+
+- Code lenses for explicit import lists
+
+  ![Imports code lens Demo](https://imgur.com/pX9kvY4.gif)
+
+- Generate functions from type signatures, and intelligently complete holes using [Wingman (tactics)](https://github.com/haskell/haskell-language-server/tree/master/plugins/hls-tactics-plugin)
+
+  ![Wingman Demo](https://user-images.githubusercontent.com/307223/92657198-3d4be400-f2a9-11ea-8ad3-f541c8eea891.gif)
+
+- Integration with [hlint](https://github.com/ndmitchell/hlint) to show diagnostics and apply hints via [apply-refact](https://github.com/mpickering/apply-refact)
+
+  ![Hlint Demo](https://user-images.githubusercontent.com/54035/110860028-8f9fa900-82bc-11eb-9fe5-6483d8bb95e6.gif)
+
+- Module name suggestions for insertion or correction
+
+  ![Module Name Demo](https://user-images.githubusercontent.com/54035/110860755-78ad8680-82bd-11eb-9845-9ea4b1cc1f76.gif)
 
 ## Requirements
 
 - For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
-
-## Language Servers
-
-Whilst this extension is powered by the Haskell Language Server by default, it also supports several others which can be manually installed:
-
-- [Haskell Language Server](https://github.com/haskell/haskell-language-server#installation): This is the default language server which will automatically be downloaded, so it does not need manual installation. It builds upon ghcide by providing extra plugins and features.
-- [ghcide](https://github.com/digital-asset/ghcide#install-ghcide): A fast and reliable LSP server with support for [basic features](https://github.com/digital-asset/ghcide#features).
-- [Haskell IDE Engine](https://github.com/haskell/haskell-ide-engine#installation): A legacy language server, you probably shouldn't use this one. Haskell Language Server replaces it instead.
-
-You can choose which language server to use from the "Haskell > Language Server Variant" configuration option.
 
 ## Configuration options
 
@@ -49,8 +59,6 @@ There are a few placeholders which will be expanded:
 - `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 - `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
-## Haskell Language Server specifics
-
 ### Local documentation
 
 Haskell Language Server can display Haddock documentation on hover and completions if the project and
@@ -59,19 +67,23 @@ its dependencies have been built with the `-haddock` GHC flag.
 - For cabal:
 
   - Add to your global config file (e.g. `~/.cabal/config`):
-    ```
+
+    ```yaml
     program-default-options
       ghc-options: -haddock
     ```
+
   - Or, for a single project, run `cabal configure --ghc-options=-haddock`
 
 - For stack, add to global `$STACK_ROOT\config.yaml`, or project's `stack.yaml`:
-  ```
+
+  ```yaml
   ghc-options:
-    "$everything": -haddock
+    '$everything': -haddock
   ```
+
   Note that this flag will cause compilation errors if a dependency contains invalid Haddock markup,
-  until GHC 8.12 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
+  until GHC 9.0 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
   instead.
 
 ### Downloaded binaries
@@ -101,7 +113,7 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | 8.6.5  | ✓     | ✓     | ✓       |
 | 8.6.4  | ✓     | ✓     | ✓       |
 
-The exact list of binaries can be checked in the last release of haskell-language-server: https://github.com/haskell/haskell-language-server/releases/latest
+The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
 
 ## Using multi-root workspaces
 
@@ -111,25 +123,19 @@ The language server is now started for each workspace folder you have in your mu
 
 ## Investigating and reporting problems
 
-1.  Go to extensions and right click `Haskell Language Server` and choose `Extensions Settings`
-2.  Scroll down to `Language Server Haskell › Trace: Server` and set it to `messages`
-3.  Restart vscode and reproduce your problem
-4.  Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
-5.  On the new Output panel that opens on the right side in the drop down menu choose `Haskell (<your project>)`
+1. Go to extensions and right click `Haskell Language Server` and choose `Extensions Settings`
+2. Scroll down to `Language Server Haskell › Trace: Server` and set it to `messages`
+3. Restart vscode and reproduce your problem
+4. Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
+5. On the new Output panel that opens on the right side in the drop down menu choose `Haskell (<your project>)`
 
-Please include the output when filing any issues on the relevant language server's issue tracker.
+Please include the output when filing any issues on the [haskell-language-server](https://github.com/haskell/haskell-language-server/issues/new) issue tracker.
 
 ### Troubleshooting
 
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
   Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
-- Usually the error or unexpected behaviour is already reported in the haskell language server [used by the extension](#hie-variant). Finding the issue in its issue tracker could be useful to help resolve it. Sometimes even it includes a workaround for the issue.
-- Haskell language servers issue trackers:
-  - haskell-language-server: https://github.com/haskell/haskell-language-server/issues
-  - ghcide: https://github.com/haskell/ghcide/issues
-- _Common issues_:
-  - For now, the extension is not able to open a single haskell source file. You need to open a workspace or folder, configured to be built with cabal, stack or other hie-bios compatible program.
-  - Check you don't have other haskell extensions active, they can interfere with each other.
+- Usually the error or unexpected behaviour is already reported in the [haskell language server issue tracker](https://github.com/haskell/haskell-language-server/issues). Finding the issue could be useful to help resolve it and sometimes includes a workaround for the issue.
 
 ## Contributing
 
