@@ -90,21 +90,7 @@ function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null
 
 /** Searches the PATH for whatever is set in serverVariant */
 function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
-  const serverVariant = workspace.getConfiguration('haskell', uri).languageServerVariant;
-
-  // Set the executable, based on the settings.
-  let exes: string[] = []; // should get set below
-  switch (serverVariant) {
-    case 'haskell-ide-engine':
-      exes = ['hie-wrapper', 'hie'];
-      break;
-    case 'haskell-language-server':
-      exes = ['haskell-language-server-wrapper', 'haskell-language-server'];
-      break;
-    case 'ghcide':
-      exes = ['ghcide'];
-      break;
-  }
+  const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
 
   for (const exe of exes) {
     if (executableExists(exe)) {
@@ -151,13 +137,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     serverExecutable = findManualExecutable(uri, folder) ?? findLocalServer(context, uri, folder);
     if (serverExecutable === null) {
       // If not, then try to download haskell-language-server binaries if it's selected
-      if (workspace.getConfiguration('haskell', uri).languageServerVariant === 'haskell-language-server') {
-        serverExecutable = await downloadHaskellLanguageServer(context, uri, folder);
-        if (!serverExecutable) {
-          return;
-        }
-      } else {
-        showNotInstalledErrorMessage(uri);
+      serverExecutable = await downloadHaskellLanguageServer(context, uri, folder);
+      if (!serverExecutable) {
         return;
       }
     }
@@ -170,16 +151,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let args: string[] = ['--lsp'];
 
-  const serverVariant = workspace.getConfiguration('haskell', uri).languageServerVariant;
-  // ghcide does not accept -d and -l params
-  if (serverVariant !== 'ghcide') {
-    if (logLevel === 'messages') {
-      args = args.concat(['-d']);
-    }
+  if (logLevel === 'messages') {
+    args = args.concat(['-d']);
+  }
 
-    if (logFile !== '') {
-      args = args.concat(['-l', logFile]);
-    }
+  if (logFile !== '') {
+    args = args.concat(['-l', logFile]);
   }
 
   // If we're operating on a standalone file (i.e. not in a folder) then we need
@@ -250,23 +227,4 @@ export async function deactivate() {
     }
   }
   await Promise.all(promises);
-}
-
-function showNotInstalledErrorMessage(uri: Uri) {
-  const variant = workspace.getConfiguration('haskell', uri).languageServerVariant;
-  let projectUrl = '';
-  switch (variant) {
-    case 'haskell-ide-engine':
-      projectUrl = '/haskell/haskell-ide-engine';
-      break;
-    case 'haskell-language-server':
-      projectUrl = '/haskell/haskell-language-server';
-      break;
-    case 'ghcide':
-      projectUrl = '/digital-asset/ghcide';
-      break;
-  }
-  const notInstalledMsg: string =
-    variant + ' executable missing, please make sure it is installed, see https://github.com' + projectUrl + '.';
-  window.showErrorMessage(notInstalledMsg);
 }
