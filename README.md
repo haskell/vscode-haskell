@@ -83,7 +83,7 @@ its dependencies have been built with the `-haddock` GHC flag.
   ```
 
   Note that this flag will cause compilation errors if a dependency contains invalid Haddock markup,
-  until GHC 8.12 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
+  until GHC 9.0 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
   instead.
 
 ### Downloaded binaries
