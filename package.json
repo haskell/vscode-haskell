@@ -75,12 +75,6 @@
           "default": true,
           "description": "Get suggestions from hlint"
         },
-        "haskell.maxNumberOfProblems": {
-          "scope": "resource",
-          "type": "number",
-          "default": 100,
-          "description": "Controls the maximum number of problems produced by the server"
-        },
         "haskell.diagnosticsOnChange": {
           "scope": "resource",
           "type": "boolean",

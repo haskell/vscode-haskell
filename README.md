@@ -79,7 +79,7 @@ its dependencies have been built with the `-haddock` GHC flag.
 
   ```yaml
   ghc-options:
-    "$everything": -haddock
+    '$everything': -haddock
   ```
 
   Note that this flag will cause compilation errors if a dependency contains invalid Haddock markup,
