@@ -1,7 +1,7 @@
 {
   "name": "haskell",
   "displayName": "Haskell",
-  "description": "Haskell language support powered by the Haskell Language Server and ghcide",
+  "description": "Haskell language support powered by the Haskell Language Server",
   "version": "1.3.0",
   "license": "MIT",
   "publisher": "haskell",
@@ -130,16 +130,6 @@
           "default": "",
           "description": "If set, redirects the logs to a file."
         },
-        "haskell.languageServerVariant": {
-          "scope": "resource",
-          "type": "string",
-          "enum": [
-            "haskell-language-server",
-            "ghcide"
-          ],
-          "default": "haskell-language-server",
-          "description": "Which language server to use."
-        },
         "haskell.releasesURL": {
           "scope": "resource",
           "type": "string",
@@ -166,7 +156,7 @@
             "Don't check for newer versions"
           ],
           "default": "keep-up-to-date",
-          "markdownDescription": "Only applicable with `#haskell.languageServerVariant#` set to `haskell-language-server`. Determine what to do when a new version of the language server is available."
+          "markdownDescription": "Determine what to do when a new version of the language server is available."
         },
         "haskell.plugin.importLens.codeActionsOn": {
           "scope": "resource",
