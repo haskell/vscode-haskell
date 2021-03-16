@@ -27,6 +27,7 @@ install:
   - npm run vscode:prepublish
 
 before_deploy:
+  - npm install -g ovsx
   - npm install -g vsce
   - vsce package
 
@@ -49,15 +50,14 @@ deploy:
       branch: master
       tags: true
       condition: $TRAVIS_OS_NAME = linux
-# - provider: releases # Deploy the *.vsix pcakge to GitHub releases.
-#   file_glob: true
-#   file: "*.vsix"
-#   skip_cleanup: true
-#   on: # Due to a limitation with releases, we can only deploy them on tags.
-#     repo: haskell/vscode-haskell
-#     branch: master
-#     tags: true
-#     condition: $TRAVIS_OS_NAME = linux
+  - provider: script # Deploy to VS Code Market Place (only on tags!).
+    script: ovsx publish -p $OPEN_VSX_ACCESS_TOKEN
+    skip_cleanup: true
+    on: # Publish on all builds on master branch.
+      repo: haskell/vscode-haskell
+      branch: master
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux
 
 notifications:
   email: false
