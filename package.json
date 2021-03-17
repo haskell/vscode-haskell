@@ -221,7 +221,7 @@
         "haskell.plugin.tactic.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
           "scope": "resource",
-          "type": "number",
+          "type": "integer",
           "default": true,
           "markdownDescription": "Maximum number of `Use constructor <x>` code actions that can appear"
         },
