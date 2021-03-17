@@ -221,13 +221,13 @@
         "haskell.plugin.tactic.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
           "scope": "resource",
-          "type": "boolean",
+          "type": "integer",
           "default": true,
           "markdownDescription": "Maximum number of `Use constructor <x>` code actions that can appear"
         },
         "haskell.plugin.tactic.config.features": {
           "scope": "resource",
-          "type": "Object",
+          "type": "string",
           "default": true,
           "markdownDescription": "Features set used by wingman (tactic) plugin"
         },
