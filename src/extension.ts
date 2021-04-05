@@ -106,7 +106,7 @@ async function activeServer(context: ExtensionContext, document: TextDocument) {
   if (
     (document.languageId !== 'haskell' &&
       document.languageId !== 'cabal' &&
-      document.languageId !== 'literate Haskell') ||
+      document.languageId !== 'literate haskell') ||
     (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled')
   ) {
     return;
