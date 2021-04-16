@@ -131,7 +131,7 @@
           "description": "An optional URL to override where to check for haskell-language-server releases"
         },
         "haskell.serverExecutablePath": {
-          "scope": "resource",
+          "scope": "machine",
           "type": "string",
           "default": "",
           "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
