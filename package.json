@@ -83,6 +83,7 @@
         },
         "haskell.completionSnippetsOn": {
           "title": "Completion Snippets",
+          "markdownDeprecationMessage": "**Deprecated**: Please use `#haskell.plugin.ghcide-completions.config.snippetsOn#` instead.",
           "scope": "resource",
           "type": "boolean",
           "default": true,
@@ -218,6 +219,32 @@
           "default": true,
           "description": "Enables wingman (tactic) plugin"
         },
+        "haskell.plugin.tactic.config.features": {
+          "scope": "resource",
+          "type": "string",
+          "default": true,
+          "markdownDescription": "Features set used by wingman (tactic) plugin"
+        },
+        "haskell.plugin.tactics.config.hole_severity": {
+          "enumDescriptions": [
+            "error",
+            "warning",
+            "info",
+            "hint",
+            "none"
+          ],
+          "scope": "resource",
+          "description": "The severity to use when showing hole diagnostics.",
+          "enum": [
+            1,
+            2,
+            3,
+            4,
+            null
+          ],
+          "default": null,
+          "type": "string"
+        },
         "haskell.plugin.tactic.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
           "scope": "resource",
@@ -225,11 +252,11 @@
           "default": true,
           "markdownDescription": "Maximum number of `Use constructor <x>` code actions that can appear"
         },
-        "haskell.plugin.tactic.config.features": {
+        "haskell.plugin.tactics.config.timeout_duration": {
+          "markdownDescription": "The timeout for Wingman actions, in seconds",
           "scope": "resource",
-          "type": "string",
-          "default": true,
-          "markdownDescription": "Features set used by wingman (tactic) plugin"
+          "default": 2,
+          "type": "integer"
         },
         "haskell.plugin.pragmas.codeActionsOn": {
           "scope": "resource",
@@ -242,6 +269,18 @@
           "type": "boolean",
           "default": true,
           "description": "Enables pragmas completions"
+        },
+        "haskell.plugin.ghcide-completions.config.autoExtendOn": {
+          "markdownDescription": "Extends the import list automatically when completing a out-of-scope identifier",
+          "scope": "resource",
+          "default": true,
+          "type": "boolean"
+        },
+        "haskell.plugin.ghcide-completions.config.snippetsOn": {
+          "markdownDescription": "Inserts snippets when using code completions",
+          "scope": "resource",
+          "default": true,
+          "type": "boolean"
         },
         "haskell.plugin.ghcide-type-lenses.globalOn": {
           "scope": "resource",
