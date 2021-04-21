@@ -223,7 +223,7 @@
           "scope": "resource",
           "type": "string",
           "default": true,
-          "markdownDescription": "Features set used by wingman (tactic) plugin"
+          "markdownDescription": "Feature set used by Wingman"
         },
         "haskell.plugin.tactics.config.hole_severity": {
           "enumDescriptions": [
@@ -249,7 +249,7 @@
           "title": "Max number of constructors",
           "scope": "resource",
           "type": "integer",
-          "default": true,
+          "default": 5,
           "markdownDescription": "Maximum number of `Use constructor <x>` code actions that can appear"
         },
         "haskell.plugin.tactics.config.timeout_duration": {

@@ -1,6 +1,23 @@
 ### 1.3.0
 
-- Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads (@soiamsoNG)
+- Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads, thanks to @soiamsoNG
+- With this version _the only supported lsp server variant is [`haskell-language-server`](https://github.com/haskell/haskell-language-server)_
+- Add support for generic plugin configuration. Thanks to it, each plugin capability (diagnostics, code actions, code lenses, etc) or the entire plugin can be disabled
+- Add some plugin specic options:
+  - [wingman](https://haskellwingman.dev/) (aka tactics) plugin
+    - `haskell.plugin.tactic.config.features`: Feature set used by the plugin
+    - `haskell.plugin.tactics.config.hole_severity`: The severity to use when showing hole diagnostics
+    - `haskell.plugin.tactic.config.max_use_ctor_actions`: Maximum number of `Use constructor <x>` code actions that can appear
+    - `haskell.plugin.tactics.config.timeout_duration`: The timeout for Wingman actions, in seconds
+  - completions
+    - `haskell.plugin.ghcide-completions.config.autoExtendOn`: Extends the import list automatically when completing a out-of-scope identifier
+    - `haskell.plugin.ghcide-completions.config.snippetsOn`: Inserts snippets when using code completions
+  - type signature lenses - `haskell.plugin.ghcide-type-lenses.config.mode`: Control how type lenses are shown
+- The option `haskell.serverExecutablePath` has now `machine` scope, so it can be only changed globally by the user. It avoids a potential security vulnerability as folders containing `.vscode/settings.json` with that option could execute arbitrary programs.
+- Deprecated options:
+  - `haskell.hlintOn`: use `haskell.plugin.hlint.globalOn` instead.
+  - `haskell.completionSnippetsOn`: use `haskell.plugin.ghcide-completions.config.snippetsOn`
+- Fixed a small typo that caused the server not to be loaded in `.lhs` files, thanks to @Max7cd
 
 ### 1.2.0
 
