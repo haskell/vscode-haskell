@@ -1,6 +1,6 @@
 ### 1.3.0
 
-- Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads (@soiamsoNG), thanks to @soiamsoNG
+- Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads, thanks to @soiamsoNG
 - With this version _the only supported lsp server variant is [`haskell-language-server`](https://github.com/haskell/haskell-language-server)_
 - Add support for generic plugin configuration. Thanks to it, each plugin capability (diagnostics, code actions, code lenses, etc) or the entire plugin can be disabled
 - Add some plugin specic options:
