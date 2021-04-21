@@ -223,7 +223,7 @@
           "scope": "resource",
           "type": "string",
           "default": true,
-          "markdownDescription": "Feature set used by wingman (tactic) plugin"
+          "markdownDescription": "Feature set used by Wingman"
         },
         "haskell.plugin.tactics.config.hole_severity": {
           "enumDescriptions": [
