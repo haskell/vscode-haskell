@@ -1,3 +1,7 @@
+### 1.4.0
+
+- Restore `resource` scope for `haskell.serverExecutablePath` temporary. The `machine` scope will be set again after giving users a period of time to let them adapt theirs workflows and changing or adding some option in the extension itself to help that adjustement (see #387).
+
 ### 1.3.0
 
 - Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads, thanks to @soiamsoNG
