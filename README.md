@@ -59,6 +59,13 @@ There are a few placeholders which will be expanded:
 - `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 - `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
 
+#### Security warning
+
+The option has scope `resource` scope so it can be changed per workspace.
+This supposes it could be used to execute arbitrary programs adding a `.vscode/settings.json` in the workspace folder including this option with the appropiate path.
+For this reason its scope will be changed to `machine` so users only will be able to change it globally.
+See #387 for more details.
+
 ### Local documentation
 
 Haskell Language Server can display Haddock documentation on hover and completions if the project and

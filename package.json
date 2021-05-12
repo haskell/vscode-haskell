@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -132,10 +132,10 @@
           "description": "An optional URL to override where to check for haskell-language-server releases"
         },
         "haskell.serverExecutablePath": {
-          "scope": "machine",
+          "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with ~, ${HOME} and ${workspaceFolder}."
+          "markdownDescription": "Manually set a language server executable. Can be something on the $PATH or a path to an executable itself. Works with `~,` `${HOME}` and `${workspaceFolder}`. **Deprecated scope**: This option will be set to `machine` scope in a future release, so it can be changed only globally, not per workspace."
         },
         "haskell.updateBehavior": {
           "scope": "machine",
