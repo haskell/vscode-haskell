@@ -213,17 +213,11 @@
           "default": true,
           "description": "Enables retrie plugin"
         },
-        "haskell.plugin.tactic.globalOn": {
+        "haskell.plugin.tactics.globalOn": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Enables wingman (tactic) plugin"
-        },
-        "haskell.plugin.tactic.config.features": {
-          "scope": "resource",
-          "type": "string",
-          "default": true,
-          "markdownDescription": "Feature set used by Wingman"
+          "description": "Enables Wingman (tactics) plugin"
         },
         "haskell.plugin.tactics.config.hole_severity": {
           "enumDescriptions": [
@@ -245,7 +239,7 @@
           "default": null,
           "type": "string"
         },
-        "haskell.plugin.tactic.config.max_use_ctor_actions": {
+        "haskell.plugin.tactics.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
           "scope": "resource",
           "type": "integer",
