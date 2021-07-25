@@ -315,6 +315,12 @@ export async function downloadHaskellLanguageServer(
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
   await downloadFile(title, asset.browser_download_url, binaryDest);
+  if (ghcVersion.startsWith('9.')) {
+    window.showWarningMessage(
+      'Currently, HLS supports GHC 9 only partially. ' +
+        'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.'
+    );
+  }
   return binaryDest;
 }
 
