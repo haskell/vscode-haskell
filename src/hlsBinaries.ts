@@ -102,7 +102,7 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
     return window.withProgress(
       {
         location: ProgressLocation.Window,
-        title: 'Working out the project GHC version',
+        title: 'Working out the project GHC version. This might take a while...',
       },
       async () => {
         return new Promise<string>((resolve, reject) => {
