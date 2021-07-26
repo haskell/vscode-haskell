@@ -109,16 +109,18 @@ Note that if `haskell-language-server-wrapper`/`haskell-language-server` is alre
 
 These are the versions of GHC that there are binaries of `haskell-language-server` for. Building from source may support more versions!
 
-| GHC    | Linux | macOS | Windows |
-| ------ | ----- | ----- | ------- |
-| 8.10.4 | ✓     | ✓     | ✓       |
-| 8.10.3 | ✓     | ✓     | ✓       |
-| 8.10.2 | ✓     | ✓     | ✓       |
-| 8.8.4  | ✓     | ✓     | ✓       |
-| 8.8.3  | ✓     | ✓     |         |
-| 8.8.2  | ✓     | ✓     |         |
-| 8.6.5  | ✓     | ✓     | ✓       |
-| 8.6.4  | ✓     | ✓     | ✓       |
+| GHC                                                                              | Linux | macOS | Windows |
+| -------------------------------------------------------------------------------- | ----- | ----- | ------- |
+| 9.0.1 ([limited](https://github.com/haskell/haskell-language-server/issues/297)) | ✓     | ✓     | ✓       |
+| 8.10.5                                                                           | ✓     | ✓     | ✓       |
+| 8.10.4                                                                           | ✓     | ✓     | ✓       |
+| 8.10.3                                                                           | ✓     | ✓     | ✓       |
+| 8.10.2                                                                           | ✓     | ✓     | ✓       |
+| 8.8.4                                                                            | ✓     | ✓     | ✓       |
+| 8.8.3                                                                            | ✓     | ✓     |         |
+| 8.8.2                                                                            | ✓     | ✓     |         |
+| 8.6.5                                                                            | ✓     | ✓     | ✓       |
+| 8.6.4                                                                            | ✓     | ✓     | ✓       |
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
 
