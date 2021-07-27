@@ -51,7 +51,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 If your server is manually installed and not on your path, you can also manually set the path to the executable.
 
 ```json
-"haskell.serverExecutablePath": "~/.local/bin/hie"
+"haskell.serverExecutablePath": "~/.local/bin/haskell-language-server"
 ```
 
 There are a few placeholders which will be expanded:
@@ -61,7 +61,7 @@ There are a few placeholders which will be expanded:
 
 #### Security warning
 
-The option has scope `resource` scope so it can be changed per workspace.
+The option has `resource` scope so it can be changed per workspace.
 This supposes it could be used to execute arbitrary programs adding a `.vscode/settings.json` in the workspace folder including this option with the appropiate path.
 For this reason its scope will be changed to `machine` so users only will be able to change it globally.
 See #387 for more details.
@@ -109,16 +109,18 @@ Note that if `haskell-language-server-wrapper`/`haskell-language-server` is alre
 
 These are the versions of GHC that there are binaries of `haskell-language-server` for. Building from source may support more versions!
 
-| GHC    | Linux | macOS | Windows |
-| ------ | ----- | ----- | ------- |
-| 8.10.4 | ✓     | ✓     | ✓       |
-| 8.10.3 | ✓     | ✓     | ✓       |
-| 8.10.2 | ✓     | ✓     | ✓       |
-| 8.8.4  | ✓     | ✓     | ✓       |
-| 8.8.3  | ✓     | ✓     |         |
-| 8.8.2  | ✓     | ✓     |         |
-| 8.6.5  | ✓     | ✓     | ✓       |
-| 8.6.4  | ✓     | ✓     | ✓       |
+| GHC                                                                              | Linux | macOS | Windows |
+| -------------------------------------------------------------------------------- | ----- | ----- | ------- |
+| 9.0.1 ([limited](https://github.com/haskell/haskell-language-server/issues/297)) | ✓     | ✓     | ✓       |
+| 8.10.5                                                                           | ✓     | ✓     | ✓       |
+| 8.10.4                                                                           | ✓     | ✓     | ✓       |
+| 8.10.3                                                                           | ✓     | ✓     | ✓       |
+| 8.10.2                                                                           | ✓     | ✓     | ✓       |
+| 8.8.4                                                                            | ✓     | ✓     | ✓       |
+| 8.8.3                                                                            | ✓     | ✓     |         |
+| 8.8.2                                                                            | ✓     | ✓     |         |
+| 8.6.5                                                                            | ✓     | ✓     | ✓       |
+| 8.6.4                                                                            | ✓     | ✓     | ✓       |
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
 

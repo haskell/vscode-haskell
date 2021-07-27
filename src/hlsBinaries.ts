@@ -102,26 +102,29 @@ async function getProjectGhcVersion(context: ExtensionContext, dir: string, rele
     return window.withProgress(
       {
         location: ProgressLocation.Window,
-        title: 'Working out the project GHC version',
+        title: 'Working out the project GHC version. This might take a while...',
       },
       async () => {
-        // Need to set the encoding to 'utf8' in order to get back a string
-        const out = child_process.spawnSync(wrapper, ['--project-ghc-version'], { encoding: 'utf8', cwd: dir });
-        if (out.error) {
-          throw out.error;
-        }
-        if (out.status !== 0) {
-          const regex = /Cradle requires (.+) but couldn't find it/;
-          const res = regex.exec(out.stderr);
-          if (res) {
-            throw new MissingToolError(res[1]);
-          }
-
-          throw Error(
-            `${wrapper} --project-ghc-version exited with exit code ${out.status}:\n${out.stdout}\n${out.stderr}`
+        return new Promise<string>((resolve, reject) => {
+          // Need to set the encoding to 'utf8' in order to get back a string
+          child_process.exec(
+            wrapper + ' --project-ghc-version',
+            { encoding: 'utf8', cwd: dir },
+            (err, stdout, stderr) => {
+              if (err) {
+                const regex = /Cradle requires (.+) but couldn't find it/;
+                const res = regex.exec(stderr);
+                if (res) {
+                  throw new MissingToolError(res[1]);
+                }
+                throw Error(
+                  `${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`
+                );
+              }
+              resolve(stdout.trim());
+            }
           );
-        }
-        return out.stdout.trim();
+        });
       }
     );
   };
@@ -312,6 +315,12 @@ export async function downloadHaskellLanguageServer(
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
   await downloadFile(title, asset.browser_download_url, binaryDest);
+  if (ghcVersion.startsWith('9.')) {
+    window.showWarningMessage(
+      'Currently, HLS supports GHC 9 only partially. ' +
+        'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.'
+    );
+  }
   return binaryDest;
 }
 

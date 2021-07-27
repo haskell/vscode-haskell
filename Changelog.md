@@ -1,3 +1,9 @@
+### 1.5.0
+
+- Emit warning about limited support for ghc-9.x on hls executable download
+- Fix `working out project ghc` progress notificacion
+- Fix tactics config, thanks to @isovector
+
 ### 1.4.0
 
 - Restore `resource` scope for `haskell.serverExecutablePath` temporary. The `machine` scope will be set again after giving users a period of time to let them adapt theirs workflows and changing or adding some option in the extension itself to help that adjustement (see #387).
