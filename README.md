@@ -51,7 +51,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 If your server is manually installed and not on your path, you can also manually set the path to the executable.
 
 ```json
-"haskell.serverExecutablePath": "~/.local/bin/hie"
+"haskell.serverExecutablePath": "~/.local/bin/haskell-language-server"
 ```
 
 There are a few placeholders which will be expanded:
@@ -61,7 +61,7 @@ There are a few placeholders which will be expanded:
 
 #### Security warning
 
-The option has scope `resource` scope so it can be changed per workspace.
+The option has `resource` scope so it can be changed per workspace.
 This supposes it could be used to execute arbitrary programs adding a `.vscode/settings.json` in the workspace folder including this option with the appropiate path.
 For this reason its scope will be changed to `machine` so users only will be able to change it globally.
 See #387 for more details.
