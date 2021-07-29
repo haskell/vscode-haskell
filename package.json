@@ -67,27 +67,11 @@
       "type": "object",
       "title": "Haskell",
       "properties": {
-        "haskell.hlintOn": {
-          "title": "Hlint",
-          "markdownDeprecationMessage": "**Deprecated**: Please use `#haskell.plugin.hlint.globalOn#` instead.",
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Get suggestions from hlint"
-        },
         "haskell.diagnosticsOnChange": {
           "scope": "resource",
           "type": "boolean",
           "default": true,
           "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
-        },
-        "haskell.completionSnippetsOn": {
-          "title": "Completion Snippets",
-          "markdownDeprecationMessage": "**Deprecated**: Please use `#haskell.plugin.ghcide-completions.config.snippetsOn#` instead.",
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Show snippets with type information when using code completion"
         },
         "haskell.formatOnImportOn": {
           "scope": "resource",
@@ -177,6 +161,12 @@
           "default": true,
           "description": "Enables hlint diagnostics"
         },
+        "haskell.plugin.hlint.config.flags": {
+          "markdownDescription": "Flags used by hlint",
+          "scope": "resource",
+          "default": [],
+          "type": "array"
+        },
         "haskell.plugin.eval.globalOn": {
           "scope": "resource",
           "type": "boolean",
@@ -219,6 +209,12 @@
           "default": true,
           "description": "Enables Wingman (tactics) plugin"
         },
+        "haskell.plugin.tactics.config.auto_gas": {
+          "markdownDescription": "The depth of the search tree when performing \"Attempt to fill hole\". Bigger values will be able to derive more solutions, but will take exponentially more time.",
+          "scope": "resource",
+          "default": 4,
+          "type": "integer"
+        },
         "haskell.plugin.tactics.config.hole_severity": {
           "enumDescriptions": [
             "error",
@@ -251,6 +247,12 @@
           "scope": "resource",
           "default": 2,
           "type": "integer"
+        },
+        "haskell.plugin.tactics.config.proofstate_styling": {
+          "markdownDescription": "Should Wingman emit styling markup when showing metaprogram proof states?",
+          "scope": "resource",
+          "default": true,
+          "type": "boolean"
         },
         "haskell.plugin.pragmas.codeActionsOn": {
           "scope": "resource",
