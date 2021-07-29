@@ -34,7 +34,8 @@
   },
   "activationEvents": [
     "onLanguage:haskell",
-    "onLanguage:literate haskell"
+    "onLanguage:literate haskell",
+    "onLanguage:cabal"
   ],
   "main": "./dist/extension",
   "contributes": {
@@ -49,6 +50,16 @@
           ".hs"
         ]
       },
+      {
+        "id": "cabal",
+        "aliases": [
+          "Cabal"
+        ],
+        "extensions": [
+          ".cabal"
+        ]
+      },
+
       {
         "id": "literate haskell",
         "aliases": [
