@@ -1,0 +1,35 @@
+on:
+  release:
+    types: [created]
+
+name: Deploy Extension
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - name: Publish to Visual Studio Marketplace
+        id: publishToVSMarketplace
+        uses: HaaLeo/publish-vscode-extension@v0
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
+      - name: Publish to Open VSX Registry
+        id: publishToOpenVSX
+        continue-on-error: true
+        uses: HaaLeo/publish-vscode-extension@v0
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+      - name: Upload extension vsix
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.publishToVSMarketplace.outputs.vsixPath }}
+          asset_name: haskell-${{ github.event.release.tag_name }}.vsix
+          asset_content_type: application/vsix
