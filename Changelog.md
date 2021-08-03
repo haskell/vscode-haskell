@@ -1,8 +1,13 @@
+### Next release
+
+- Add tracking of cabal files to work together with the incoming cabal formatter plugin
+
 ### 1.5.0
 
 - Emit warning about limited support for ghc-9.x on hls executable download
 - Fix `working out project ghc` progress notificacion
 - Fix tactics config, thanks to @isovector
+- Update server config to match haskell-language-server-1.3.0 one
 
 ### 1.4.0
 
