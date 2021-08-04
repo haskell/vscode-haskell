@@ -46,7 +46,7 @@ export class ExtensionLogger implements Logger {
 
   private logLevel(level: LogLevel, msg: string) {
     if (level <= this.level) {
-      this.log(`[${this.name}][${level}] ${msg}`);
+      this.log(`[${this.name}][${LogLevel[level].toUpperCase()}] ${msg}`);
     }
   }
 
