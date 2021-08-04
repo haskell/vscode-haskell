@@ -116,12 +116,12 @@ async function getProjectGhcVersion(
       async (progress, token) => {
         return new Promise<string>((resolve, reject) => {
           const command: string = wrapper + ' --project-ghc-version';
-          logger.info(`Executing '${command}' in cwd ${dir} to get the project ghc version`);
+          logger.info(`Executing '${command}' in cwd '${dir}' to get the project or file ghc version`);
           token.onCancellationRequested(() => {
-            logger.warn(`User canceled the executon of '${command}'`);
+            logger.warn(`User canceled the execution of '${command}'`);
           });
           // Need to set the encoding to 'utf8' in order to get back a string
-          // We execute the command in a shell for windows, to allow use cmd or bat scripts
+          // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
           const childProcess = child_process
             .execFile(
               command,
@@ -130,25 +130,33 @@ async function getProjectGhcVersion(
                 if (err) {
                   logger.error(`Error executing '${command}' with error code ${err.code}`);
                   logger.error(`stderr: ${stderr}`);
-                  logger.error(`stdout: ${stdout}`);
+                  if (stdout) {
+                    logger.error(`stdout: ${stdout}`);
+                  }
                   const regex = /Cradle requires (.+) but couldn't find it/;
                   const res = regex.exec(stderr);
                   if (res) {
-                    throw new MissingToolError(res[1]);
+                    reject(new MissingToolError(res[1]));
                   }
-                  throw Error(
-                    `${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`
+                  reject(
+                    Error(`${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`)
                   );
+                } else {
+                  logger.info(`The GHC version for the project or file: ${stdout?.trim()}`);
+                  resolve(stdout?.trim());
                 }
-                resolve(stdout.trim());
               }
             )
-            .on('close', (code, signal) => {
-              logger.info(`Execution of '${command}' closed with code ${code} and signal ${signal}`);
+            .on('exit', (code, signal) => {
+              const msg =
+                `Execution of '${command}' terminated with code ${code}` + (signal ? `and signal ${signal}` : '');
+              logger.info(msg);
             })
             .on('error', (err) => {
-              logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
-              throw err;
+              if (err) {
+                logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
+                reject(err);
+              }
             });
           token.onCancellationRequested((_) => childProcess.kill());
         });
@@ -306,7 +314,7 @@ export async function downloadHaskellLanguageServer(
     return null;
   }
   logger.info(`The latest release is ${release.tag_name}`);
-  logger.info(`Figure out the ghc version to use or advertise an installation link for missing components`);
+  logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
   try {
