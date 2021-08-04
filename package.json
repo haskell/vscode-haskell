@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -101,6 +101,17 @@
             "messages"
           ],
           "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        },
+        "haskell.trace.client": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "off",
+            "error",
+            "debug"
+          ],
+          "default": "error",
           "description": "Traces the communication between VS Code and the language server."
         },
         "haskell.logFile": {
@@ -312,6 +323,16 @@
         "command": "haskell.commands.restartServer",
         "title": "Haskell: Restart Haskell LSP server",
         "description": "Restart the Haskell LSP server"
+      },
+      {
+        "command": "haskell.commands.startServer",
+        "title": "Haskell: Start Haskell LSP server",
+        "description": "Start the Haskell LSP server"
+      },
+      {
+        "command": "haskell.commands.stopServer",
+        "title": "Haskell: Stop Haskell LSP server",
+        "description": "Stop the Haskell LSP server"
       }
     ]
   },

@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as url from 'url';
 import { promisify } from 'util';
 import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import { Logger } from 'vscode-languageclient';
 import { downloadFile, executableExists, httpsGetSilently } from './utils';
 import * as validate from './validation';
 
@@ -97,33 +98,69 @@ class NoBinariesError extends Error {
  * if needed. Returns null if there was an error in either downloading the wrapper or
  * in working out the ghc version
  */
-async function getProjectGhcVersion(context: ExtensionContext, dir: string, release: IRelease): Promise<string> {
+async function getProjectGhcVersion(
+  context: ExtensionContext,
+  logger: Logger,
+  dir: string,
+  release: IRelease
+): Promise<string> {
+  const title: string = 'Working out the project GHC version. This might take a while...';
+  logger.info(title);
   const callWrapper = (wrapper: string) => {
     return window.withProgress(
       {
-        location: ProgressLocation.Window,
-        title: 'Working out the project GHC version. This might take a while...',
+        location: ProgressLocation.Notification,
+        title: `${title}`,
+        cancellable: true,
       },
-      async () => {
+      async (progress, token) => {
         return new Promise<string>((resolve, reject) => {
+          const args = ['--project-ghc-version'];
+          const command: string = wrapper + args.join(' ');
+          logger.info(`Executing '${command}' in cwd '${dir}' to get the project or file ghc version`);
+          token.onCancellationRequested(() => {
+            logger.warn(`User canceled the execution of '${command}'`);
+          });
           // Need to set the encoding to 'utf8' in order to get back a string
-          child_process.exec(
-            wrapper + ' --project-ghc-version',
-            { encoding: 'utf8', cwd: dir },
-            (err, stdout, stderr) => {
-              if (err) {
-                const regex = /Cradle requires (.+) but couldn't find it/;
-                const res = regex.exec(stderr);
-                if (res) {
-                  throw new MissingToolError(res[1]);
+          // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
+          const childProcess = child_process
+            .execFile(
+              wrapper,
+              args,
+              { encoding: 'utf8', cwd: dir, shell: getGithubOS() === 'Windows' },
+              (err, stdout, stderr) => {
+                if (err) {
+                  logger.error(`Error executing '${command}' with error code ${err.code}`);
+                  logger.error(`stderr: ${stderr}`);
+                  if (stdout) {
+                    logger.error(`stdout: ${stdout}`);
+                  }
+                  const regex = /Cradle requires (.+) but couldn't find it/;
+                  const res = regex.exec(stderr);
+                  if (res) {
+                    reject(new MissingToolError(res[1]));
+                  }
+                  reject(
+                    Error(`${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`)
+                  );
+                } else {
+                  logger.info(`The GHC version for the project or file: ${stdout?.trim()}`);
+                  resolve(stdout?.trim());
                 }
-                throw Error(
-                  `${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`
-                );
               }
-              resolve(stdout.trim());
-            }
-          );
+            )
+            .on('exit', (code, signal) => {
+              const msg =
+                `Execution of '${command}' terminated with code ${code}` + (signal ? `and signal ${signal}` : '');
+              logger.info(msg);
+            })
+            .on('error', (err) => {
+              if (err) {
+                logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
+                reject(err);
+              }
+            });
+          token.onCancellationRequested((_) => childProcess.kill());
         });
       }
     );
@@ -250,10 +287,12 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
  */
 export async function downloadHaskellLanguageServer(
   context: ExtensionContext,
+  logger: Logger,
   resource: Uri,
   folder?: WorkspaceFolder
 ): Promise<string | null> {
   // Make sure to create this before getProjectGhcVersion
+  logger.info('Downloading haskell-language-server');
   if (!fs.existsSync(context.globalStoragePath)) {
     fs.mkdirSync(context.globalStoragePath);
   }
@@ -265,7 +304,7 @@ export async function downloadHaskellLanguageServer(
     return null;
   }
 
-  // Fetch the latest release from GitHub or from cache
+  logger.info('Fetching the latest release from GitHub or from cache');
   const release = await getLatestReleaseMetadata(context);
   if (!release) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
@@ -276,12 +315,12 @@ export async function downloadHaskellLanguageServer(
     window.showErrorMessage(message);
     return null;
   }
-
-  // Figure out the ghc version to use or advertise an installation link for missing components
+  logger.info(`The latest release is ${release.tag_name}`);
+  logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
   try {
-    ghcVersion = await getProjectGhcVersion(context, dir, release);
+    ghcVersion = await getProjectGhcVersion(context, logger, dir, release);
   } catch (error) {
     if (error instanceof MissingToolError) {
       const link = error.installLink();
@@ -304,8 +343,12 @@ export async function downloadHaskellLanguageServer(
   // When searching for binaries, use startsWith because the compression may differ
   // between .zip and .gz
   const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExt}`;
+  logger.info(`Search for binary ${assetName} in release assests`);
   const asset = release?.assets.find((x) => x.name.startsWith(assetName));
   if (!asset) {
+    logger.error(
+      `No binary ${assetName} found in the release assets: ${release?.assets.map((value) => value.name).join(',')}`
+    );
     window.showInformationMessage(new NoBinariesError(release.tag_name, ghcVersion).message);
     return null;
   }
@@ -314,12 +357,14 @@ export async function downloadHaskellLanguageServer(
   const binaryDest = path.join(context.globalStoragePath, serverName);
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
+  logger.info(title);
   await downloadFile(title, asset.browser_download_url, binaryDest);
   if (ghcVersion.startsWith('9.')) {
-    window.showWarningMessage(
+    const warning =
       'Currently, HLS supports GHC 9 only partially. ' +
-        'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.'
-    );
+      'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.';
+    logger.warn(warning);
+    window.showWarningMessage(warning);
   }
   return binaryDest;
 }
