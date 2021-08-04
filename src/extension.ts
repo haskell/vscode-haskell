@@ -49,7 +49,7 @@ export async function activate(context: ExtensionContext) {
         const uri = folder.uri.toString();
         client.info(`Deleting folder for clients: ${uri}`);
         clients.delete(uri);
-        client.info('Stopping the client');
+        client.info('Stopping the server');
         client.stop();
       }
     }
@@ -58,9 +58,9 @@ export async function activate(context: ExtensionContext) {
   // Register editor commands for HIE, but only register the commands once at activation.
   const restartCmd = commands.registerCommand(CommandNames.RestartServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Stopping the client');
+      langClient?.info('Stopping the server');
       await langClient?.stop();
-      langClient?.info('Starting the client');
+      langClient?.info('Starting the server');
       langClient?.start();
     }
   });
@@ -69,9 +69,9 @@ export async function activate(context: ExtensionContext) {
 
   const stopCmd = commands.registerCommand(CommandNames.StopServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Stopping the client');
+      langClient?.info('Stopping the server');
       await langClient?.stop();
-      langClient?.info('Client stopped');
+      langClient?.info('Server stopped');
     }
   });
 
@@ -79,9 +79,9 @@ export async function activate(context: ExtensionContext) {
 
   const startCmd = commands.registerCommand(CommandNames.StartServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Starting the client');
+      langClient?.info('Starting the server');
       langClient?.start();
-      langClient?.info('Client started');
+      langClient?.info('Server started');
     }
   });
 
@@ -118,10 +118,10 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
 /** Searches the PATH for whatever is set in serverVariant */
 function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
-  logger.info(`Searching for server executables ${exes.join(' ')} in PATH`);
+  logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
   for (const exe of exes) {
     if (executableExists(exe)) {
-      logger.info(`Found server executable in PATH: ${exe}`);
+      logger.info(`Found server executable in $PATH: ${exe}`);
       return exe;
     }
   }
@@ -178,7 +178,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     }
   } catch (e) {
     if (e instanceof Error) {
-      logger.error('Error getting the server executable: ${e.message}');
+      logger.error(`Error getting the server executable: ${e.message}`);
       window.showErrorMessage(e.message);
     }
     return;
@@ -197,6 +197,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
+  if (folder) {
+    logger.info(`Activating the language server in the workspace folder: ${folder?.uri.fsPath}`);
+  } else {
+    logger.info(`Activating the language server in the parent dir of the file: ${uri.fsPath}`);
+  }
+
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
   };
@@ -210,9 +216,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   logger.info(`run command: ${serverExecutable} ${args.join(' ')}`);
   logger.info(`debug command: ${serverExecutable} ${args.join(' ')}`);
-  logger.info(`server cwd: ${exeOptions.cwd}`);
+  if (exeOptions.cwd) {
+    logger.info(`server cwd: ${exeOptions.cwd}`);
+  }
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
+  logger.info(`document selector patten: ${pat}`);
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
@@ -244,7 +253,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   langClient.registerProposedFeatures();
 
   // Finally start the client and add it to the list of clients.
-  logger.info('Starting language client');
+  logger.info('Starting language server');
   langClient.start();
   clients.set(clientsKey, langClient);
 }
