@@ -323,6 +323,16 @@
         "command": "haskell.commands.restartServer",
         "title": "Haskell: Restart Haskell LSP server",
         "description": "Restart the Haskell LSP server"
+      },
+      {
+        "command": "haskell.commands.startServer",
+        "title": "Haskell: Start Haskell LSP server",
+        "description": "Start the Haskell LSP server"
+      },
+      {
+        "command": "haskell.commands.stopServer",
+        "title": "Haskell: Stop Haskell LSP server",
+        "description": "Stop the Haskell LSP server"
       }
     ]
   },

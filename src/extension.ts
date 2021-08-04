@@ -68,6 +68,26 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(restartCmd);
 
+  const stopCmd = commands.registerCommand(CommandNames.StopServerCommandName, async () => {
+    for (const langClient of clients.values()) {
+      langClient?.info('Stopping the client');
+      await langClient?.stop();
+      langClient?.info('Client stopped');
+    }
+  });
+
+  context.subscriptions.push(stopCmd);
+
+  const startCmd = commands.registerCommand(CommandNames.StartServerCommandName, async () => {
+    for (const langClient of clients.values()) {
+      langClient?.info('Starting the client');
+      langClient?.start();
+      langClient?.info('Client started');
+    }
+  });
+
+  context.subscriptions.push(startCmd);
+
   context.subscriptions.push(ImportIdentifier.registerCommand());
 
   // Set up the documentation browser.
