@@ -15,6 +15,7 @@ import {
   ExecutableOptions,
   LanguageClient,
   LanguageClientOptions,
+  Logger,
   RevealOutputChannelOn,
   ServerOptions,
   TransportKind,
@@ -23,7 +24,7 @@ import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
-import { executableExists } from './utils';
+import { executableExists, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -45,7 +46,11 @@ export async function activate(context: ExtensionContext) {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
-        clients.delete(folder.uri.toString());
+        const uri = folder.uri.toString();
+        client.info('Deleting folder for clients: ${uri}');
+        clients.delete(uri);
+        client.info;
+        client.info('Stopping the client');
         client.stop();
       }
     }
@@ -54,10 +59,13 @@ export async function activate(context: ExtensionContext) {
   // Register editor commands for HIE, but only register the commands once at activation.
   const restartCmd = commands.registerCommand(CommandNames.RestartServerCommandName, async () => {
     for (const langClient of clients.values()) {
+      langClient?.info('Stopping the client');
       await langClient?.stop();
+      langClient?.info('Starting the client');
       langClient?.start();
     }
   });
+
   context.subscriptions.push(restartCmd);
 
   context.subscriptions.push(ImportIdentifier.registerCommand());
@@ -70,18 +78,18 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(openOnHackageDisposable);
 }
 
-function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null {
+function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
   let exePath = workspace.getConfiguration('haskell', uri).serverExecutablePath;
   if (exePath === '') {
     return null;
   }
-
+  logger.info('Trying to find the server executable in: ${exePath}');
   // Substitute path variables with their corresponding locations.
   exePath = exePath.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
   if (folder) {
     exePath = exePath.replace('${workspaceFolder}', folder.uri.path).replace('${workspaceRoot}', folder.uri.path);
   }
-
+  logger.info('Location after path variables subsitution: ${exePath}');
   if (!executableExists(exePath)) {
     throw new Error(`serverExecutablePath is set to ${exePath} but it doesn't exist and is not on the PATH`);
   }
@@ -89,11 +97,12 @@ function findManualExecutable(uri: Uri, folder?: WorkspaceFolder): string | null
 }
 
 /** Searches the PATH for whatever is set in serverVariant */
-function findLocalServer(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder): string | null {
+function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
-
+  logger.info('Searching for server executables ${exes} in PATH');
   for (const exe of exes) {
     if (executableExists(exe)) {
+      logger.info('Found server executable in PATH: ${exe}');
       return exe;
     }
   }
@@ -120,6 +129,9 @@ async function activeServer(context: ExtensionContext, document: TextDocument) {
 
 async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
   const clientsKey = folder ? folder.uri.toString() : uri.toString();
+  // Set a unique name per workspace folder (useful for multi-root workspaces).
+  const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
+  const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
   // If the client already has an LSP server for this uri/folder, then don't start a new one.
   if (clients.has(clientsKey)) {
@@ -129,21 +141,25 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   clients.set(clientsKey, null);
 
   const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
+  const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
   const logFile = workspace.getConfiguration('haskell', uri).logFile;
+
+  const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel);
 
   let serverExecutable;
   try {
     // Try and find local installations first
-    serverExecutable = findManualExecutable(uri, folder) ?? findLocalServer(context, uri, folder);
+    serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
     if (serverExecutable === null) {
       // If not, then try to download haskell-language-server binaries if it's selected
-      serverExecutable = await downloadHaskellLanguageServer(context, uri, folder);
+      serverExecutable = await downloadHaskellLanguageServer(context, logger, uri, folder);
       if (!serverExecutable) {
         return;
       }
     }
   } catch (e) {
     if (e instanceof Error) {
+      logger.error('Error getting the server executable: ${e.message}');
       window.showErrorMessage(e.message);
     }
     return;
@@ -173,13 +189,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     debug: { command: serverExecutable, transport: TransportKind.stdio, args, options: exeOptions },
   };
 
-  // Set a unique name per workspace folder (useful for multi-root workspaces).
-  const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
-  const outputChannel: OutputChannel = window.createOutputChannel(langName);
-  outputChannel.appendLine('[client] run command: "' + serverExecutable + ' ' + args.join(' ') + '"');
-  outputChannel.appendLine('[client] debug command: "' + serverExecutable + ' ' + args.join(' ') + '"');
-
-  outputChannel.appendLine(`[client] server cwd: ${exeOptions.cwd}`);
+  logger.info('run command: "' + serverExecutable + ' ' + args.join(' ') + '"');
+  logger.info('debug command: "' + serverExecutable + ' ' + args.join(' ') + '"');
+  logger.info(`server cwd: ${exeOptions.cwd}`);
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   const clientOptions: LanguageClientOptions = {
@@ -213,6 +225,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   langClient.registerProposedFeatures();
 
   // Finally start the client and add it to the list of clients.
+  logger.info('Starting language client');
   langClient.start();
   clients.set(clientsKey, langClient);
 }

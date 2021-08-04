@@ -7,9 +7,57 @@ import * as https from 'https';
 import { extname } from 'path';
 import * as url from 'url';
 import { promisify } from 'util';
-import { ProgressLocation, window } from 'vscode';
+import { OutputChannel, ProgressLocation, window } from 'vscode';
+import { Logger } from 'vscode-languageclient';
 import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
+
+enum LogLevel {
+  Off,
+  Error,
+  Warn,
+  Info,
+}
+export class ExtensionLogger implements Logger {
+  public readonly name: string;
+  public readonly level: LogLevel;
+  public readonly channel: OutputChannel;
+
+  constructor(name: string, level: string, channel: OutputChannel) {
+    this.name = name;
+    this.level = this.getLogLevel(level);
+    this.channel = channel;
+  }
+  warn(message: string): void {
+    this.logLevel(LogLevel.Warn, message);
+  }
+  info(message: string): void {
+    this.logLevel(LogLevel.Info, message);
+  }
+
+  error(message: string) {
+    this.logLevel(LogLevel.Error, message);
+  }
+
+  log(msg: string) {
+    this.channel.appendLine(msg);
+  }
+
+  private logLevel(level: LogLevel, msg: string) {
+    if (level <= this.level) this.log('[${name}][${level}] ${msg}');
+  }
+
+  private getLogLevel(level: string) {
+    switch (level) {
+      case 'off':
+        return LogLevel.Off;
+      case 'error':
+        return LogLevel.Error;
+      default:
+        return LogLevel.Info;
+    }
+  }
+}
 
 /** When making http requests to github.com, use this header otherwise
  * the server will close the request
