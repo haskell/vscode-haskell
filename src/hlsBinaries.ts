@@ -115,7 +115,8 @@ async function getProjectGhcVersion(
       },
       async (progress, token) => {
         return new Promise<string>((resolve, reject) => {
-          const command: string = wrapper + ' --project-ghc-version';
+          const args = ['--project-ghc-version'];
+          const command: string = wrapper + args.join(' ');
           logger.info(`Executing '${command}' in cwd '${dir}' to get the project or file ghc version`);
           token.onCancellationRequested(() => {
             logger.warn(`User canceled the execution of '${command}'`);
@@ -124,7 +125,8 @@ async function getProjectGhcVersion(
           // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
           const childProcess = child_process
             .execFile(
-              command,
+              wrapper,
+              args,
               { encoding: 'utf8', cwd: dir, shell: getGithubOS() === 'Windows' },
               (err, stdout, stderr) => {
                 if (err) {
