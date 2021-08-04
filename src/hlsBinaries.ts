@@ -110,27 +110,27 @@ async function getProjectGhcVersion(
     return window.withProgress(
       {
         location: ProgressLocation.Notification,
-        title: title,
+        title: `${title}`,
         cancellable: true,
       },
       async (progress, token) => {
         return new Promise<string>((resolve, reject) => {
           const command: string = wrapper + ' --project-ghc-version';
-          logger.info('Executing `${command}` in cwd ${dir} to get the project ghc version');
+          logger.info(`Executing '${command}' in cwd ${dir} to get the project ghc version`);
           token.onCancellationRequested(() => {
-            logger.warn('User canceled the executon of `${command}`');
+            logger.warn(`User canceled the executon of '${command}'`);
           });
           // Need to set the encoding to 'utf8' in order to get back a string
           // We execute the command in a shell for windows, to allow use cmd or bat scripts
-          let childProcess = child_process
+          const childProcess = child_process
             .execFile(
               command,
-              { encoding: 'utf8', cwd: dir, shell: getGithubOS() == 'Windows' },
+              { encoding: 'utf8', cwd: dir, shell: getGithubOS() === 'Windows' },
               (err, stdout, stderr) => {
                 if (err) {
-                  logger.error('Error executing `${command}` with error code ${err.code}');
-                  logger.error('stderr: ${stderr}');
-                  logger.error('stdout: ${stdout}');
+                  logger.error(`Error executing '${command}' with error code ${err.code}`);
+                  logger.error(`stderr: ${stderr}`);
+                  logger.error(`stdout: ${stdout}`);
                   const regex = /Cradle requires (.+) but couldn't find it/;
                   const res = regex.exec(stderr);
                   if (res) {
@@ -144,10 +144,10 @@ async function getProjectGhcVersion(
               }
             )
             .on('close', (code, signal) => {
-              logger.info('Execution of `${command}` closed with code ${err.code} and signal ${signal}');
+              logger.info(`Execution of '${command}' closed with code ${code} and signal ${signal}`);
             })
             .on('error', (err) => {
-              logger.error('Error execution `${command}`: name = ${err.name}, message = ${err.message}');
+              logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
               throw err;
             });
           token.onCancellationRequested((_) => childProcess.kill());
@@ -305,8 +305,8 @@ export async function downloadHaskellLanguageServer(
     window.showErrorMessage(message);
     return null;
   }
-  logger.info('The latest release is ${release.tag_name}');
-  logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
+  logger.info(`The latest release is ${release.tag_name}`);
+  logger.info(`Figure out the ghc version to use or advertise an installation link for missing components`);
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
   try {
@@ -333,10 +333,12 @@ export async function downloadHaskellLanguageServer(
   // When searching for binaries, use startsWith because the compression may differ
   // between .zip and .gz
   const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExt}`;
-  logger.info('Search for binary ${assetName} in release assests');
+  logger.info(`Search for binary ${assetName} in release assests`);
   const asset = release?.assets.find((x) => x.name.startsWith(assetName));
   if (!asset) {
-    logger.error('No binary ${assetName} found in the release assets: ' + release?.assets.map((value) => value.name));
+    logger.error(
+      `No binary ${assetName} found in the release assets: ${release?.assets.map((value) => value.name).join(',')}`
+    );
     window.showInformationMessage(new NoBinariesError(release.tag_name, ghcVersion).message);
     return null;
   }
@@ -348,7 +350,7 @@ export async function downloadHaskellLanguageServer(
   logger.info(title);
   await downloadFile(title, asset.browser_download_url, binaryDest);
   if (ghcVersion.startsWith('9.')) {
-    let warning =
+    const warning =
       'Currently, HLS supports GHC 9 only partially. ' +
       'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.';
     logger.warn(warning);

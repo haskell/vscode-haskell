@@ -47,9 +47,8 @@ export async function activate(context: ExtensionContext) {
       const client = clients.get(folder.uri.toString());
       if (client) {
         const uri = folder.uri.toString();
-        client.info('Deleting folder for clients: ${uri}');
+        client.info(`Deleting folder for clients: ${uri}`);
         clients.delete(uri);
-        client.info;
         client.info('Stopping the client');
         client.stop();
       }
@@ -103,15 +102,15 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   if (exePath === '') {
     return null;
   }
-  logger.info('Trying to find the server executable in: ${exePath}');
+  logger.info(`Trying to find the server executable in: ${exePath}`);
   // Substitute path variables with their corresponding locations.
   exePath = exePath.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
   if (folder) {
     exePath = exePath.replace('${workspaceFolder}', folder.uri.path).replace('${workspaceRoot}', folder.uri.path);
   }
-  logger.info('Location after path variables subsitution: ${exePath}');
+  logger.info(`Location after path variables subsitution: ${exePath}`);
   if (!executableExists(exePath)) {
-    throw new Error(`serverExecutablePath is set to ${exePath} but it doesn't exist and is not on the PATH`);
+    throw new Error(`serverExecutablePath is set to ${exePath} but it doesn't exist and it is not on the PATH`);
   }
   return exePath;
 }
@@ -119,10 +118,10 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
 /** Searches the PATH for whatever is set in serverVariant */
 function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
-  logger.info('Searching for server executables ${exes} in PATH');
+  logger.info(`Searching for server executables ${exes.join(' ')} in PATH`);
   for (const exe of exes) {
     if (executableExists(exe)) {
-      logger.info('Found server executable in PATH: ${exe}');
+      logger.info(`Found server executable in PATH: ${exe}`);
       return exe;
     }
   }
@@ -209,8 +208,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     debug: { command: serverExecutable, transport: TransportKind.stdio, args, options: exeOptions },
   };
 
-  logger.info('run command: "' + serverExecutable + ' ' + args.join(' ') + '"');
-  logger.info('debug command: "' + serverExecutable + ' ' + args.join(' ') + '"');
+  logger.info(`run command: ${serverExecutable} ${args.join(' ')}`);
+  logger.info(`debug command: ${serverExecutable} ${args.join(' ')}`);
   logger.info(`server cwd: ${exeOptions.cwd}`);
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';

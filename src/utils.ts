@@ -28,23 +28,26 @@ export class ExtensionLogger implements Logger {
     this.level = this.getLogLevel(level);
     this.channel = channel;
   }
-  warn(message: string): void {
+  public warn(message: string): void {
     this.logLevel(LogLevel.Warn, message);
   }
-  info(message: string): void {
+
+  public info(message: string): void {
     this.logLevel(LogLevel.Info, message);
   }
 
-  error(message: string) {
+  public error(message: string) {
     this.logLevel(LogLevel.Error, message);
   }
 
-  log(msg: string) {
+  public log(msg: string) {
     this.channel.appendLine(msg);
   }
 
   private logLevel(level: LogLevel, msg: string) {
-    if (level <= this.level) this.log('[${name}][${level}] ${msg}');
+    if (level <= this.level) {
+      this.log(`[${this.name}][${level}] ${msg}`);
+    }
   }
 
   private getLogLevel(level: string) {
