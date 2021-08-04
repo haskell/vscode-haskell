@@ -119,8 +119,9 @@ async function activeServer(context: ExtensionContext, document: TextDocument) {
 }
 
 async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
+  const ignoreStandalone = workspace.getConfiguration('haskell').ignoreStandalone;
   const clientsKey = folder ? folder.uri.toString() : uri.toString();
-
+  if (!folder && ignoreStandalone) return;
   // If the client already has an LSP server for this uri/folder, then don't start a new one.
   if (clients.has(clientsKey)) {
     return;
