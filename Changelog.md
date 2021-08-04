@@ -7,6 +7,7 @@
 - Add much more logging in the client side, configured with `haskell.trace.client`
 - Fix error handling of `working out project ghc` (See #421)
   - And dont use a shell to spawn the subprocess in non windows systems
+  - Show the progress as a cancellable notification
 - Add commands `Start Haskell LSP server` and `Stop Haskell LSP server`
 
 ### 1.5.0
