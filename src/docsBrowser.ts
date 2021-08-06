@@ -108,7 +108,7 @@ export namespace DocsBrowser {
     });
   }
 
-  function processLink(ms: MarkedString): string | MarkdownString {
+  function processLink(ms: MarkdownString | MarkedString): string | MarkdownString {
     function transform(s: string): string {
       return s.replace(
         /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^\/]+)\/(src\/)?(.+\.html#?.*))\)/gi,

@@ -19,7 +19,7 @@ import {
   RevealOutputChannelOn,
   ServerOptions,
   TransportKind,
-} from 'vscode-languageclient';
+} from 'vscode-languageclient/node';
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
