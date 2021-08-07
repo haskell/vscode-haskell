@@ -10,7 +10,7 @@
 ### 1.5.1
 
 - Add much more logging in the client side, configured with `haskell.trace.client`
-- Fix error handling of working out project ghc and a bug when the path to the executable contains spaces (See #421)
+- Fix error handling of `working out project ghc` and a bug when the path to the executable contains spaces (See #421)
   - And dont use a shell to spawn the subprocess in non windows systems
   - Show the progress as a cancellable notification
 - Add commands `Start Haskell LSP server` and `Stop Haskell LSP server`
