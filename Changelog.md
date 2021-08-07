@@ -2,10 +2,15 @@
 
 - Add tracking of cabal files to work together with the incoming cabal formatter plugin
 
+### 1.6.0
+
+- Bump up vscode version to 1.52.0 (#424) by @berberman
+  - To match the lsp spec version used in haskell-language-version and fix <https://github.com/haskell/haskell-language-server/issues/2068>
+
 ### 1.5.1
 
 - Add much more logging in the client side, configured with `haskell.trace.client`
-- Fix error handling of `working out project ghc` (See #421)
+- Fix error handling of working out project ghc and a bug when the path to the executable contains spaces (See #421)
   - And dont use a shell to spawn the subprocess in non windows systems
   - Show the progress as a cancellable notification
 - Add commands `Start Haskell LSP server` and `Stop Haskell LSP server`
