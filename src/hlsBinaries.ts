@@ -116,7 +116,7 @@ async function getProjectGhcVersion(
       async (progress, token) => {
         return new Promise<string>((resolve, reject) => {
           const args = ['--project-ghc-version'];
-          const command: string = wrapper + args.join(' ');
+          const command: string = wrapper + ' ' + args.join(' ');
           logger.info(`Executing '${command}' in cwd '${dir}' to get the project or file ghc version`);
           token.onCancellationRequested(() => {
             logger.warn(`User canceled the execution of '${command}'`);
