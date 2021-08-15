@@ -43,7 +43,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
-- If you are installing from a offline VSIX file, you need install [language-haskell](https://github.com/JustusAdam/language-haskell) too after installation (either from the marketplace or offline).
+- If you are installing from an offline VSIX file, you need to install [language-haskell](https://github.com/JustusAdam/language-haskell) too after installation (either from the marketplace or offline).
 
 ## Configuration options
 
