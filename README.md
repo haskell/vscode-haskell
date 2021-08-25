@@ -47,7 +47,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 
 ## Configuration options
 
-### Path to server executable executable
+### Path to server executable
 
 If your server is manually installed and not on your path, you can also manually set the path to the executable.
 
