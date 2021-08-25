@@ -2,6 +2,10 @@
 
 - Add tracking of cabal files to work together with the incoming cabal formatter plugin
 
+### 1.6.1
+
+- Fix wrapper call to get project ghc version in windows with spaces in path (<https://github.com/haskell/vscode-haskell/pull/439>)
+
 ### 1.6.0
 
 - Bump up vscode version to 1.52.0 (#424) by @berberman
