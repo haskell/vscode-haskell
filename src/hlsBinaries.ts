@@ -125,7 +125,7 @@ async function getProjectGhcVersion(
           // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
           const childProcess = child_process
             .execFile(
-              wrapper,
+              getGithubOS() === 'Windows' ? `"${wrapper}"` : wrapper,
               args,
               { encoding: 'utf8', cwd: dir, shell: getGithubOS() === 'Windows' },
               (err, stdout, stderr) => {
