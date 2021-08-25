@@ -228,7 +228,6 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     documentSelector: [
       { scheme: 'file', language: 'haskell', pattern: pat },
       { scheme: 'file', language: 'literate haskell', pattern: pat },
-      { scheme: 'file', language: 'cabal', pattern: pat },
     ],
     synchronize: {
       // Synchronize the setting section 'haskell' to the server.
