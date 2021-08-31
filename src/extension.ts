@@ -150,18 +150,20 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   const clientsKey = folder ? folder.uri.toString() : uri.toString();
   // Set a unique name per workspace folder (useful for multi-root workspaces).
   const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
-  const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
   // If the client already has an LSP server for this uri/folder, then don't start a new one.
   if (clients.has(clientsKey)) {
     return;
   }
+
   // Set the key to null to prevent multiple servers being launched at once
   clients.set(clientsKey, null);
 
   const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
   const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
   const logFile = workspace.getConfiguration('haskell', uri).logFile;
+
+  const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
   const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel);
 
