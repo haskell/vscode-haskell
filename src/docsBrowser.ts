@@ -23,63 +23,83 @@ import { ProvideCompletionItemsSignature, ProvideHoverSignature } from 'vscode-l
 export namespace DocsBrowser {
   'use strict';
 
+  async function showDocumentation({
+    title,
+    localPath,
+    hackageUri,
+  }: {
+    title: string;
+    localPath: string;
+    hackageUri: string;
+  }) {
+    const arr = localPath.match(/([^\/]+)\.[^.]+$/);
+    const ttl = arr !== null && arr.length === 2 ? arr[1].replace(/-/gi, '.') : title;
+    const documentationDirectory = dirname(localPath);
+    let panel;
+    try {
+      const docUri = Uri.parse(documentationDirectory);
+
+      // Make sure to use Uri.parse here, as path will already have 'file:///' in it
+      panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Beside, {
+        localResourceRoots: [docUri],
+        enableFindWidget: true,
+        enableCommandUris: true,
+        enableScripts: true,
+      });
+
+      const encoded = encodeURIComponent(JSON.stringify({ hackageUri: hackageUri, inWebView: true }));
+      const hackageCmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
+
+      const bytes = await workspace.fs.readFile(Uri.parse(localPath));
+
+      const addBase = `
+          <base href="${panel.webview.asWebviewUri(Uri.parse(documentationDirectory))}/">
+          `;
+
+      panel.webview.html = `
+          <html>
+          ${addBase}
+          <body>
+          <div><a href="${hackageCmd}">Open on Hackage</a></div>
+          ${bytes.toString()}
+          </body>
+          </html>
+          `;
+    } catch (e) {
+      await window.showErrorMessage(e);
+    }
+    return panel;
+  }
+
   // registers the browser in VSCode infrastructure
-  export function registerDocsBrowser(): Disposable {
-    return commands.registerCommand(
-      'haskell.showDocumentation',
-      async ({ title, localPath, hackageUri }: { title: string; localPath: string; hackageUri: string }) => {
-        const arr = localPath.match(/([^\/]+)\.[^.]+$/);
-        const ttl = arr !== null && arr.length === 2 ? arr[1].replace(/-/gi, '.') : title;
-        const documentationDirectory = dirname(localPath);
-        let panel;
-        try {
-          // Make sure to use Uri.parse here, as path will already have 'file:///' in it
-          panel = window.createWebviewPanel('haskell.showDocumentationPanel', ttl, ViewColumn.Beside, {
-            localResourceRoots: [Uri.parse(documentationDirectory)],
-            enableFindWidget: true,
-            enableCommandUris: true,
-            enableScripts: true,
-          });
+  export function registerDocsBrowser(alwaysOpenInHackage: boolean): Disposable {
+    if (alwaysOpenInHackage) {
+      return commands.registerCommand('haskell.showDocumentation', openDocumentationOnHackage);
+    } else {
+      return commands.registerCommand('haskell.showDocumentation', showDocumentation);
+    }
+  }
 
-          const encoded = encodeURIComponent(JSON.stringify({ hackageUri }));
-          const hackageCmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
-
-          const bytes = await workspace.fs.readFile(Uri.parse(localPath));
-
-          const addBase = `
-              <base href="${panel.webview.asWebviewUri(Uri.parse(documentationDirectory))}/">
-              `;
-
-          panel.webview.html = `
-              <html>
-              ${addBase}
-              <body>
-              <div><a href="${hackageCmd}">Open on Hackage</a></div>
-              ${bytes.toString()}
-              </body>
-              </html>
-              `;
-        } catch (e) {
-          await window.showErrorMessage(e);
-        }
-        return panel;
+  async function openDocumentationOnHackage({
+    hackageUri,
+    inWebView = false,
+  }: {
+    hackageUri: string;
+    inWebView: boolean;
+  }) {
+    try {
+      // open on Hackage and close the original webview in VS code
+      await env.openExternal(Uri.parse(hackageUri));
+      if (inWebView) {
+        await commands.executeCommand('workbench.action.closeActiveEditor');
       }
-    );
+    } catch (e) {
+      await window.showErrorMessage(e);
+    }
   }
 
   export function registerDocsOpenOnHackage(): Disposable {
-    return commands.registerCommand(
-      'haskell.openDocumentationOnHackage',
-      async ({ hackageUri }: { hackageUri: string }) => {
-        try {
-          // open on Hackage and close the original webview in VS code
-          await env.openExternal(Uri.parse(hackageUri));
-          await commands.executeCommand('workbench.action.closeActiveEditor');
-        } catch (e) {
-          await window.showErrorMessage(e);
-        }
-      }
-    );
+    return commands.registerCommand('haskell.openDocumentationOnHackage', openDocumentationOnHackage);
   }
 
   export function hoverLinksMiddlewareHook(
