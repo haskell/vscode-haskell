@@ -96,8 +96,8 @@
         "haskell.openDocumentationInHackage": {
           "scope": "resource",
           "type": "boolean",
-          "default": false,
-          "description": "When opening 'Documentation' for external libraries, open in vscode by default. Set to true to instead open in hackage."
+          "default": true,
+          "description": "When opening 'Documentation' for external libraries, open in hackage by default. Set to false to instead open in vscode."
         },
         "haskell.trace.server": {
           "scope": "resource",
