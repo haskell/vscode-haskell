@@ -147,10 +147,16 @@ export namespace DocsBrowser {
       return s.replace(
         /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^\/]+)\/(src\/)?(.+\.html#?.*))\)/gi,
         (all, title, localPath, packageName, maybeSrcDir, fileAndAnchor) => {
+          let hackageUri: string;
           if (!maybeSrcDir) {
-            maybeSrcDir = '';
+            hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${fileAndAnchor}`;
+          } else {
+            hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${maybeSrcDir}${fileAndAnchor.replace(
+              /-/gi,
+              '.'
+            )}`;
           }
-          const hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${maybeSrcDir}${fileAndAnchor}`;
+
           const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
           const cmd = 'command:haskell.showDocumentation?' + encoded;
           return `[${title}](${cmd})`;
