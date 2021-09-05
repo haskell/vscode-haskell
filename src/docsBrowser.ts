@@ -145,21 +145,25 @@ export namespace DocsBrowser {
   function processLink(ms: MarkdownString | MarkedString): string | MarkdownString {
     function transform(s: string): string {
       return s.replace(
-        /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^\/]+)\/(src\/)?(.+\.html#?.*))\)/gi,
-        (all, title, localPath, packageName, maybeSrcDir, fileAndAnchor) => {
+        /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^\/]+)\/(?:.*\/)?(.+\.html#?.*))\)/gi,
+        (all, title, localPath, packageName, fileAndAnchor) => {
           let hackageUri: string;
-          if (!maybeSrcDir) {
+          if (title == 'Documentation') {
             hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${fileAndAnchor}`;
-          } else {
-            hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${maybeSrcDir}${fileAndAnchor.replace(
+            const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
+            const cmd = 'command:haskell.showDocumentation?' + encoded;
+            return `[${title}](${cmd})`;
+          } else if (title == 'Source') {
+            hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/src/${fileAndAnchor.replace(
               /-/gi,
               '.'
             )}`;
+            const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
+            const cmd = 'command:haskell.showDocumentation?' + encoded;
+            return `[${title}](${cmd})`;
+          } else {
+            return s;
           }
-
-          const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
-          const cmd = 'command:haskell.showDocumentation?' + encoded;
-          return `[${title}](${cmd})`;
         }
       );
     }
