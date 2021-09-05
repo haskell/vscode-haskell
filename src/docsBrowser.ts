@@ -16,6 +16,7 @@ import {
   Uri,
   ViewColumn,
   window,
+  workspace,
 } from 'vscode';
 import { ProvideCompletionItemsSignature, ProvideHoverSignature } from 'vscode-languageclient';
 
@@ -37,14 +38,27 @@ export namespace DocsBrowser {
             localResourceRoots: [Uri.parse(documentationDirectory)],
             enableFindWidget: true,
             enableCommandUris: true,
+            enableScripts: true,
           });
-          const uri = panel.webview.asWebviewUri(Uri.parse(localPath));
 
           const encoded = encodeURIComponent(JSON.stringify({ hackageUri }));
           const hackageCmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
 
-          panel.webview.html = `<div><a href="${hackageCmd}">Open on Hackage</a></div>
-          <div><iframe src="${uri}" frameBorder = "0" style = "background: white; width: 100%; height: 100%; position:absolute; left: 0; right: 0; bottom: 0; top: 30px;"/></div>`;
+          const bytes = await workspace.fs.readFile(Uri.parse(localPath));
+
+          const addBase = `
+              <base href="${panel.webview.asWebviewUri(Uri.parse(documentationDirectory))}/">
+              `;
+
+          panel.webview.html = `
+              <html>
+              ${addBase}
+              <body>
+              <div><a href="${hackageCmd}">Open on Hackage</a></div>
+              ${bytes.toString()}
+              </body>
+              </html>
+              `;
         } catch (e) {
           await window.showErrorMessage(e);
         }
