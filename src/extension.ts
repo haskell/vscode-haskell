@@ -90,8 +90,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(ImportIdentifier.registerCommand());
 
   // Set up the documentation browser.
-  const openInHackage = workspace.getConfiguration('haskell').openDocumentationInHackage;
-  const docsDisposable = DocsBrowser.registerDocsBrowser(openInHackage);
+  const docsDisposable = DocsBrowser.registerDocsBrowser();
   context.subscriptions.push(docsDisposable);
 
   const openOnHackageDisposable = DocsBrowser.registerDocsOpenOnHackage();

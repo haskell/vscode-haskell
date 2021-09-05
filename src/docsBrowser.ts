@@ -72,12 +72,8 @@ export namespace DocsBrowser {
   }
 
   // registers the browser in VSCode infrastructure
-  export function registerDocsBrowser(alwaysOpenInHackage: boolean): Disposable {
-    if (alwaysOpenInHackage) {
-      return commands.registerCommand('haskell.showDocumentation', openDocumentationOnHackage);
-    } else {
-      return commands.registerCommand('haskell.showDocumentation', showDocumentation);
-    }
+  export function registerDocsBrowser(): Disposable {
+    return commands.registerCommand('haskell.showDocumentation', showDocumentation);
   }
 
   async function openDocumentationOnHackage({
@@ -143,6 +139,8 @@ export namespace DocsBrowser {
   }
 
   function processLink(ms: MarkdownString | MarkedString): string | MarkdownString {
+    const openDocsInHackage = workspace.getConfiguration('haskell').get('openDocumentationInHackage');
+    const openSourceInHackage = workspace.getConfiguration('haskell').get('openSourceInHackage');
     function transform(s: string): string {
       return s.replace(
         /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^\/]+)\/(?:.*\/)?(.+\.html#?.*))\)/gi,
@@ -151,7 +149,12 @@ export namespace DocsBrowser {
           if (title == 'Documentation') {
             hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${fileAndAnchor}`;
             const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
-            const cmd = 'command:haskell.showDocumentation?' + encoded;
+            let cmd: string;
+            if (openDocsInHackage) {
+              cmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
+            } else {
+              cmd = 'command:haskell.showDocumentation?' + encoded;
+            }
             return `[${title}](${cmd})`;
           } else if (title == 'Source') {
             hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/src/${fileAndAnchor.replace(
@@ -159,7 +162,12 @@ export namespace DocsBrowser {
               '.'
             )}`;
             const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
-            const cmd = 'command:haskell.showDocumentation?' + encoded;
+            let cmd: string;
+            if (openSourceInHackage) {
+              cmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
+            } else {
+              cmd = 'command:haskell.showDocumentation?' + encoded;
+            }
             return `[${title}](${cmd})`;
           } else {
             return s;
