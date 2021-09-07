@@ -93,6 +93,18 @@
           "default": "ormolu",
           "description": "The formatter to use when formatting a document or range. Ensure the plugin is enabled."
         },
+        "haskell.openDocumentationInHackage": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "When opening 'Documentation' for external libraries, open in hackage by default. Set to false to instead open in vscode."
+        },
+        "haskell.openSourceInHackage": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "When opening 'Source' for external libraries, open in hackage by default. Set to false to instead open in vscode."
+        },
         "haskell.trace.server": {
           "scope": "resource",
           "type": "string",
