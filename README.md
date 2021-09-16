@@ -113,6 +113,8 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | GHC                                                                              | Linux | macOS | Windows |
 | -------------------------------------------------------------------------------- | ----- | ----- | ------- |
 | 9.0.1 ([limited](https://github.com/haskell/haskell-language-server/issues/297)) | ✓     | ✓     | ✓       |
+| 8.10.7                                                                           | ✓     | ✓     | ✓       |
+| 8.10.6                                                                           | ✓     | ✓     | ✓       |
 | 8.10.5                                                                           | ✓     | ✓     | ✓       |
 | 8.10.4                                                                           | ✓     | ✓     | ✓       |
 | 8.10.3                                                                           | ✓     | ✓     | ✓       |
