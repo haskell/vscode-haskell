@@ -160,6 +160,18 @@
           "default": "keep-up-to-date",
           "markdownDescription": "Determine what to do when a new version of the language server is available."
         },
+        "haskell.checkProject": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to typecheck the entire project on load. As it is activated by default could drive to bad perfomance in large projects."
+        },
+        "haskell.maxCompletions": {
+          "scope": "resource",
+          "default": 40,
+          "type": "integer",
+          "description": "Maximum number of completions sent to the editor."
+        },
         "haskell.plugin.importLens.codeActionsOn": {
           "scope": "resource",
           "type": "boolean",
@@ -322,6 +334,12 @@
             "Only display type lenses of exported global bindings",
             "Follows error messages produced by GHC about missing signatures"
           ]
+        },
+        "haskell.plugin.refineImports.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables refine imports plugin"
         }
       }
     },
