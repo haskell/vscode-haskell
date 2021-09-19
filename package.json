@@ -396,7 +396,8 @@
     "tslint-loader": "^3.5.4",
     "typescript": "^3.9.5",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "set-value": ">=4.0.1"
   },
   "extensionDependencies": [
     "justusadam.language-haskell"
