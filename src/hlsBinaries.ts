@@ -22,7 +22,7 @@ interface IAsset {
   name: string;
 }
 
-type UpdateBehaviour = 'keep-up-to-date' | 'prompt' | 'never-check';
+export type UpdateBehaviour = 'keep-up-to-date' | 'prompt' | 'never-check';
 
 const assetValidator: validate.Validator<IAsset> = validate.object({
   browser_download_url: validate.string(),
