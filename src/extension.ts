@@ -23,7 +23,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { downloadHaskellLanguageServer } from './hlsBinaries';
+import { downloadHaskellLanguageServer, UpdateBehaviour } from './hlsBinaries';
 import { executableExists, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
@@ -169,14 +169,19 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverExecutable;
   try {
-    // Try and find local installations first
-    serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
-    if (serverExecutable === null) {
-      // If not, then try to download haskell-language-server binaries if it's selected
+    const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
+    // Try Manual Excutable first
+    if (findManualExecutable(logger, uri, folder)) {
+      serverExecutable = findManualExecutable(logger, uri, folder);
+    } else if (updateBehaviour !== 'keep-up-to-date' && findLocalServer(context, logger, uri, folder) !== null) {
+      // If keep-up-to-date not set then will find local one
+      serverExecutable = findLocalServer(context, logger, uri, folder);
+    } else {
+      // Otherwise will download haskell-language-server release
       serverExecutable = await downloadHaskellLanguageServer(context, logger, uri, folder);
-      if (!serverExecutable) {
-        return;
-      }
+    }
+    if (!serverExecutable) {
+      return;
     }
   } catch (e) {
     if (e instanceof Error) {
