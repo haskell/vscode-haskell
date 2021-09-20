@@ -164,7 +164,7 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Whether to typecheck the entire project on load. As it is activated by default could drive to bad perfomance in large projects."
+          "description": "Whether to typecheck the entire project on load. It could drive to bad perfomance in large projects."
         },
         "haskell.maxCompletions": {
           "scope": "resource",
