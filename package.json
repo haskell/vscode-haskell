@@ -67,18 +67,6 @@
       "type": "object",
       "title": "Haskell",
       "properties": {
-        "haskell.diagnosticsOnChange": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
-        },
-        "haskell.formatOnImportOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "When adding an import, use the formatter on the result"
-        },
         "haskell.formattingProvider": {
           "scope": "resource",
           "type": "string",
@@ -165,6 +153,18 @@
           ],
           "default": "keep-up-to-date",
           "markdownDescription": "Determine what to do when a new version of the language server is available."
+        },
+        "haskell.checkProject": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to typecheck the entire project on load. It could drive to bad perfomance in large projects."
+        },
+        "haskell.maxCompletions": {
+          "scope": "resource",
+          "default": 40,
+          "type": "integer",
+          "description": "Maximum number of completions sent to the editor."
         },
         "haskell.plugin.importLens.codeActionsOn": {
           "scope": "resource",
@@ -328,6 +328,12 @@
             "Only display type lenses of exported global bindings",
             "Follows error messages produced by GHC about missing signatures"
           ]
+        },
+        "haskell.plugin.refineImports.globalOn": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enables refine imports plugin"
         }
       }
     },
@@ -379,12 +385,13 @@
     "husky": "^4.2.5",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
+    "set-value": ">=4.0.1",
     "ts-loader": "^6.2.2",
     "tslint": "^5.20.1",
     "tslint-loader": "^3.5.4",
     "typescript": "^3.9.5",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack": "^5.53.0",
+    "webpack-cli": "^4.8.0"
   },
   "extensionDependencies": [
     "justusadam.language-haskell"
