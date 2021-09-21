@@ -391,13 +391,13 @@
     "husky": "^4.2.5",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
+    "set-value": ">=4.0.1",
     "ts-loader": "^6.2.2",
     "tslint": "^5.20.1",
     "tslint-loader": "^3.5.4",
     "typescript": "^3.9.5",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11",
-    "set-value": ">=4.0.1"
+    "webpack": "^5.53.0",
+    "webpack-cli": "^4.8.0"
   },
   "extensionDependencies": [
     "justusadam.language-haskell"
