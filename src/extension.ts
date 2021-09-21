@@ -196,6 +196,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     args = args.concat(['-l', logFile]);
   }
 
+  let extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
+  if (extraArgs !== null) {
+    args = args.concat(extraArgs.split(' '));
+  }
+
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
