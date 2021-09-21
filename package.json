@@ -67,18 +67,6 @@
       "type": "object",
       "title": "Haskell",
       "properties": {
-        "haskell.diagnosticsOnChange": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Compute diagnostics continuously as you type. Turn off to only generate diagnostics on file save."
-        },
-        "haskell.formatOnImportOn": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "When adding an import, use the formatter on the result"
-        },
         "haskell.formattingProvider": {
           "scope": "resource",
           "type": "string",
