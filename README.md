@@ -41,7 +41,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 
 - Call hierarchy support
 
-  ![Call Hierarchy in VSCode](call-hierarchy-in-vscode.gif)
+  ![Call Hierarchy in VSCode](https://github.com/haskell/haskell-language-server/raw/2857eeece0398e1cd4b2ffb6069b05c4d2308b39/plugins/hls-call-hierarchy-plugin/call-hierarchy-in-vscode.gif)
 
 ## Requirements
 
