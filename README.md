@@ -12,6 +12,7 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - Document symbols
 - Highlight references in document
 - Code completion
+- Show documentation and sources in hackage
 - Formatting via Brittany, Floskell, Fourmolu, Ormolu or Stylish Haskell
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
 - Code evaluation (Haskell Language Server), see ([Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md))
@@ -37,6 +38,10 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - Module name suggestions for insertion or correction
 
   ![Module Name Demo](https://user-images.githubusercontent.com/54035/110860755-78ad8680-82bd-11eb-9845-9ea4b1cc1f76.gif)
+
+- Call hierarchy support
+
+  ![Call Hierarchy in VSCode](call-hierarchy-in-vscode.gif)
 
 ## Requirements
 
