@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
