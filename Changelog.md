@@ -1,6 +1,17 @@
-### Next release
+### 1.7.0
 
-- Add tracking of cabal files to work together with the incoming cabal formatter plugin
+- Add an option to set server command line arguments thanks to [@cdsmith](https://github.com/cdsmith) <https://github.com/haskell/vscode-haskell/pull/464>
+  - It includes a new config option `haskell.serverExtraArgs` to being able to pass extra argument to the lsp server executable
+- Update config options to match last haskell-language-server version <https://github.com/haskell/vscode-haskell/pull/463>
+  - It removes `haskell.diagnosticsOnChange` and `haskell.formatOnImportOn` cause they were unused in the server
+  - It adds `haskell.checkProject`, `haskell.maxCompletions` and `haskell.plugin.refineImports.globalOn`
+- Fix showDocumentation command thanks to [@pranaysashank](https://github.com/pranaysashank) <https://github.com/haskell/vscode-haskell/pull/452>
+  - It fixes partially showing the documentation directly in vscode. The documentation is rendered but internal links still does not work
+  - Two config options has been added: `haskell.openDocumentationInHackage` and `haskell.openSourceInHackage` with default value `true`
+    - So documentation will be opened using the hackage url in an external navigator by default
+    - If you prefer having them in vscode you will need to change them to `false`
+- Create output channel only if there are no existing clients thanks to [@pranaysashank](https://github.com/pranaysashank) <https://github.com/haskell/vscode-haskell/pull/448>
+  - This fixes the creation of several output channels for the extension
 
 ### 1.6.1
 
@@ -8,7 +19,7 @@
 
 ### 1.6.0
 
-- Bump up vscode version to 1.52.0 (#424) by @berberman
+- Bump up vscode version to 1.52.0 (#424) by [@berberman](https://github.com/berberman)
   - To match the lsp spec version used in haskell-language-version and fix <https://github.com/haskell/haskell-language-server/issues/2068>
 
 ### 1.5.1
