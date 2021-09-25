@@ -1,3 +1,7 @@
+### 1.7.1
+
+- Bug fix release due to #471 and fixed with #469 thanks to [@berberman](https://github.com/berberman)
+
 ### 1.7.0
 
 - Add an option to set server command line arguments thanks to [@cdsmith](https://github.com/cdsmith) <https://github.com/haskell/vscode-haskell/pull/464>
