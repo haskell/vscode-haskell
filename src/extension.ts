@@ -197,7 +197,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
 
   let extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
-  if (extraArgs !== null) {
+  if (extraArgs !== '') {
     args = args.concat(extraArgs.split(' '));
   }
 
@@ -213,6 +213,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
   };
+
+  // We don't want empty strings in our args
+  args = args.map((x) => x.trim()).filter((x) => x !== '');
 
   // For our intents and purposes, the server should be launched the same way in
   // both debug and run mode.
