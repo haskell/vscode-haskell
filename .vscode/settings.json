@@ -13,5 +13,6 @@
   "editor.formatOnSave": true,
   "files.associations": {
     ".prettierrc": "yaml"
-  }
+  },
+  "files.eol": "\n"
 }
