@@ -368,7 +368,7 @@
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version",
     "pretest": "tsc -p ./",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/src/test/runTest.js"
   },
   "husky": {
     "hooks": {
@@ -384,7 +384,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^14.0.3",
     "@types/request-promise-native": "^1.0.17",
-    "@types/vscode": "^1.39.0",
+    "@types/vscode": "^1.60.0",
     "@types/yauzl": "^2.9.1",
     "@vscode/test-electron": "^1.6.1",
     "glob": "^7.1.4",
