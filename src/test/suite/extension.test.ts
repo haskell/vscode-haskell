@@ -5,11 +5,23 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 // import * as haskell from '../../extension';
 
+function getExtension() {
+  return vscode.extensions.getExtension('haskell.haskell');
+}
+
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
-  test('Sample test', () => {
-    assert.strictEqual([1, 2, 3].indexOf(5), -1);
-    assert.strictEqual([1, 2, 3].indexOf(0), -1);
+  test('Extension should be present', () => {
+    assert.ok(getExtension());
+  });
+
+  test('should activate', () => {
+    return vscode.extensions
+      .getExtension('haskell.haskell')
+      ?.activate()
+      .then(() => {
+        assert.ok(true);
+      });
   });
 });
