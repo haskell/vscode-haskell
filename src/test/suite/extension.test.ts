@@ -17,8 +17,7 @@ suite('Extension Test Suite', () => {
   });
 
   test('should activate', () => {
-    return vscode.extensions
-      .getExtension('haskell.haskell')
+    return getExtension()
       ?.activate()
       .then(() => {
         assert.ok(true);
