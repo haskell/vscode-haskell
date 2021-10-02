@@ -196,7 +196,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     args = args.concat(['-l', logFile]);
   }
 
-  let extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
+  const extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
   if (extraArgs !== '') {
     args = args.concat(extraArgs.split(' '));
   }
