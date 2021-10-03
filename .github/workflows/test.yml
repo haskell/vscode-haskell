@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      - run: npm install
+      - run: npm ci
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
