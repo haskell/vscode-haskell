@@ -17,10 +17,14 @@ suite('Extension Test Suite', () => {
   });
 
   test('should activate', () => {
-    return getExtension('haskell.haskell')
+    getExtension('justusadam.language-haskell')
       ?.activate()
       .then(() => {
-        assert.ok(true);
+        getExtension('haskell.haskell')
+          ?.activate()
+          .then(() => {
+            assert.ok(true);
+          });
       });
   });
 });
