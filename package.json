@@ -368,7 +368,7 @@
     "tslint-fix": "tslint --fix -p tsconfig.json  -c tslint.json --format stylish 'src/**/*.ts'",
     "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version",
     "pretest": "tsc -p ./",
-    "test": "node ./out/src/test/runTest.js"
+    "test": "node ./out/test/runTest.js"
   },
   "husky": {
     "hooks": {
