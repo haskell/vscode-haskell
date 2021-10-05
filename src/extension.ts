@@ -200,9 +200,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
   const logFile = workspace.getConfiguration('haskell', uri).logFile;
 
-  const readableOutputChannel: ReadableOutputChannel = new ReadableOutputChannel(window.createOutputChannel(langName));
-  outputChannels.set(langName, readableOutputChannel);
-  const outputChannel: OutputChannel = readableOutputChannel;
+  // const readableOutputChannel: ReadableOutputChannel = new ReadableOutputChannel(window.createOutputChannel(langName));
+  // outputChannels.set(langName, readableOutputChannel);
+  const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
   const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel);
 
