@@ -1,7 +1,9 @@
 import * as cp from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 
 import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath, runTests } from '@vscode/test-electron';
+import { workspace } from 'vscode';
 
 function installExtension(vscodeExePath: string, extId: string) {
   const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExePath);
@@ -26,14 +28,20 @@ async function main() {
     // Passed to --extensionTestsPath
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
+    const testWorkspace = path.resolve(__dirname, '../../test-workspace');
+
+    if (!fs.existsSync(testWorkspace)) {
+      fs.mkdirSync(testWorkspace);
+    }
+
+    await workspace.getConfiguration('haskell').update('haskell.logFile', path.join(testWorkspace, 'hls.log'));
+
     // Download VS Code, unzip it and run the integration test
     await runTests({
       vscodeExecutablePath,
       extensionDevelopmentPath,
       extensionTestsPath,
-      launchArgs: [
-        // '--disable-extensions'
-      ],
+      launchArgs: [testWorkspace],
     });
   } catch (err) {
     console.error(err);

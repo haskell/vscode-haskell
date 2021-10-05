@@ -16,11 +16,15 @@ suite('Extension Test Suite', () => {
     assert.ok(getExtension('haskell.haskell'));
   });
 
-  test('should activate', () => {
+  test('Extension should activate', () => {
     return getExtension('haskell.haskell')
       ?.activate()
       .then(() => {
         assert.ok(true);
       });
+  });
+
+  test('Server should be activated', () => {
+    vscode.workspace.openTextDocument('Main.hs').then((textDoc) => {});
   });
 });
