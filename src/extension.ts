@@ -7,6 +7,7 @@ import {
   OutputChannel,
   TextDocument,
   Uri,
+  ViewColumn,
   window,
   workspace,
   WorkspaceFolder,
@@ -26,10 +27,46 @@ import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
 import { executableExists, ExtensionLogger } from './utils';
 
+class ReadableOutputChannel implements OutputChannel {
+  public readonly name: string;
+  public readonly contents: string[] = [];
+
+  private readonly original: OutputChannel;
+
+  constructor(original: OutputChannel) {
+    this.original = original;
+    this.name = original.name;
+  }
+  public show(preserveFocus?: boolean): void;
+  public show(column?: ViewColumn, preserveFocus?: boolean): void;
+  public show(column?: any, preserveFocus?: any): void {
+    this.original.show(column, preserveFocus);
+  }
+
+  public append(value: string): void {
+    this.original.append(value);
+    this.contents.push(value);
+  }
+  public appendLine(value: string): void {
+    this.original.appendLine(value);
+    this.contents.push(value);
+  }
+  public clear(): void {
+    this.original.clear();
+  }
+
+  public hide(): void {
+    this.original.hide();
+  }
+  public dispose(): void {
+    this.original.dispose();
+  }
+}
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
 // in which case don't try to launch another one for that uri
 const clients: Map<string, LanguageClient | null> = new Map();
+export const outputChannels: Map<string, ReadableOutputChannel> = new Map();
 
 // This is the entrypoint to our extension
 export async function activate(context: ExtensionContext) {
@@ -163,7 +200,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
   const logFile = workspace.getConfiguration('haskell', uri).logFile;
 
-  const outputChannel: OutputChannel = window.createOutputChannel(langName);
+  const readableOutputChannel: ReadableOutputChannel = new ReadableOutputChannel(window.createOutputChannel(langName));
+  outputChannels.set(langName, readableOutputChannel);
+  const outputChannel: OutputChannel = readableOutputChannel;
 
   const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel);
 
