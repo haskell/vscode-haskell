@@ -11,7 +11,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: npm run compile
+      - run: npm ci
       - name: Publish to Visual Studio Marketplace
         id: publishToVSMarketplace
         uses: HaaLeo/publish-vscode-extension@v0
