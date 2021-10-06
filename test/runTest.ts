@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath, runTests } from '@vscode/test-electron';
-import { workspace } from 'vscode';
 
 function installExtension(vscodeExePath: string, extId: string) {
   const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExePath);
@@ -33,8 +32,6 @@ async function main() {
     if (!fs.existsSync(testWorkspace)) {
       fs.mkdirSync(testWorkspace);
     }
-
-    await workspace.getConfiguration('haskell').update('haskell.logFile', path.join(testWorkspace, 'hls.log'));
 
     // Download VS Code, unzip it and run the integration test
     await runTests({
