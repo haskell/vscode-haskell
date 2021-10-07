@@ -12,6 +12,10 @@ async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function withTimeout(seconds: number, f: Promise<any>) {
+  Promise.race([f, delay(seconds * 1000)]);
+}
+
 function getHaskellConfig() {
   return vscode.workspace.getConfiguration('haskell');
 }
@@ -53,22 +57,19 @@ suite('Extension Test Suite', () => {
   test('Server executables should be downloaded', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
-    await delay(30 * 1000);
     assert.ok(
-      await existsWorkspaceFile(`/bin/haskell-language-server-wrapper${exeExt}`),
+      await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper${exeExt}`)),
       'The wrapper executable was not downloaded in 15 seconds'
     );
-    await delay(30 * 1000);
     assert.ok(
-      await existsWorkspaceFile(`/bin/haskell-language-server${exeExt}`),
+      await withTimeout(30, existsWorkspaceFile(`/bin/haskell-language-server${exeExt}`)),
       'The server executable was not downloaded in 15 seconds'
     );
   });
 
   test('Server log should be created', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    await delay(5 * 1000);
-    assert.ok(await existsWorkspaceFile('hls.log'), 'Server log not created in 5 seconds');
+    assert.ok(await withTimeout(5, existsWorkspaceFile('hls.log')), 'Server log not created in 5 seconds');
   });
 
   suiteTeardown(async () => {
