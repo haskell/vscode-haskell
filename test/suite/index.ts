@@ -6,6 +6,7 @@ export async function run(): Promise<void> {
   // Create the mocha test
   const mocha = new Mocha({
     ui: 'tdd',
+    timeout: 60000,
   });
   mocha.useColors(true);
 

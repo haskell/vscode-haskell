@@ -7,7 +7,7 @@ import * as url from 'url';
 import { promisify } from 'util';
 import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
-import { downloadFile, executableExists, httpsGetSilently } from './utils';
+import { downloadFile, executableExists, httpsGetSilently, resolvePathPlaceHolders } from './utils';
 import * as validate from './validation';
 
 /** GitHub API release */
@@ -102,7 +102,8 @@ async function getProjectGhcVersion(
   context: ExtensionContext,
   logger: Logger,
   dir: string,
-  release: IRelease
+  release: IRelease,
+  storagePath: string
 ): Promise<string> {
   const title: string = 'Working out the project GHC version. This might take a while...';
   logger.info(title);
@@ -174,7 +175,7 @@ async function getProjectGhcVersion(
   // Otherwise search to see if we previously downloaded the wrapper
 
   const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}${exeExt}`;
-  const downloadedWrapper = path.join(context.globalStoragePath, wrapperName);
+  const downloadedWrapper = path.join(storagePath, wrapperName);
 
   if (executableExists(downloadedWrapper)) {
     return callWrapper(downloadedWrapper);
@@ -204,7 +205,7 @@ async function getProjectGhcVersion(
   return callWrapper(downloadedWrapper);
 }
 
-async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRelease | null> {
+async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: string): Promise<IRelease | null> {
   const releasesUrl = workspace.getConfiguration('haskell').releasesURL
     ? url.parse(workspace.getConfiguration('haskell').releasesURL)
     : undefined;
@@ -218,7 +219,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext): Promise<IRel
         path: '/repos/haskell/haskell-language-server/releases',
       };
 
-  const offlineCache = path.join(context.globalStoragePath, 'latestApprovedRelease.cache.json');
+  const offlineCache = path.join(storagePath, 'latestApprovedRelease.cache.json');
 
   async function readCachedReleaseData(): Promise<IRelease | null> {
     try {
@@ -293,8 +294,18 @@ export async function downloadHaskellLanguageServer(
 ): Promise<string | null> {
   // Make sure to create this before getProjectGhcVersion
   logger.info('Downloading haskell-language-server');
-  if (!fs.existsSync(context.globalStoragePath)) {
-    fs.mkdirSync(context.globalStoragePath);
+
+  let storagePath: string | undefined = await workspace.getConfiguration('haskell').get('releasesDownloadStoragePath');
+
+  if (!storagePath) {
+    storagePath = context.globalStorageUri.fsPath;
+  } else {
+    storagePath = resolvePathPlaceHolders(storagePath);
+  }
+  logger.info(`Using ${storagePath} to store downloaded binaries`);
+
+  if (!fs.existsSync(storagePath)) {
+    fs.mkdirSync(storagePath);
   }
 
   const githubOS = getGithubOS();
@@ -305,7 +316,7 @@ export async function downloadHaskellLanguageServer(
   }
 
   logger.info('Fetching the latest release from GitHub or from cache');
-  const release = await getLatestReleaseMetadata(context);
+  const release = await getLatestReleaseMetadata(context, storagePath);
   if (!release) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
@@ -320,7 +331,7 @@ export async function downloadHaskellLanguageServer(
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
   try {
-    ghcVersion = await getProjectGhcVersion(context, logger, dir, release);
+    ghcVersion = await getProjectGhcVersion(context, logger, dir, release, storagePath);
   } catch (error) {
     if (error instanceof MissingToolError) {
       const link = error.installLink();
@@ -354,7 +365,7 @@ export async function downloadHaskellLanguageServer(
   }
 
   const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
-  const binaryDest = path.join(context.globalStoragePath, serverName);
+  const binaryDest = path.join(storagePath, serverName);
 
   const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
   logger.info(title);

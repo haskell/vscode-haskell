@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -125,6 +125,12 @@
           "type": "string",
           "default": "",
           "description": "An optional URL to override where to check for haskell-language-server releases"
+        },
+        "haskell.releasesDownloadStoragePath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "An optional path where downloaded binaries will be stored. Check the default value [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)"
         },
         "haskell.serverExecutablePath": {
           "scope": "resource",
