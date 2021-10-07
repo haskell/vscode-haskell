@@ -3,17 +3,18 @@ import * as os from 'os';
 import * as path from 'path';
 import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
+import { CommandNames } from '../../src/commands/constants';
 
 function getExtension() {
   return vscode.extensions.getExtension('haskell.haskell');
 }
 
 async function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((_, reject) => setTimeout(reject, ms));
 }
 
 async function withTimeout(seconds: number, f: Promise<any>) {
-  Promise.race([f, delay(seconds * 1000)]);
+  return Promise.race([f, delay(seconds * 1000)]);
 }
 
 function getHaskellConfig() {
@@ -73,6 +74,7 @@ suite('Extension Test Suite', () => {
   });
 
   suiteTeardown(async () => {
+    await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
     const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot());
     dirContents.forEach(async ([name, type]) => {
       await vscode.workspace.fs.delete(getWorkspaceFile(name), { recursive: true });
