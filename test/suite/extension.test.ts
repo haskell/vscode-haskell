@@ -10,7 +10,7 @@ function getExtension() {
 }
 
 async function delay(ms: number) {
-  return new Promise((_, reject) => setTimeout(reject, ms));
+  return new Promise((_, reject) => setTimeout(() => reject(`Timeout of ${ms} ms reached.`), ms));
 }
 
 async function withTimeout(seconds: number, f: Promise<any>) {
@@ -31,8 +31,14 @@ function getWorkspaceFile(name: string) {
 }
 
 async function existsWorkspaceFile(fileRelativePath: string) {
-  const files = await vscode.workspace.findFiles(`**/${fileRelativePath}`);
-  return files.length === 1;
+  return new Promise<vscode.Uri>((resolve) => {
+    // tslint:disable: no-console
+    console.log(`Creating file system watcher for ${fileRelativePath}`);
+    vscode.workspace.createFileSystemWatcher(`**/${fileRelativePath}`).onDidCreate((uri) => {
+      console.log(`Created: ${uri}`);
+      resolve(uri);
+    });
+  });
 }
 
 suite('Extension Test Suite', () => {
@@ -63,7 +69,7 @@ suite('Extension Test Suite', () => {
       'The wrapper executable was not downloaded in 15 seconds'
     );
     assert.ok(
-      await withTimeout(30, existsWorkspaceFile(`/bin/haskell-language-server${exeExt}`)),
+      await withTimeout(60, existsWorkspaceFile(`/bin/haskell-language-server${exeExt}`)),
       'The server executable was not downloaded in 15 seconds'
     );
   });
@@ -76,7 +82,11 @@ suite('Extension Test Suite', () => {
   suiteTeardown(async () => {
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
     const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot());
+    // tslint:disable: no-console
+    console.log(`Deleting test ws contents: ${dirContents}`);
     dirContents.forEach(async ([name, type]) => {
+      const uri: vscode.Uri = getWorkspaceFile(name);
+      console.log(`Deleting ${uri}`);
       await vscode.workspace.fs.delete(getWorkspaceFile(name), { recursive: true });
     });
   });
