@@ -4,7 +4,6 @@ import * as os from 'os';
 import * as path from 'path';
 import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
-import { Disposable } from 'vscode-languageserver-protocol';
 import { CommandNames } from '../../src/commands/constants';
 
 function getExtension() {
@@ -32,21 +31,21 @@ function getWorkspaceFile(name: string) {
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
 }
 
-const disposables: Disposable[] = [];
-
-async function existsWorkspaceFile(pattern: string) {
-  return new Promise<vscode.Uri>((resolve) => {
-    const pat: vscode.RelativePattern = new vscode.RelativePattern(getWorkspaceRoot(), pattern);
-    console.log(`Creating file system watcher for ${pat}`);
-    const watcher = vscode.workspace.createFileSystemWatcher(pat).onDidCreate((uri) => {
-      console.log(`Created: ${uri}`);
-      resolve(uri);
-    });
-    disposables.push(watcher);
-  });
-}
-
 suite('Extension Test Suite', () => {
+  const disposables: vscode.Disposable[] = [];
+
+  async function existsWorkspaceFile(pattern: string) {
+    const relPath: vscode.RelativePattern = new vscode.RelativePattern(getWorkspaceRoot(), pattern);
+    const watcher = vscode.workspace.createFileSystemWatcher(relPath);
+    disposables.push(watcher);
+    return new Promise<vscode.Uri>((resolve) => {
+      watcher.onDidCreate((uri) => {
+        console.log(`Created: ${uri}`);
+        resolve(uri);
+      });
+    });
+  }
+
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
@@ -66,13 +65,15 @@ suite('Extension Test Suite', () => {
     assert.ok(true);
   });
 
-  test('Server executables should be downloaded', async () => {
+  test('HLS executables should be downloaded', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
+    console.log('Testing wrapper');
     assert.ok(
       await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper${exeExt}`)),
       'The wrapper executable was not downloaded in 30 seconds'
     );
+    console.log('Testing server');
     assert.ok(
       await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server${exeExt}`)),
       'The server executable was not downloaded in 30 seconds'
