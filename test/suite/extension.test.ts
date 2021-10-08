@@ -44,14 +44,16 @@ async function deleteWorkspaceFiles() {
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
 
-  async function existsWorkspaceFile(pattern: string) {
+  async function existsWorkspaceFile(pattern: string, pred?: (uri: vscode.Uri) => boolean) {
     const relPath: vscode.RelativePattern = new vscode.RelativePattern(getWorkspaceRoot(), pattern);
     const watcher = vscode.workspace.createFileSystemWatcher(relPath);
     disposables.push(watcher);
     return new Promise<vscode.Uri>((resolve) => {
       watcher.onDidCreate((uri) => {
         console.log(`Created: ${uri}`);
-        resolve(uri);
+        if (!pred || pred(uri)) {
+          resolve(uri);
+        }
       });
     });
   }
@@ -80,14 +82,15 @@ suite('Extension Test Suite', () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     console.log('Testing wrapper');
+    const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     assert.ok(
-      await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}[!.]`)),
+      await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}`, pred)),
       'The wrapper executable was not downloaded in 30 seconds'
     );
     console.log('Testing server');
     assert.ok(
-      await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}[!.]`)),
-      'The server executable was not downloaded in 30 seconds'
+      await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}`, pred)),
+      'The server executable was not downloaded in 60 seconds'
     );
   });
 
