@@ -1,3 +1,4 @@
+// tslint:disable: no-console
 import * as assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
@@ -23,21 +24,21 @@ function getHaskellConfig() {
 }
 
 function getWorkspaceRoot() {
-  return vscode.workspace.workspaceFolders![0]!.uri;
+  return vscode.workspace.workspaceFolders![0];
 }
 
 function getWorkspaceFile(name: string) {
-  const wsroot = getWorkspaceRoot();
+  const wsroot = getWorkspaceRoot().uri;
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
 }
 
 const disposables: Disposable[] = [];
 
-async function existsWorkspaceFile(fileRelativePath: string) {
+async function existsWorkspaceFile(pattern: string) {
   return new Promise<vscode.Uri>((resolve) => {
-    // tslint:disable: no-console
-    console.log(`Creating file system watcher for ${fileRelativePath}`);
-    const watcher = vscode.workspace.createFileSystemWatcher(`**${fileRelativePath}`).onDidCreate((uri) => {
+    const pat: vscode.RelativePattern = new vscode.RelativePattern(getWorkspaceRoot(), pattern);
+    console.log(`Creating file system watcher for ${pat}`);
+    const watcher = vscode.workspace.createFileSystemWatcher(pat).onDidCreate((uri) => {
       console.log(`Created: ${uri}`);
       resolve(uri);
     });
@@ -86,8 +87,7 @@ suite('Extension Test Suite', () => {
   suiteTeardown(async () => {
     disposables.forEach((d) => d.dispose());
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
-    const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot());
-    // tslint:disable: no-console
+    const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot().uri);
     console.log(`Deleting test ws contents: ${dirContents}`);
     dirContents.forEach(async ([name, type]) => {
       const uri: vscode.Uri = getWorkspaceFile(name);
