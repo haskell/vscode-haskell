@@ -37,7 +37,7 @@ async function existsWorkspaceFile(fileRelativePath: string) {
   return new Promise<vscode.Uri>((resolve) => {
     // tslint:disable: no-console
     console.log(`Creating file system watcher for ${fileRelativePath}`);
-    const watcher = vscode.workspace.createFileSystemWatcher(`**/${fileRelativePath}`).onDidCreate((uri) => {
+    const watcher = vscode.workspace.createFileSystemWatcher(`**${fileRelativePath}`).onDidCreate((uri) => {
       console.log(`Created: ${uri}`);
       resolve(uri);
     });
