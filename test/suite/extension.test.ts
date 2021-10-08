@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
+import { Disposable } from 'vscode-languageserver-protocol';
 import { CommandNames } from '../../src/commands/constants';
 
 function getExtension() {
@@ -30,14 +31,17 @@ function getWorkspaceFile(name: string) {
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
 }
 
+const disposables: Disposable[] = [];
+
 async function existsWorkspaceFile(fileRelativePath: string) {
   return new Promise<vscode.Uri>((resolve) => {
     // tslint:disable: no-console
     console.log(`Creating file system watcher for ${fileRelativePath}`);
-    vscode.workspace.createFileSystemWatcher(`**/${fileRelativePath}`).onDidCreate((uri) => {
+    const watcher = vscode.workspace.createFileSystemWatcher(`**/${fileRelativePath}`).onDidCreate((uri) => {
       console.log(`Created: ${uri}`);
       resolve(uri);
     });
+    disposables.push(watcher);
   });
 }
 
@@ -66,11 +70,11 @@ suite('Extension Test Suite', () => {
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     assert.ok(
       await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper${exeExt}`)),
-      'The wrapper executable was not downloaded in 15 seconds'
+      'The wrapper executable was not downloaded in 30 seconds'
     );
     assert.ok(
-      await withTimeout(60, existsWorkspaceFile(`/bin/haskell-language-server${exeExt}`)),
-      'The server executable was not downloaded in 15 seconds'
+      await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server${exeExt}`)),
+      'The server executable was not downloaded in 30 seconds'
     );
   });
 
@@ -80,6 +84,7 @@ suite('Extension Test Suite', () => {
   });
 
   suiteTeardown(async () => {
+    disposables.forEach((d) => d.dispose());
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
     const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot());
     // tslint:disable: no-console
