@@ -11,7 +11,7 @@ function getExtension() {
 }
 
 async function delay(ms: number) {
-  return new Promise((_, reject) => setTimeout(() => reject(`Timeout of ${ms} ms reached.`), ms));
+  return new Promise((resolve) => setTimeout(() => resolve(false), ms));
 }
 
 async function withTimeout(seconds: number, f: Promise<any>) {
@@ -29,6 +29,16 @@ function getWorkspaceRoot() {
 function getWorkspaceFile(name: string) {
   const wsroot = getWorkspaceRoot().uri;
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
+}
+
+async function deleteWorkspaceFiles() {
+  const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot().uri);
+  console.log(`Deleting test ws contents: ${dirContents}`);
+  dirContents.forEach(async ([name, type]) => {
+    const uri: vscode.Uri = getWorkspaceFile(name);
+    console.log(`Deleting ${uri}`);
+    await vscode.workspace.fs.delete(getWorkspaceFile(name), { recursive: true });
+  });
 }
 
 suite('Extension Test Suite', () => {
@@ -49,6 +59,7 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
+    await deleteWorkspaceFiles();
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
@@ -70,30 +81,25 @@ suite('Extension Test Suite', () => {
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     console.log('Testing wrapper');
     assert.ok(
-      await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper${exeExt}`)),
+      await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}[!.]`)),
       'The wrapper executable was not downloaded in 30 seconds'
     );
     console.log('Testing server');
     assert.ok(
-      await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server${exeExt}`)),
+      await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}[!.]`)),
       'The server executable was not downloaded in 30 seconds'
     );
   });
 
   test('Server log should be created', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(await withTimeout(5, existsWorkspaceFile('hls.log')), 'Server log not created in 5 seconds');
+    assert.ok(await withTimeout(30, existsWorkspaceFile('hls.log')), 'Server log not created in 30 seconds');
   });
 
   suiteTeardown(async () => {
     disposables.forEach((d) => d.dispose());
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
-    const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot().uri);
-    console.log(`Deleting test ws contents: ${dirContents}`);
-    dirContents.forEach(async ([name, type]) => {
-      const uri: vscode.Uri = getWorkspaceFile(name);
-      console.log(`Deleting ${uri}`);
-      await vscode.workspace.fs.delete(getWorkspaceFile(name), { recursive: true });
-    });
+    delay(5); // to give time to shutdown server
+    await deleteWorkspaceFiles();
   });
 });
