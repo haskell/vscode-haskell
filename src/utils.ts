@@ -4,10 +4,11 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
+import * as os from 'os';
 import { extname } from 'path';
 import * as url from 'url';
 import { promisify } from 'util';
-import { OutputChannel, ProgressLocation, window } from 'vscode';
+import { OutputChannel, ProgressLocation, window, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
@@ -260,4 +261,12 @@ export function executableExists(exe: string): boolean {
   const cmd: string = isWindows ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe]);
   return out.status === 0 || (isWindows && fs.existsSync(exe));
+}
+
+export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) {
+  path = path.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
+  if (folder) {
+    path = path.replace('${workspaceFolder}', folder.uri.path).replace('${workspaceRoot}', folder.uri.path);
+  }
+  return path;
 }

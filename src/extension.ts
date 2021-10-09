@@ -1,5 +1,4 @@
 'use strict';
-import * as os from 'os';
 import * as path from 'path';
 import {
   commands,
@@ -24,7 +23,7 @@ import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
-import { executableExists, ExtensionLogger } from './utils';
+import { executableExists, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -103,12 +102,9 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
     return null;
   }
   logger.info(`Trying to find the server executable in: ${exePath}`);
-  // Substitute path variables with their corresponding locations.
-  exePath = exePath.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
-  if (folder) {
-    exePath = exePath.replace('${workspaceFolder}', folder.uri.path).replace('${workspaceRoot}', folder.uri.path);
-  }
+  exePath = resolvePathPlaceHolders(exePath, folder);
   logger.info(`Location after path variables subsitution: ${exePath}`);
+
   if (!executableExists(exePath)) {
     throw new Error(`serverExecutablePath is set to ${exePath} but it doesn't exist and it is not on the PATH`);
   }
