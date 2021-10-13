@@ -263,6 +263,10 @@ export function executableExists(exe: string): boolean {
   return out.status === 0 || (isWindows && fs.existsSync(exe));
 }
 
+export function directoryExists(path: string): boolean {
+  return fs.existsSync(path) && fs.lstatSync(path).isDirectory();
+}
+
 export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) {
   path = path.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
   if (folder) {
