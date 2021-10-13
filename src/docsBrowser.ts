@@ -47,7 +47,7 @@ export namespace DocsBrowser {
         enableScripts: true,
       });
 
-      const encoded = encodeURIComponent(JSON.stringify({ hackageUri: hackageUri, inWebView: true }));
+      const encoded = encodeURIComponent(JSON.stringify({ hackageUri, inWebView: true }));
       const hackageCmd = 'command:haskell.openDocumentationOnHackage?' + encoded;
 
       const bytes = await workspace.fs.readFile(Uri.parse(localPath));
@@ -65,7 +65,7 @@ export namespace DocsBrowser {
           </body>
           </html>
           `;
-    } catch (e) {
+    } catch (e: any) {
       await window.showErrorMessage(e);
     }
     return panel;
@@ -89,7 +89,7 @@ export namespace DocsBrowser {
       if (inWebView) {
         await commands.executeCommand('workbench.action.closeActiveEditor');
       }
-    } catch (e) {
+    } catch (e: any) {
       await window.showErrorMessage(e);
     }
   }
@@ -146,7 +146,7 @@ export namespace DocsBrowser {
         /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^\/]+)\/(?:.*\/)?(.+\.html#?.*))\)/gi,
         (all, title, localPath, packageName, fileAndAnchor) => {
           let hackageUri: string;
-          if (title == 'Documentation') {
+          if (title === 'Documentation') {
             hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${fileAndAnchor}`;
             const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
             let cmd: string;
@@ -156,7 +156,7 @@ export namespace DocsBrowser {
               cmd = 'command:haskell.showDocumentation?' + encoded;
             }
             return `[${title}](${cmd})`;
-          } else if (title == 'Source') {
+          } else if (title === 'Source') {
             hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/src/${fileAndAnchor.replace(
               /-/gi,
               '.'
