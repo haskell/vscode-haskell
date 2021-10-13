@@ -23,7 +23,7 @@ import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
-import { executableExists, ExtensionLogger, resolvePathPlaceHolders } from './utils';
+import { directoryExists, executableExists, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -103,10 +103,16 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   }
   logger.info(`Trying to find the server executable in: ${exePath}`);
   exePath = resolvePathPlaceHolders(exePath, folder);
-  logger.info(`Location after path variables subsitution: ${exePath}`);
+  logger.info(`Location after path variables substitution: ${exePath}`);
 
   if (!executableExists(exePath)) {
-    throw new Error(`serverExecutablePath is set to ${exePath} but it doesn't exist and it is not on the PATH`);
+    let msg = `serverExecutablePath is set to ${exePath}`;
+    if (directoryExists(exePath)) {
+      msg += ' but it is a directory and the config option should point to the executable *full* path';
+    } else {
+      msg += " but it doesn't exist and it is not on the PATH";
+    }
+    throw new Error(msg);
   }
   return exePath;
 }
