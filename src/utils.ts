@@ -233,7 +233,7 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
       inFlightDownloads.set(src, new Map([[dest, downloadTask]]));
     }
     return await downloadTask;
-  } catch (e) {
+  } catch (e: any) {
     await promisify(fs.unlink)(downloadDest).catch(ignoreFileNotExists);
     throw new Error(`Failed to download ${src}:\n${e.message}`);
   }

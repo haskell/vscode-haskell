@@ -65,7 +65,7 @@ export namespace DocsBrowser {
           </body>
           </html>
           `;
-    } catch (e) {
+    } catch (e: any) {
       await window.showErrorMessage(e);
     }
     return panel;
@@ -89,7 +89,7 @@ export namespace DocsBrowser {
       if (inWebView) {
         await commands.executeCommand('workbench.action.closeActiveEditor');
       }
-    } catch (e) {
+    } catch (e: any) {
       await window.showErrorMessage(e);
     }
   }

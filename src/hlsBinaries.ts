@@ -211,13 +211,13 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
     : undefined;
   const opts: https.RequestOptions = releasesUrl
     ? {
-        host: releasesUrl.host,
-        path: releasesUrl.path,
-      }
+      host: releasesUrl.host,
+      path: releasesUrl.path,
+    }
     : {
-        host: 'api.github.com',
-        path: '/repos/haskell/haskell-language-server/releases',
-      };
+      host: 'api.github.com',
+      path: '/repos/haskell/haskell-language-server/releases',
+    };
 
   const offlineCache = path.join(storagePath, 'latestApprovedRelease.cache.json');
 
@@ -225,7 +225,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
     try {
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
       return validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
-    } catch (err) {
+    } catch (err: any) {
       // If file doesn't exist, return null, otherwise consider it a failure
       if (err.code === 'ENOENT') {
         return null;
@@ -268,7 +268,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
     // Cache the latest successfully fetched release information
     await promisify(fs.writeFile)(offlineCache, JSON.stringify(latestInfoParsed), { encoding: 'utf-8' });
     return latestInfoParsed;
-  } catch (githubError) {
+  } catch (githubError: any) {
     // Attempt to read from the latest cached file
     try {
       const cachedInfoParsed = await readCachedReleaseData();
