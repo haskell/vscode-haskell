@@ -344,7 +344,7 @@ export async function downloadHaskellLanguageServer(
       }
     } else if (error instanceof NoBinariesError) {
       window.showInformationMessage(error.message);
-    } else {
+    } else if (error instanceof Error) {
       // We couldn't figure out the right ghc version to download
       window.showErrorMessage(`Couldn't figure out what GHC version the project is using:\n${error.message}`);
     }
