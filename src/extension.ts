@@ -108,7 +108,7 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   if (!executableExists(exePath)) {
     let msg = `serverExecutablePath is set to ${exePath}`;
     if (directoryExists(exePath)) {
-      msg += ' but it is a directory and the config option should point to the executable *full* path';
+      msg += ' but it is a directory and the config option should point to the executable full path';
     } else {
       msg += " but it doesn't exist and it is not on the PATH";
     }

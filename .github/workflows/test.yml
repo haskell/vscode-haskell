@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 10.x
       - run: npm ci
-      - run: npm run compile
+      - run: npm run webpack
       - run: xvfb-run -a npm test
         if: runner.os == 'Linux'
       - run: npm test
