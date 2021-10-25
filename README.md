@@ -2,7 +2,8 @@
 
 [![vsmarketplacebadge](https://vsmarketplacebadge.apphb.com/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
 
-This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
+This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).  
+As almost all features are provided by the server you might find interesting read its [documentation](https://haskell-language-server.readthedocs.io).
 
 ## Features
 
@@ -13,35 +14,15 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - Highlight references in document
 - Code completion
 - Show documentation and sources in hackage
-- Formatting via Brittany, Floskell, Fourmolu, Ormolu or Stylish Haskell
+- Formatting via [Brittany](https://github.com/lspitzner/brittany), [Floskell](https://github.com/ennocramer/floskell), [Fourmolu](https://github.com/fourmolu/fourmolu), [Ormolu](https://github.com/tweag/ormolu) or [Stylish Haskell](https://github.com/haskell/stylish-haskell)
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
-- Code evaluation (Haskell Language Server), see ([Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md))
-
-  ![Eval Demo](https://raw.githubusercontent.com/haskell/haskell-language-server/master/plugins/hls-eval-plugin/demo.gif)
-
-- Integration with [retrie](https://hackage.haskell.org/package/retrie)
-
-  ![Retrie Demo](https://i.imgur.com/Ev7B87k.gif)
-
-- Code lenses for explicit import lists
-
-  ![Imports code lens Demo](https://imgur.com/pX9kvY4.gif)
-
-- Generate functions from type signatures, and intelligently complete holes using [Wingman (tactics)](https://github.com/haskell/haskell-language-server/tree/master/plugins/hls-tactics-plugin)
-
-  ![Wingman Demo](https://user-images.githubusercontent.com/307223/92657198-3d4be400-f2a9-11ea-8ad3-f541c8eea891.gif)
-
-- Integration with [hlint](https://github.com/ndmitchell/hlint) to show diagnostics and apply hints via [apply-refact](https://github.com/mpickering/apply-refact)
-
-  ![Hlint Demo](https://user-images.githubusercontent.com/54035/110860028-8f9fa900-82bc-11eb-9fe5-6483d8bb95e6.gif)
-
-- Module name suggestions for insertion or correction
-
-  ![Module Name Demo](https://user-images.githubusercontent.com/54035/110860755-78ad8680-82bd-11eb-9845-9ea4b1cc1f76.gif)
-
-- Call hierarchy support
-
-  ![Call Hierarchy in VSCode](https://github.com/haskell/haskell-language-server/raw/2857eeece0398e1cd4b2ffb6069b05c4d2308b39/plugins/hls-call-hierarchy-plugin/call-hierarchy-in-vscode.gif)
+- [Code evaluation](#Code_evaluation), see its [Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md)
+- [Integration with](#Retrie_integration) [retrie](https://hackage.haskell.org/package/retrie), a powerful, easy-to-use codemodding tool
+- [Code lenses for explicit import lists](#Explicit_import_lists)
+- [Generate functions from type signatures, and intelligently complete holes using](#Wingman) [Wingman (tactics)](https://github.com/haskell/haskell-language-server/tree/master/plugins/hls-tactics-plugin)
+- [Integration with](#Hlint) [hlint](https://github.com/ndmitchell/hlint), the most used haskell linter, to show diagnostics and apply hints via [apply-refact](https://github.com/mpickering/apply-refact)
+- [Module name suggestions](#Module_names) for insertion or correction
+- [Call hierarchy support](#Call_hierarchy)
 
 ## Requirements
 
@@ -51,6 +32,8 @@ This extension adds language support for [Haskell](https://haskell.org), powered
 - If you are installing from an offline VSIX file, you need to install [language-haskell](https://github.com/JustusAdam/language-haskell) too after installation (either from the marketplace or offline).
 
 ## Configuration options
+
+For a general picture about the server configuration, including the project setup, [you can consult the server documentation about the topic](https://haskell-language-server.readthedocs.io/en/latest/configuration.html).
 
 ### Path to server executable
 
@@ -71,33 +54,6 @@ The option has `resource` scope so it can be changed per workspace.
 This supposes it could be used to execute arbitrary programs adding a `.vscode/settings.json` in the workspace folder including this option with the appropiate path.
 For this reason its scope will be changed to `machine` so users only will be able to change it globally.
 See #387 for more details.
-
-### Local documentation
-
-Haskell Language Server can display Haddock documentation on hover and completions if the project and
-its dependencies have been built with the `-haddock` GHC flag.
-
-- For cabal:
-
-  - Add to your global config file (e.g. `~/.cabal/config`):
-
-    ```yaml
-    program-default-options
-      ghc-options: -haddock
-    ```
-
-  - Or, for a single project, run `cabal configure --ghc-options=-haddock`
-
-- For stack, add to global `$STACK_ROOT\config.yaml`, or project's `stack.yaml`:
-
-  ```yaml
-  ghc-options:
-    '$everything': -haddock
-  ```
-
-  Note that this flag will cause compilation errors if a dependency contains invalid Haddock markup,
-  until GHC 9.0 which [will report warnings](https://gitlab.haskell.org/ghc/ghc/-/merge_requests/2377)
-  instead.
 
 ### Downloaded binaries
 
@@ -130,6 +86,7 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | 8.6.4                                                                            | ✓     | ✓     | ✓       |
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
+You can check the current GHC versions support status and the policy followed for deprecations [here](https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html).
 
 ## Using multi-root workspaces
 
@@ -161,3 +118,33 @@ If you want to help, get started by reading [Contributing](https://github.com/ha
 ## Release Notes
 
 See the [Changelog](https://github.com/haskell/vscode-haskell/blob/master/Changelog.md) for more details.
+
+## Demos
+
+### Code evaluation
+
+![Eval Demo](https://raw.githubusercontent.com/haskell/haskell-language-server/master/plugins/hls-eval-plugin/demo.gif)
+
+### Retrie integration
+
+![Retrie Demo](https://i.imgur.com/Ev7B87k.gif)
+
+### Explicit import lists
+
+![Imports code lens Demo](https://imgur.com/pX9kvY4.gif)
+
+### Wingman
+
+![Wingman Demo](https://user-images.githubusercontent.com/307223/92657198-3d4be400-f2a9-11ea-8ad3-f541c8eea891.gif)
+
+### Hlint
+
+![Hlint Demo](https://user-images.githubusercontent.com/54035/110860028-8f9fa900-82bc-11eb-9fe5-6483d8bb95e6.gif)
+
+### Module names
+
+![Module Name Demo](https://user-images.githubusercontent.com/54035/110860755-78ad8680-82bd-11eb-9845-9ea4b1cc1f76.gif)
+
+### Call hierarchy
+
+![Call Hierarchy in VSCode](https://github.com/haskell/haskell-language-server/raw/2857eeece0398e1cd4b2ffb6069b05c4d2308b39/plugins/hls-call-hierarchy-plugin/call-hierarchy-in-vscode.gif)
