@@ -7,6 +7,8 @@ As almost all features are provided by the server you might find interesting rea
 
 ## Features
 
+You can watch demos for some of these features [below](#demos).
+
 - Warning and error diagnostics from GHC
 - Type information and documentation on hover
 - Jump to definition
