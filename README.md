@@ -85,7 +85,7 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | 8.6.5                                                                            | ✓     | ✓     | ✓       |
 | 8.6.4                                                                            | ✓     | ✓     | ✓       |
 
-The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
+The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>  
 You can check the current GHC versions support status and the policy followed for deprecations [here](https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html).
 
 ## Using multi-root workspaces
