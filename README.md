@@ -16,13 +16,13 @@ As almost all features are provided by the server you might find interesting rea
 - Show documentation and sources in hackage
 - Formatting via [Brittany](https://github.com/lspitzner/brittany), [Floskell](https://github.com/ennocramer/floskell), [Fourmolu](https://github.com/fourmolu/fourmolu), [Ormolu](https://github.com/tweag/ormolu) or [Stylish Haskell](https://github.com/haskell/stylish-haskell)
 - [Multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces) support
-- [Code evaluation](#Code_evaluation), see its [Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md)
-- [Integration with](#Retrie_integration) [retrie](https://hackage.haskell.org/package/retrie), a powerful, easy-to-use codemodding tool
-- [Code lenses for explicit import lists](#Explicit_import_lists)
-- [Generate functions from type signatures, and intelligently complete holes using](#Wingman) [Wingman (tactics)](https://github.com/haskell/haskell-language-server/tree/master/plugins/hls-tactics-plugin)
-- [Integration with](#Hlint) [hlint](https://github.com/ndmitchell/hlint), the most used haskell linter, to show diagnostics and apply hints via [apply-refact](https://github.com/mpickering/apply-refact)
-- [Module name suggestions](#Module_names) for insertion or correction
-- [Call hierarchy support](#Call_hierarchy)
+- [Code evaluation](#code_evaluation), see its [Tutorial](https://github.com/haskell/haskell-language-server/blob/master/plugins/hls-eval-plugin/README.md)
+- [Integration with](#retrie_integration) [retrie](https://hackage.haskell.org/package/retrie), a powerful, easy-to-use codemodding tool
+- [Code lenses for explicit import lists](#explicit_import_lists)
+- [Generate functions from type signatures, and intelligently complete holes using](#wingman) [Wingman (tactics)](https://github.com/haskell/haskell-language-server/tree/master/plugins/hls-tactics-plugin)
+- [Integration with](#hlint) [hlint](https://github.com/ndmitchell/hlint), the most used haskell linter, to show diagnostics and apply hints via [apply-refact](https://github.com/mpickering/apply-refact)
+- [Module name suggestions](#module_names) for insertion or correction
+- [Call hierarchy support](#call_hierarchy)
 
 ## Requirements
 
