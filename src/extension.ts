@@ -208,11 +208,6 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     args = args.concat(extraArgs.split(' '));
   }
 
-  const envVars: IEnvVars = workspace.getConfiguration('haskell', uri).envVars;
-  for (const [key, val] of Object.entries(envVars)) {
-    process.env[key] = val;
-  }
-
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
@@ -222,8 +217,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     logger.info(`Activating the language server in the parent dir of the file: ${uri.fsPath}`);
   }
 
+  const envVars: IEnvVars = workspace.getConfiguration('haskell', uri).envVars;
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
+    env: Object.assign(process.env, envVars),
   };
 
   // We don't want empty strings in our args
