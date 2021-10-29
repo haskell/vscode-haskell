@@ -25,6 +25,11 @@ import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
 import { directoryExists, executableExists, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
+// Used for environment variables later on
+interface IEnvVars {
+  [key: string]: string;
+}
+
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
 // in which case don't try to launch another one for that uri
@@ -201,6 +206,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   const extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
   if (extraArgs !== '') {
     args = args.concat(extraArgs.split(' '));
+  }
+
+  const envVars: IEnvVars = workspace.getConfiguration('haskell', uri).envVars;
+  for (const [key, val] of Object.entries(envVars)) {
+    process.env[key] = val;
   }
 
   // If we're operating on a standalone file (i.e. not in a folder) then we need
