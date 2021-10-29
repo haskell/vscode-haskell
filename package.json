@@ -144,6 +144,12 @@
           "default": "",
           "markdownDescription": "Pass additional arguments to the language server."
         },
+        "haskell.envVars": {
+          "scope": "resource",
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Define environment variables for compilation/execution."
+        },
         "haskell.updateBehavior": {
           "scope": "machine",
           "type": "string",
