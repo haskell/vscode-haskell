@@ -260,11 +260,15 @@ export function executableExists(exe: string): boolean {
   const isWindows = process.platform === 'win32';
   const cmd: string = isWindows ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0 || (isWindows && fs.existsSync(exe));
+  return out.status === 0 || (isWindows && fileExists(exe));
 }
 
 export function directoryExists(path: string): boolean {
   return fs.existsSync(path) && fs.lstatSync(path).isDirectory();
+}
+
+function fileExists(path: string): boolean {
+  return fs.existsSync(path) && fs.lstatSync(path).isFile();
 }
 
 export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) {
