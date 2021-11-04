@@ -217,10 +217,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     logger.info(`Activating the language server in the parent dir of the file: ${uri.fsPath}`);
   }
 
-  const envVars: IEnvVars = workspace.getConfiguration('haskell', uri).envVars;
+  const serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
-    env: Object.assign(process.env, envVars),
+    env: Object.assign(process.env, serverEnvironment),
   };
 
   // We don't want empty strings in our args
