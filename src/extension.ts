@@ -238,6 +238,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   if (exeOptions.cwd) {
     logger.info(`server cwd: ${exeOptions.cwd}`);
   }
+  if (serverEnvironment) {
+    logger.info('server environment variables:');
+    Object.entries(serverEnvironment).forEach(([key, val]: [string, string | undefined]) => {
+      logger.info(`  ${key}=${val}`);
+    });
+  }
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   logger.info(`document selector patten: ${pat}`);
