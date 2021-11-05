@@ -103,7 +103,8 @@ suite('Extension Test Suite', () => {
   test('Server should inherit environment variables defined in the settings', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
-      await withTimeout(30, existsWorkspaceFile('cache-test/*.hiedb')),
+      // Folder will have already been created by this point, so it will not trigger watcher in existsWorkspaceFile()
+      vscode.workspace.getWorkspaceFolder(getWorkspaceFile('cache-test')),
       'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
     );
   });
