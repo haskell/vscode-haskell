@@ -25,6 +25,11 @@ import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
 import { directoryExists, executableExists, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
+// Used for environment variables later on
+interface IEnvVars {
+  [key: string]: string;
+}
+
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
 // in which case don't try to launch another one for that uri
@@ -218,8 +223,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     logger.info(`Activating the language server in the parent dir of the file: ${uri.fsPath}`);
   }
 
+  const serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
+    env: Object.assign(process.env, serverEnvironment),
   };
 
   // We don't want empty strings in our args
@@ -236,6 +243,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   logger.info(`debug command: ${serverExecutable} ${args.join(' ')}`);
   if (exeOptions.cwd) {
     logger.info(`server cwd: ${exeOptions.cwd}`);
+  }
+  if (serverEnvironment) {
+    logger.info('server environment variables:');
+    Object.entries(serverEnvironment).forEach(([key, val]: [string, string | undefined]) => {
+      logger.info(`  ${key}=${val}`);
+    });
   }
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';

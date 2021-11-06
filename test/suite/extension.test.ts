@@ -65,6 +65,7 @@ suite('Extension Test Suite', () => {
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
+    await getHaskellConfig().update('serverEnvironment', { XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath) });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
   });
@@ -97,6 +98,15 @@ suite('Extension Test Suite', () => {
   test('Server log should be created', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(await withTimeout(30, existsWorkspaceFile('hls.log')), 'Server log not created in 30 seconds');
+  });
+
+  test('Server should inherit environment variables defined in the settings', async () => {
+    await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
+    assert.ok(
+      // Folder will have already been created by this point, so it will not trigger watcher in existsWorkspaceFile()
+      vscode.workspace.getWorkspaceFolder(getWorkspaceFile('cache-test')),
+      'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
+    );
   });
 
   suiteTeardown(async () => {
