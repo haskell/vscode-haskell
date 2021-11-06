@@ -21,7 +21,7 @@ jobs:
           node-version: 10.x
       - run: npm ci
       - run: npm run webpack
-      - run: xvfb-run -a npm test
+      - run: xvfb-run -s '-screen 0 640x480x16' -a npm test
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os != 'Linux'
