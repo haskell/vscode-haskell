@@ -113,7 +113,7 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   if (!executableExists(exePath)) {
     let msg = `serverExecutablePath is set to ${exePath}`;
     if (directoryExists(exePath)) {
-      msg += ' but it is a directory and the config option should point to the executable full path';
+      msg += ' but it is a directory and the config option should point to the executable file full path';
     } else {
       msg += " but it doesn't exist and it is not on the PATH";
     }
@@ -126,6 +126,7 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
 function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
   logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
+  logger.info(`$PATH environment variable: ${process.env.PATH}`);
   for (const exe of exes) {
     if (executableExists(exe)) {
       logger.info(`Found server executable in $PATH: ${exe}`);
@@ -173,6 +174,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
   const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel);
+
+  logger.info('Environment variables:');
+  Object.entries(process.env).forEach(([key, value]: [string, string | undefined]) => {
+    logger.info(`  ${key}: ${value}`);
+  });
 
   let serverExecutable;
   try {
