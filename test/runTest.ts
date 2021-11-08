@@ -1,3 +1,4 @@
+// tslint:disable: no-console
 import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -28,6 +29,7 @@ async function main() {
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
     const testWorkspace = path.resolve(__dirname, '../../test-workspace');
+    console.log(`Test workspace: ${testWorkspace}`);
 
     if (!fs.existsSync(testWorkspace)) {
       fs.mkdirSync(testWorkspace);
