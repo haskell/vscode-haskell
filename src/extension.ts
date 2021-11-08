@@ -108,7 +108,7 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   }
   logger.info(`Trying to find the server executable in: ${exePath}`);
   exePath = resolvePathPlaceHolders(exePath, folder);
-  logger.info(`Location after path variables substitution: ${exePath}`);
+  logger.log(`Location after path variables substitution: ${exePath}`);
 
   if (!executableExists(exePath)) {
     let msg = `serverExecutablePath is set to ${exePath}`;
@@ -164,6 +164,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     return;
   }
 
+  const currentWorkingDir = folder ? folder.uri.fsPath : path.dirname(uri.fsPath);
+
   // Set the key to null to prevent multiple servers being launched at once
   clients.set(clientsKey, null);
 
@@ -173,11 +175,14 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
-  const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel);
-
-  logger.info('Environment variables:');
+  const logFilePath = logFile ? path.resolve(currentWorkingDir, logFile) : undefined;
+  const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel, logFilePath);
+  if (logFilePath) {
+    logger.info(`Writing client log to file ${logFilePath}`);
+  }
+  logger.log('Environment variables:');
   Object.entries(process.env).forEach(([key, value]: [string, string | undefined]) => {
-    logger.info(`  ${key}: ${value}`);
+    logger.log(`  ${key}: ${value}`);
   });
 
   let serverExecutable;
@@ -217,11 +222,13 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
+  let cwdMsg = `Activating the language server in working dir: ${currentWorkingDir}`;
   if (folder) {
-    logger.info(`Activating the language server in the workspace folder: ${folder?.uri.fsPath}`);
+    cwdMsg += ' (the workspace folder)';
   } else {
-    logger.info(`Activating the language server in the parent dir of the file: ${uri.fsPath}`);
+    cwdMsg += ` (parent dir of loaded file ${uri.fsPath})`;
   }
+  logger.info(cwdMsg);
 
   const serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
   const exeOptions: ExecutableOptions = {
@@ -252,7 +259,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
-  logger.info(`document selector patten: ${pat}`);
+  logger.log(`document selector patten: ${pat}`);
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.

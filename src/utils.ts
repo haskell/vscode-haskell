@@ -18,16 +18,19 @@ enum LogLevel {
   Error,
   Warn,
   Info,
+  Debug
 }
 export class ExtensionLogger implements Logger {
   public readonly name: string;
   public readonly level: LogLevel;
   public readonly channel: OutputChannel;
+  public readonly logFile: string | undefined;
 
-  constructor(name: string, level: string, channel: OutputChannel) {
+  constructor(name: string, level: string, channel: OutputChannel, logFile: string | undefined) {
     this.name = name;
     this.level = this.getLogLevel(level);
     this.channel = channel;
+    this.logFile = logFile;
   }
   public warn(message: string): void {
     this.logLevel(LogLevel.Warn, message);
@@ -41,13 +44,25 @@ export class ExtensionLogger implements Logger {
     this.logLevel(LogLevel.Error, message);
   }
 
-  public log(msg: string) {
-    this.channel.appendLine(msg);
+  public log(message: string) {
+    this.logLevel(LogLevel.Debug, message);
+  }
+
+  private write(msg: string) {
+    let now = new Date();
+    // Ugly hack to make js date iso format similar to hls one
+    const offset = now.getTimezoneOffset();
+    now = new Date(now.getTime() - (offset * 60 * 1000));
+    const timedMsg = `${new Date().toISOString().replace('T', ' ').replace('Z', '0000')} ${msg}`;
+    this.channel.appendLine(timedMsg);
+    if (this.logFile) {
+      fs.appendFileSync(this.logFile, timedMsg + '\n');
+    }
   }
 
   private logLevel(level: LogLevel, msg: string) {
     if (level <= this.level) {
-      this.log(`[${this.name}][${LogLevel[level].toUpperCase()}] ${msg}`);
+      this.write(`[${this.name}] ${LogLevel[level].toUpperCase()} ${msg}`);
     }
   }
 
@@ -57,6 +72,8 @@ export class ExtensionLogger implements Logger {
         return LogLevel.Off;
       case 'error':
         return LogLevel.Error;
+      case 'debug':
+        return LogLevel.Debug;
       default:
         return LogLevel.Info;
     }
