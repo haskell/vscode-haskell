@@ -40,6 +40,7 @@ async function main() {
     const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
     const testWorkspace = path.resolve(__dirname, '../../test-workspace');
+    console.log(`Test workspace: ${testWorkspace}`);
 
     if (!fs.existsSync(testWorkspace)) {
       fs.mkdirSync(testWorkspace);
@@ -54,11 +55,11 @@ async function main() {
     });
 
     console.log('Test workspace contents: ');
-    forDirContents(testWorkspace, () => console.log);
+    forDirContents(testWorkspace, (file, absPath) => console.log(absPath));
     if (exitCode === 0) {
       console.log(`Tests were succesfull, deleting test workspace in ${testWorkspace}`);
-      forDirContents(testWorkspace, (file: fs.Dirent) => {
-        return file.isDirectory() ? fs.rmdirSync : fs.unlinkSync;
+      forDirContents(testWorkspace, (file, absPath) => {
+        return file.isDirectory() ? fs.rmdirSync(absPath) : fs.unlinkSync(absPath);
       });
     }
   } catch (err) {
