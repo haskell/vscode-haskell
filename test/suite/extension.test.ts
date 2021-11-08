@@ -1,8 +1,9 @@
 // tslint:disable: no-console
 import * as assert from 'assert';
+import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { TextEncoder } from 'util';
+import { /* promisify ,*/ TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { CommandNames } from '../../src/commands/constants';
 
@@ -10,12 +11,12 @@ function getExtension() {
   return vscode.extensions.getExtension('haskell.haskell');
 }
 
-async function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(() => resolve(false), ms));
+async function delay(seconds: number) {
+  return new Promise((resolve) => setTimeout(() => resolve(false), seconds * 1000));
 }
 
 async function withTimeout(seconds: number, f: Promise<any>) {
-  return Promise.race([f, delay(seconds * 1000)]);
+  return Promise.race([f, delay(seconds)]);
 }
 
 function getHaskellConfig() {
@@ -29,6 +30,24 @@ function getWorkspaceRoot() {
 function getWorkspaceFile(name: string) {
   const wsroot = getWorkspaceRoot().uri;
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
+}
+
+async function deleteWorkspaceFiles(pred?: (fileType: [string, vscode.FileType]) => boolean) {
+  await deleteFiles(getWorkspaceRoot().uri, pred);
+}
+
+async function deleteFiles(dir: vscode.Uri, pred?: (fileType: [string, vscode.FileType]) => boolean) {
+  const dirContents = await vscode.workspace.fs.readDirectory(dir);
+  console.log(`Deleting ${dir} contents: ${dirContents}`);
+  dirContents.forEach(async ([name, type]) => {
+    const uri: vscode.Uri = getWorkspaceFile(name);
+    if (!pred || pred([name, type])) {
+      console.log(`Deleting ${uri}`);
+      await vscode.workspace.fs.delete(getWorkspaceFile(name), {
+        recursive: true, useTrash: false
+      });
+    }
+  });
 }
 
 suite('Extension Test Suite', () => {
@@ -52,6 +71,7 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
+    await deleteWorkspaceFiles();
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
@@ -77,6 +97,11 @@ suite('Extension Test Suite', () => {
     assert.ok(true);
   });
 
+  test('Extension should create the extension log file', async () => {
+    await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
+    assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
+  });
+
   test('HLS executables should be downloaded', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     console.log('Testing wrapper');
@@ -91,24 +116,31 @@ suite('Extension Test Suite', () => {
     );
   });
 
-  test('Server log should be created', async () => {
+  test('Extension log should have server output', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Server log not created in 30 seconds');
+    await delay(10);
+    const logContents = fs.readFileSync(getWorkspaceFile('hls.log').fsPath);
+    console.log(`Log contents:\n${logContents.toString()}`);
+    assert.ok(logContents, 'Extension log file does not exist');
+    assert.match(logContents.toString(), /INFO hls:	Registering ide configuration/,
+      'Extension log file has no hls output');
   });
 
   test('Server should inherit environment variables defined in the settings', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
-      // Folder will have already been created by this point, so it will not trigger watcher in existsWorkspaceFile()
       await withTimeout(30, filesCreated.get('cache')!),
       'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
     );
   });
 
   suiteTeardown(async () => {
-    console.log('Disposing all resources')
+    console.log('Disposing all resources');
     disposables.forEach((d) => d.dispose());
     console.log('Stopping the lsp server');
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
+    await delay(5);
+    console.log('Deleting test workspace contents');
+    await deleteWorkspaceFiles(([name, type]) => !name.includes('.log'));
   });
 });
