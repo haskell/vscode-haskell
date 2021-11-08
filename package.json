@@ -109,9 +109,10 @@
           "enum": [
             "off",
             "error",
+            "info",
             "debug"
           ],
-          "default": "error",
+          "default": "info",
           "description": "Sets the log level in the client side."
         },
         "haskell.logFile": {
