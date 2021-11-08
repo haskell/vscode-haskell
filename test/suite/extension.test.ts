@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { /* promisify ,*/ TextEncoder } from 'util';
+import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { CommandNames } from '../../src/commands/constants';
 
@@ -34,6 +34,17 @@ function getWorkspaceFile(name: string) {
 
 async function deleteWorkspaceFiles(pred?: (fileType: [string, vscode.FileType]) => boolean) {
   await deleteFiles(getWorkspaceRoot().uri, pred);
+}
+
+function getExtensionLogContent(): string | undefined {
+  const extLog = getWorkspaceFile('hls.log').fsPath;
+  if (fs.existsSync(extLog)) {
+    const logContents = fs.readFileSync(extLog);
+    return logContents.toString();
+  } else {
+    console.log(`${extLog} does not exist!`);
+    return undefined;
+  }
 }
 
 async function deleteFiles(dir: vscode.Uri, pred?: (fileType: [string, vscode.FileType]) => boolean) {
@@ -119,10 +130,9 @@ suite('Extension Test Suite', () => {
   test('Extension log should have server output', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     await delay(10);
-    const logContents = fs.readFileSync(getWorkspaceFile('hls.log').fsPath);
-    console.log(`Log contents:\n${logContents.toString()}`);
+    const logContents = getExtensionLogContent();
     assert.ok(logContents, 'Extension log file does not exist');
-    assert.match(logContents.toString(), /INFO hls:	Registering ide configuration/,
+    assert.match(logContents, /INFO hls:	Registering ide configuration/,
       'Extension log file has no hls output');
   });
 
@@ -140,6 +150,11 @@ suite('Extension Test Suite', () => {
     console.log('Stopping the lsp server');
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
     await delay(5);
+    console.log('Contents of the extension log:');
+    const logContent = getExtensionLogContent();
+    if (logContent) {
+      console.log(logContent);
+    }
     console.log('Deleting test workspace contents');
     await deleteWorkspaceFiles(([name, type]) => !name.includes('.log'));
   });
