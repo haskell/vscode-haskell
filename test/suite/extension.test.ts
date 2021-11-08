@@ -33,6 +33,7 @@ function getWorkspaceFile(name: string) {
 
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
+  const filesCreated: Map<string, Promise<vscode.Uri>> = new Map();
 
   async function existsWorkspaceFile(pattern: string, pred?: (uri: vscode.Uri) => boolean) {
     const relPath: vscode.RelativePattern = new vscode.RelativePattern(getWorkspaceRoot(), pattern);
@@ -58,6 +59,13 @@ suite('Extension Test Suite', () => {
       { XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath) });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
+
+    const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
+    const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
+    filesCreated.set('wrapper', existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}`, pred));
+    filesCreated.set('log', existsWorkspaceFile('hls.log'));
+    filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
 
   test('Extension should be present', () => {
@@ -71,30 +79,28 @@ suite('Extension Test Suite', () => {
 
   test('HLS executables should be downloaded', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     console.log('Testing wrapper');
-    const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     assert.ok(
-      await withTimeout(30, existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}`, pred)),
+      await withTimeout(30, filesCreated.get('wrapper')!),
       'The wrapper executable was not downloaded in 30 seconds'
     );
     console.log('Testing server');
     assert.ok(
-      await withTimeout(60, existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}`, pred)),
+      await withTimeout(60, filesCreated.get('server')!),
       'The server executable was not downloaded in 60 seconds'
     );
   });
 
   test('Server log should be created', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(await withTimeout(30, existsWorkspaceFile('hls.log')), 'Server log not created in 30 seconds');
+    assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Server log not created in 30 seconds');
   });
 
   test('Server should inherit environment variables defined in the settings', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
       // Folder will have already been created by this point, so it will not trigger watcher in existsWorkspaceFile()
-      vscode.workspace.getWorkspaceFolder(getWorkspaceFile('cache-test')),
+      await withTimeout(30, filesCreated.get('cache')!),
       'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
     );
   });
