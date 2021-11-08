@@ -13,14 +13,14 @@ function installExtension(vscodeExePath: string, extId: string) {
   });
 }
 
-function showDirContens(dir: string) {
-  console.log(dir);
+function forDirContents(dir: string, cb: (file: fs.Dirent, absPath: string) => void) {
   const files = fs.readdirSync(dir, { withFileTypes: true });
   files.forEach((file: fs.Dirent) => {
     const absPath = path.resolve(dir, file.name);
     if (file.isDirectory()) {
-      showDirContens(absPath);
+      forDirContents(absPath, cb);
     }
+    cb(file, absPath);
   });
 }
 
@@ -54,10 +54,12 @@ async function main() {
     });
 
     console.log('Test workspace contents: ');
-    showDirContens(testWorkspace);
+    forDirContents(testWorkspace, () => console.log);
     if (exitCode === 0) {
-      console.log(`Tests were succesfull, deleting test workspace in ${testWorkspace}`)
-      fs.rmdirSync(testWorkspace, { recursive: true });
+      console.log(`Tests were succesfull, deleting test workspace in ${testWorkspace}`);
+      forDirContents(testWorkspace, (file: fs.Dirent) => {
+        return file.isDirectory() ? fs.rmdirSync : fs.unlinkSync;
+      });
     }
   } catch (err) {
     console.error(err);
