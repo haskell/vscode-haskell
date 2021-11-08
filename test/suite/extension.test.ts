@@ -55,7 +55,8 @@ async function deleteFiles(dir: vscode.Uri, pred?: (fileType: [string, vscode.Fi
     if (!pred || pred([name, type])) {
       console.log(`Deleting ${uri}`);
       await vscode.workspace.fs.delete(getWorkspaceFile(name), {
-        recursive: true, useTrash: false
+        recursive: true,
+        useTrash: false,
       });
     }
   });
@@ -86,13 +87,15 @@ suite('Extension Test Suite', () => {
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
-    await getHaskellConfig().update('serverEnvironment',
-      { XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath) });
+    await getHaskellConfig().update('serverEnvironment', {
+      XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath),
+    });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
 
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
+    // Setting up watchers before actual tests start, to ensure we will got the created event
     filesCreated.set('wrapper', existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}`, pred));
     filesCreated.set('server', existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
@@ -132,8 +135,7 @@ suite('Extension Test Suite', () => {
     await delay(10);
     const logContents = getExtensionLogContent();
     assert.ok(logContents, 'Extension log file does not exist');
-    assert.match(logContents, /INFO hls:	Registering ide configuration/,
-      'Extension log file has no hls output');
+    assert.match(logContents, /INFO hls:\s+Registering ide configuration/, 'Extension log file has no hls output');
   });
 
   test('Server should inherit environment variables defined in the settings', async () => {
