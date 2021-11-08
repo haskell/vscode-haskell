@@ -1,3 +1,4 @@
+// tslint:disable: no-console
 import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -12,9 +13,20 @@ function installExtension(vscodeExePath: string, extId: string) {
   });
 }
 
+function showDirContens(dir: string) {
+  console.log(dir);
+  const files = fs.readdirSync(dir, { withFileTypes: true });
+  files.forEach((file: fs.Dirent) => {
+    const absPath = path.resolve(dir, file.name);
+    if (file.isDirectory()) {
+      showDirContens(absPath);
+    }
+  });
+}
+
 async function main() {
   try {
-    const vscodeExecutablePath = await downloadAndUnzipVSCode('1.61.2');
+    const vscodeExecutablePath = await downloadAndUnzipVSCode('stable');
 
     // We have to install this dependant extension
     installExtension(vscodeExecutablePath, 'justusadam.language-haskell');
@@ -34,12 +46,19 @@ async function main() {
     }
 
     // Download VS Code, unzip it and run the integration test
-    await runTests({
+    const exitCode = await runTests({
       vscodeExecutablePath,
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [testWorkspace],
     });
+
+    console.log('Test workspace contents: ');
+    showDirContens(testWorkspace);
+    if (exitCode === 0) {
+      console.log(`Tests were succesfull, deleting test workspace in ${testWorkspace}`)
+      fs.rmdirSync(testWorkspace, { recursive: true });
+    }
   } catch (err) {
     console.error(err);
     console.error('Failed to run tests');

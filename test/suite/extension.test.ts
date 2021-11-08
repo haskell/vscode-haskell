@@ -31,16 +31,6 @@ function getWorkspaceFile(name: string) {
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
 }
 
-async function deleteWorkspaceFiles() {
-  const dirContents = await vscode.workspace.fs.readDirectory(getWorkspaceRoot().uri);
-  console.log(`Deleting test ws contents: ${dirContents}`);
-  dirContents.forEach(async ([name, type]) => {
-    const uri: vscode.Uri = getWorkspaceFile(name);
-    console.log(`Deleting ${uri}`);
-    await vscode.workspace.fs.delete(getWorkspaceFile(name), { recursive: true });
-  });
-}
-
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
 
@@ -61,11 +51,11 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
-    await deleteWorkspaceFiles();
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
-    await getHaskellConfig().update('serverEnvironment', { XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath) });
+    await getHaskellConfig().update('serverEnvironment',
+      { XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath) });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
   });
@@ -110,9 +100,9 @@ suite('Extension Test Suite', () => {
   });
 
   suiteTeardown(async () => {
+    console.log('Disposing all resources')
     disposables.forEach((d) => d.dispose());
+    console.log('Stopping the lsp server');
     await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
-    delay(5); // to give time to shutdown server
-    await deleteWorkspaceFiles();
   });
 });
