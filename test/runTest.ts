@@ -14,7 +14,7 @@ function installExtension(vscodeExePath: string, extId: string) {
 
 async function main() {
   try {
-    const vscodeExecutablePath = await downloadAndUnzipVSCode('stable');
+    const vscodeExecutablePath = await downloadAndUnzipVSCode('1.61.2');
 
     // We have to install this dependant extension
     installExtension(vscodeExecutablePath, 'justusadam.language-haskell');
