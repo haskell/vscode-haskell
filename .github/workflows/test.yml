@@ -25,3 +25,10 @@ jobs:
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os != 'Linux'
+      - name: Upload log file to workflow artifacts on error
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: extension.log
+          path: test-workspace/hls.log
+
