@@ -19,9 +19,20 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - name: Ensure there is a supported ghc versions
+        uses: haskell/actions/setup@v1
+        with:
+          ghc-version: 9.0.1
       - run: npm ci
       - run: npm run webpack
-      - run: xvfb-run -a npm test
+      - run: xvfb-run -s '-screen 0 640x480x16' -a npm test
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os != 'Linux'
+      - name: Upload log file to workflow artifacts on error
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: extension-${{ matrix.os }}.log
+          path: test-workspace/hls.log
+
