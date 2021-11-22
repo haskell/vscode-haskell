@@ -37,7 +37,7 @@ const releaseValidator: validate.Validator<IRelease> = validate.object({
 
 const githubReleaseApiValidator: validate.Validator<IRelease[]> = validate.array(releaseValidator);
 
-const cachedReleaseValidator: validate.Validator<IRelease | null> = validate.optional(releaseValidator);
+const cachedReleaseValidator: validate.Validator<IRelease[] | null> = validate.optional(githubReleaseApiValidator);
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
@@ -205,7 +205,7 @@ async function getProjectGhcVersion(
   return callWrapper(downloadedWrapper);
 }
 
-async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: string): Promise<IRelease | null> {
+async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: string): Promise<IRelease[] | null> {
   const releasesUrl = workspace.getConfiguration('haskell').releasesURL
     ? url.parse(workspace.getConfiguration('haskell').releasesURL)
     : undefined;
@@ -221,7 +221,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
 
   const offlineCache = path.join(storagePath, 'latestApprovedRelease.cache.json');
 
-  async function readCachedReleaseData(): Promise<IRelease | null> {
+  async function readCachedReleaseData(): Promise<IRelease[] | null> {
     try {
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
       return validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
@@ -243,14 +243,14 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
   try {
     const releaseInfo = await httpsGetSilently(opts);
     const latestInfoParsed =
-      validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).find((x) => !x.prerelease) || null;
+      validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).filter((x) => !x.prerelease) || null;
 
     if (updateBehaviour === 'prompt') {
       const cachedInfoParsed = await readCachedReleaseData();
 
       if (
         latestInfoParsed !== null &&
-        (cachedInfoParsed === null || latestInfoParsed.tag_name !== cachedInfoParsed.tag_name)
+        (cachedInfoParsed === null || latestInfoParsed[0].tag_name !== cachedInfoParsed[0].tag_name)
       ) {
         const promptMessage =
           cachedInfoParsed === null
@@ -316,8 +316,8 @@ export async function downloadHaskellLanguageServer(
   }
 
   logger.info('Fetching the latest release from GitHub or from cache');
-  const release = await getLatestReleaseMetadata(context, storagePath);
-  if (!release) {
+  const releases = await getLatestReleaseMetadata(context, storagePath);
+  if (!releases) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
     if (updateBehaviour === 'never-check') {
@@ -326,12 +326,12 @@ export async function downloadHaskellLanguageServer(
     window.showErrorMessage(message);
     return null;
   }
-  logger.info(`The latest release is ${release.tag_name}`);
+  logger.info(`The latest release is ${releases[0].tag_name}`);
   logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
   try {
-    ghcVersion = await getProjectGhcVersion(context, logger, dir, release, storagePath);
+    ghcVersion = await getProjectGhcVersion(context, logger, dir, releases[0], storagePath);
   } catch (error) {
     if (error instanceof MissingToolError) {
       const link = error.installLink();
@@ -354,20 +354,21 @@ export async function downloadHaskellLanguageServer(
   // When searching for binaries, use startsWith because the compression may differ
   // between .zip and .gz
   const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExt}`;
-  logger.info(`Search for binary ${assetName} in release assests`);
+  logger.info(`Search for binary ${assetName} in release assets`);
+  const release = releases?.find(r => r.assets.find((x) => x.name.startsWith(assetName)));
   const asset = release?.assets.find((x) => x.name.startsWith(assetName));
   if (!asset) {
     logger.error(
-      `No binary ${assetName} found in the release assets: ${release?.assets.map((value) => value.name).join(',')}`
+      `No binary ${assetName} found in the release assets`
     );
-    window.showInformationMessage(new NoBinariesError(release.tag_name, ghcVersion).message);
+    window.showInformationMessage(new NoBinariesError(releases[0].tag_name, ghcVersion).message);
     return null;
   }
 
-  const serverName = `haskell-language-server-${release.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
+  const serverName = `haskell-language-server-${release?.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
   const binaryDest = path.join(storagePath, serverName);
 
-  const title = `Downloading haskell-language-server ${release.tag_name} for GHC ${ghcVersion}`;
+  const title = `Downloading haskell-language-server ${release?.tag_name} for GHC ${ghcVersion}`;
   logger.info(title);
   await downloadFile(title, asset.browser_download_url, binaryDest);
   if (ghcVersion.startsWith('9.')) {
