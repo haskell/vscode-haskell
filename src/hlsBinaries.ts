@@ -85,7 +85,7 @@ class NoBinariesError extends Error {
     const supportedReleasesLink =
       '[See the list of supported versions here](https://github.com/haskell/vscode-haskell#supported-ghc-versions)';
     if (ghcVersion) {
-      super(`haskell-language-server ${hlsVersion} for GHC ${ghcVersion} is not available on ${os.type()}.
+      super(`haskell-language-server ${hlsVersion} or earlier for GHC ${ghcVersion} is not available on ${os.type()}.
       ${supportedReleasesLink}`);
     } else {
       super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}.
@@ -205,7 +205,7 @@ async function getProjectGhcVersion(
   return callWrapper(downloadedWrapper);
 }
 
-async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: string): Promise<IRelease[] | null> {
+async function getReleaseMetadata(context: ExtensionContext, storagePath: string): Promise<IRelease[] | null> {
   const releasesUrl = workspace.getConfiguration('haskell').releasesURL
     ? url.parse(workspace.getConfiguration('haskell').releasesURL)
     : undefined;
@@ -219,7 +219,7 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
       path: '/repos/haskell/haskell-language-server/releases',
     };
 
-  const offlineCache = path.join(storagePath, 'latestApprovedRelease.cache.json');
+  const offlineCache = path.join(storagePath, 'approvedReleases.cache.json');
 
   async function readCachedReleaseData(): Promise<IRelease[] | null> {
     try {
@@ -242,15 +242,16 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
 
   try {
     const releaseInfo = await httpsGetSilently(opts);
-    const latestInfoParsed =
+    const releaseInfoParsed =
       validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).filter((x) => !x.prerelease) || null;
 
     if (updateBehaviour === 'prompt') {
       const cachedInfoParsed = await readCachedReleaseData();
 
       if (
-        latestInfoParsed !== null &&
-        (cachedInfoParsed === null || latestInfoParsed[0].tag_name !== cachedInfoParsed[0].tag_name)
+        releaseInfoParsed !== null && releaseInfoParsed.length > 0 &&
+        (cachedInfoParsed === null || cachedInfoParsed.length == 0
+          || releaseInfoParsed[0].tag_name !== cachedInfoParsed[0].tag_name)
       ) {
         const promptMessage =
           cachedInfoParsed === null
@@ -266,8 +267,8 @@ async function getLatestReleaseMetadata(context: ExtensionContext, storagePath: 
     }
 
     // Cache the latest successfully fetched release information
-    await promisify(fs.writeFile)(offlineCache, JSON.stringify(latestInfoParsed), { encoding: 'utf-8' });
-    return latestInfoParsed;
+    await promisify(fs.writeFile)(offlineCache, JSON.stringify(releaseInfoParsed), { encoding: 'utf-8' });
+    return releaseInfoParsed;
   } catch (githubError: any) {
     // Attempt to read from the latest cached file
     try {
@@ -316,7 +317,7 @@ export async function downloadHaskellLanguageServer(
   }
 
   logger.info('Fetching the latest release from GitHub or from cache');
-  const releases = await getLatestReleaseMetadata(context, storagePath);
+  const releases = await getReleaseMetadata(context, storagePath);
   if (!releases) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
@@ -363,6 +364,11 @@ export async function downloadHaskellLanguageServer(
     );
     window.showInformationMessage(new NoBinariesError(releases[0].tag_name, ghcVersion).message);
     return null;
+  }
+  if (release?.tag_name != releases[0].tag_name) {
+    const message = `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}. Falling back to haskell-language-server ${release?.tag_name}`
+    logger.warn(message)
+    window.showInformationMessage(message)
   }
 
   const serverName = `haskell-language-server-${release?.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
