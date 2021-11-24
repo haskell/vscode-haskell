@@ -95,7 +95,7 @@ const userAgentHeader = { 'User-Agent': 'vscode-haskell' };
  * equality is by reference, not value in Map. And we are using a tuple of
  * [src, dest] as the key.
  */
-const inFlightDownloads = new Map<string, Map<string, Thenable<void>>>();
+const inFlightDownloads = new Map<string, Map<string, Thenable<boolean>>>();
 
 export async function httpsGetSilently(options: https.RequestOptions): Promise<string> {
   const opts: https.RequestOptions = {
@@ -141,7 +141,7 @@ async function ignoreFileNotExists(err: NodeJS.ErrnoException): Promise<void> {
   throw err;
 }
 
-export async function downloadFile(titleMsg: string, src: string, dest: string): Promise<void> {
+export async function downloadFile(titleMsg: string, src: string, dest: string): Promise<boolean> {
   // Check to see if we're already in the process of downloading the same thing
   const inFlightDownload = inFlightDownloads.get(src)?.get(dest);
   if (inFlightDownload) {
@@ -150,7 +150,7 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
 
   // If it already is downloaded just use that
   if (fs.existsSync(dest)) {
-    return;
+    return false;
   }
 
   // Download it to a .tmp location first, then rename it!
@@ -241,7 +241,7 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
         inFlightDownloads.get(src)?.delete(dest);
       }
     }
-  );
+  ).then(_ => true);
 
   try {
     if (inFlightDownloads.has(src)) {

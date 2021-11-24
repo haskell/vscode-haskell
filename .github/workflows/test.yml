@@ -11,6 +11,11 @@ jobs:
     strategy:
       matrix:
         os: [macos-11, ubuntu-latest, windows-latest]
+        ghc: [9.0.1]
+        include:
+          # To test a ghc version deprecated in newer hls versions
+          - os: ubuntu-latest
+            ghc: 8.10.4
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -22,7 +27,7 @@ jobs:
       - name: Ensure there is a supported ghc versions
         uses: haskell/actions/setup@v1
         with:
-          ghc-version: 9.0.1
+          ghc-version: ${{ matrix.ghc }}
       - run: npm ci
       - run: npm run webpack
       - run: xvfb-run -s '-screen 0 640x480x16' -a npm test
