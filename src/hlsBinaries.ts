@@ -365,24 +365,26 @@ export async function downloadHaskellLanguageServer(
     window.showInformationMessage(new NoBinariesError(releases[0].tag_name, ghcVersion).message);
     return null;
   }
-  if (release?.tag_name != releases[0].tag_name) {
-    const message = `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}. Falling back to haskell-language-server ${release?.tag_name}`
-    logger.warn(message)
-    window.showInformationMessage(message)
-  }
 
   const serverName = `haskell-language-server-${release?.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
   const binaryDest = path.join(storagePath, serverName);
 
   const title = `Downloading haskell-language-server ${release?.tag_name} for GHC ${ghcVersion}`;
   logger.info(title);
-  await downloadFile(title, asset.browser_download_url, binaryDest);
+  const downloaded = await downloadFile(title, asset.browser_download_url, binaryDest);
   if (ghcVersion.startsWith('9.')) {
     const warning =
       'Currently, HLS supports GHC 9 only partially. ' +
       'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.';
     logger.warn(warning);
     window.showWarningMessage(warning);
+  }
+  if (release?.tag_name != releases[0].tag_name) {
+    const warning = `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}. Falling back to haskell-language-server ${release?.tag_name}`
+    logger.warn(warning)
+    if (downloaded) {
+      window.showInformationMessage(warning)
+    }
   }
   return binaryDest;
 }
