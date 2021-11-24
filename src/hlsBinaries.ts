@@ -205,7 +205,11 @@ async function getProjectGhcVersion(
   return callWrapper(downloadedWrapper);
 }
 
-async function getReleaseMetadata(context: ExtensionContext, storagePath: string): Promise<IRelease[] | null> {
+async function getReleaseMetadata(
+  context: ExtensionContext,
+  storagePath: string,
+  logger: Logger
+): Promise<IRelease[] | null> {
   const releasesUrl = workspace.getConfiguration('haskell').releasesURL
     ? url.parse(workspace.getConfiguration('haskell').releasesURL)
     : undefined;
@@ -220,6 +224,25 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
     };
 
   const offlineCache = path.join(storagePath, 'approvedReleases.cache.json');
+  const offlineCacheOldFormat = path.join(storagePath, 'latestApprovedRelease.cache.json');
+
+  // Migrate existing old cache file latestApprovedRelease.cache.json to the new cache file
+  // approvedReleases.cache.json if no such file exists yet.
+  if (!fs.existsSync(offlineCache)) {
+    try {
+      const oldCachedInfo = await promisify(fs.readFile)(offlineCacheOldFormat, { encoding: 'utf-8' });
+      const oldCachedInfoParsed = validate.parseAndValidate(oldCachedInfo, validate.optional(releaseValidator));
+      if (oldCachedInfoParsed !== null) {
+        await promisify(fs.writeFile)(offlineCache, JSON.stringify([oldCachedInfoParsed]), { encoding: 'utf-8' });
+      }
+      logger.info(`Successfully migrated ${offlineCacheOldFormat} to ${offlineCache}`);
+    } catch (err: any) {
+      // Ignore if old cache file does not exist
+      if (err.code !== 'ENOENT') {
+        logger.error(`Failed to migrate ${offlineCacheOldFormat} to ${offlineCache}: ${err}`);
+      }
+    }
+  }
 
   async function readCachedReleaseData(): Promise<IRelease[] | null> {
     try {
@@ -317,7 +340,7 @@ export async function downloadHaskellLanguageServer(
   }
 
   logger.info('Fetching the latest release from GitHub or from cache');
-  const releases = await getReleaseMetadata(context, storagePath);
+  const releases = await getReleaseMetadata(context, storagePath, logger);
   if (!releases) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
