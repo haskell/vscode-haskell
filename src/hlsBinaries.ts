@@ -250,7 +250,7 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
 
       if (
         releaseInfoParsed !== null && releaseInfoParsed.length > 0 &&
-        (cachedInfoParsed === null || cachedInfoParsed.length == 0
+        (cachedInfoParsed === null || cachedInfoParsed.length === 0
           || releaseInfoParsed[0].tag_name !== cachedInfoParsed[0].tag_name)
       ) {
         const promptMessage =
@@ -379,11 +379,11 @@ export async function downloadHaskellLanguageServer(
     logger.warn(warning);
     window.showWarningMessage(warning);
   }
-  if (release?.tag_name != releases[0].tag_name) {
-    const warning = `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}. Falling back to haskell-language-server ${release?.tag_name}`
-    logger.warn(warning)
+  if (release?.tag_name !== releases[0].tag_name) {
+    const warning = `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}. Falling back to haskell-language-server ${release?.tag_name}`;
+    logger.warn(warning);
     if (downloaded) {
-      window.showInformationMessage(warning)
+      window.showInformationMessage(warning);
     }
   }
   return binaryDest;
