@@ -39,6 +39,8 @@ const githubReleaseApiValidator: validate.Validator<IRelease[]> = validate.array
 
 const cachedReleaseValidator: validate.Validator<IRelease[] | null> = validate.optional(githubReleaseApiValidator);
 
+const cachedReleaseValidatorOld: validate.Validator<IRelease | null> = validate.optional(releaseValidator);
+
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
 
@@ -221,10 +223,36 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
 
   const offlineCache = path.join(storagePath, 'approvedReleases.cache.json');
 
-  async function readCachedReleaseData(): Promise<IRelease[] | null> {
+  async function readCachedReleaseData(fallBack: boolean): Promise<IRelease[] | null> {
     try {
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
       return validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
+    } catch (err: any) {
+      // If file doesn't exist, return null unless fallBack is true. In that case try to
+      // read from the older cache file format (1.7.1 and earlier).
+      // Consider everything else it a failure
+      if (err.code === 'ENOENT') {
+        if (fallBack) {
+          return readOldCachedReleaseData();
+        } else {
+          return null;
+        }
+      }
+      throw err;
+    }
+  }
+
+  const offlineCacheOld = path.join(storagePath, 'latestApprovedRelease.cache.json');
+
+  async function readOldCachedReleaseData(): Promise<IRelease[] | null> {
+    try {
+      const cachedInfo = await promisify(fs.readFile)(offlineCacheOld, { encoding: 'utf-8' });
+      const cached = validate.parseAndValidate(cachedInfo, cachedReleaseValidatorOld);
+      if (cached) {
+        return [cached];
+      } else {
+        return null;
+      }
     } catch (err: any) {
       // If file doesn't exist, return null, otherwise consider it a failure
       if (err.code === 'ENOENT') {
@@ -233,11 +261,12 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
       throw err;
     }
   }
+
   // Not all users want to upgrade right away, in that case prompt
   const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
 
   if (updateBehaviour === 'never-check') {
-    return readCachedReleaseData();
+    return readCachedReleaseData(true)
   }
 
   try {
@@ -246,7 +275,7 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
       validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).filter((x) => !x.prerelease) || null;
 
     if (updateBehaviour === 'prompt') {
-      const cachedInfoParsed = await readCachedReleaseData();
+      const cachedInfoParsed = await readCachedReleaseData(false);
 
       if (
         releaseInfoParsed !== null && releaseInfoParsed.length > 0 &&
@@ -261,7 +290,7 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
         const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
         if (decision !== 'Download') {
           // If not upgrade, bail and don't overwrite cached version information
-          return cachedInfoParsed;
+          return readCachedReleaseData(true);
         }
       }
     }
@@ -272,7 +301,7 @@ async function getReleaseMetadata(context: ExtensionContext, storagePath: string
   } catch (githubError: any) {
     // Attempt to read from the latest cached file
     try {
-      const cachedInfoParsed = await readCachedReleaseData();
+      const cachedInfoParsed = await readCachedReleaseData(true);
 
       window.showWarningMessage(
         `Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead:\n${githubError.message}`
