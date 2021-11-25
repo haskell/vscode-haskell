@@ -85,11 +85,9 @@ class NoBinariesError extends Error {
     const supportedReleasesLink =
       '[See the list of supported versions here](https://github.com/haskell/vscode-haskell#supported-ghc-versions)';
     if (ghcVersion) {
-      super(`haskell-language-server ${hlsVersion} or earlier for GHC ${ghcVersion} is not available on ${os.type()}.
-      ${supportedReleasesLink}`);
+      super(`haskell-language-server ${hlsVersion} or earlier for GHC ${ghcVersion} is not available on ${os.type()}. ${supportedReleasesLink}`);
     } else {
-      super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}.
-      ${supportedReleasesLink}`);
+      super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}. ${supportedReleasesLink}`);
     }
   }
 }
@@ -246,11 +244,13 @@ async function getReleaseMetadata(
 
   async function readCachedReleaseData(): Promise<IRelease[] | null> {
     try {
+      logger.info(`Reading cached release data at ${offlineCache}`);
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
       return validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
     } catch (err: any) {
       // If file doesn't exist, return null, otherwise consider it a failure
       if (err.code === 'ENOENT') {
+        logger.warn(`No cached release data found at ${offlineCache}`);
         return null;
       }
       throw err;
@@ -260,6 +260,8 @@ async function getReleaseMetadata(
   const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
 
   if (updateBehaviour === 'never-check') {
+    logger.warn("As 'haskell.updateBehaviour' config option is set to 'never-check' " +
+      'we try to use the possibly obsolete cached release data');
     return readCachedReleaseData();
   }
 
@@ -298,11 +300,13 @@ async function getReleaseMetadata(
       const cachedInfoParsed = await readCachedReleaseData();
 
       window.showWarningMessage(
-        `Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead:\n${githubError.message}`
+        "Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead: " +
+        githubError.message
       );
       return cachedInfoParsed;
     } catch (fileError) {
-      throw new Error(`Couldn't get the latest haskell-language-server releases from GitHub:\n${githubError.message}`);
+      throw new Error("Couldn't get the latest haskell-language-server releases from GitHub: " +
+        githubError.message);
     }
   }
 }
@@ -341,16 +345,16 @@ export async function downloadHaskellLanguageServer(
 
   logger.info('Fetching the latest release from GitHub or from cache');
   const releases = await getReleaseMetadata(context, storagePath, logger);
+  const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
   if (!releases) {
     let message = "Couldn't find any pre-built haskell-language-server binaries";
-    const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
     if (updateBehaviour === 'never-check') {
       message += ' (and checking for newer versions is disabled)';
     }
     window.showErrorMessage(message);
     return null;
   }
-  logger.info(`The latest release is ${releases[0].tag_name}`);
+  logger.info(`The latest known release is ${releases[0].tag_name}`);
   logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
@@ -370,7 +374,7 @@ export async function downloadHaskellLanguageServer(
       window.showInformationMessage(error.message);
     } else if (error instanceof Error) {
       // We couldn't figure out the right ghc version to download
-      window.showErrorMessage(`Couldn't figure out what GHC version the project is using:\n${error.message}`);
+      window.showErrorMessage(`Couldn't figure out what GHC version the project is using: ${error.message}`);
     }
     return null;
   }
@@ -382,31 +386,38 @@ export async function downloadHaskellLanguageServer(
   const release = releases?.find(r => r.assets.find((x) => x.name.startsWith(assetName)));
   const asset = release?.assets.find((x) => x.name.startsWith(assetName));
   if (!asset) {
-    logger.error(
-      `No binary ${assetName} found in the release assets`
-    );
-    window.showInformationMessage(new NoBinariesError(releases[0].tag_name, ghcVersion).message);
+    let msg = new NoBinariesError(releases[0].tag_name, ghcVersion).message;
+    if (updateBehaviour === 'never-check') {
+      msg += ". Consider set 'haskell.updateBehaviour' to 'up-to-date' to check if another release includes the missing binary";
+    }
+    logger.error(msg);
+    window.showErrorMessage(msg);
     return null;
   }
 
   const serverName = `haskell-language-server-${release?.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
   const binaryDest = path.join(storagePath, serverName);
 
+  logger.info(`Looking for an existing ${binaryDest} or download it from release assets`);
   const title = `Downloading haskell-language-server ${release?.tag_name} for GHC ${ghcVersion}`;
-  logger.info(title);
+
   const downloaded = await downloadFile(title, asset.browser_download_url, binaryDest);
   if (ghcVersion.startsWith('9.')) {
     const warning =
       'Currently, HLS supports GHC 9 only partially. ' +
-      'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more detail.';
-    logger.warn(warning);
-    window.showWarningMessage(warning);
-  }
-  if (release?.tag_name !== releases[0].tag_name) {
-    const warning = `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}. Falling back to haskell-language-server ${release?.tag_name}`;
+      'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more details.';
     logger.warn(warning);
     if (downloaded) {
-      window.showInformationMessage(warning);
+      window.showWarningMessage(warning);
+    }
+  }
+  if (release?.tag_name !== releases[0].tag_name) {
+    const warning =
+      `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}.  ` +
+      `Falling back to haskell-language-server ${release?.tag_name}`;
+    logger.warn(warning);
+    if (downloaded) {
+      window.showWarningMessage(warning);
     }
   }
   return binaryDest;
