@@ -354,7 +354,7 @@ export async function downloadHaskellLanguageServer(
     window.showErrorMessage(message);
     return null;
   }
-  logger.info(`The latest release is ${releases[0].tag_name}`);
+  logger.info(`The latest known release is ${releases[0].tag_name}`);
   logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
   const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
   let ghcVersion: string;
