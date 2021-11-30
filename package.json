@@ -275,7 +275,7 @@
             null
           ],
           "default": null,
-          "type": "string"
+          "type": "integer"
         },
         "haskell.plugin.tactics.config.max_use_ctor_actions": {
           "title": "Max number of constructors",
