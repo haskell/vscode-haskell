@@ -1,8 +1,54 @@
-### 1.7.1
+# Changelog for vscode-haskell
+
+## 1.8.0
+
+This release includes some interesting new features:
+
+- You can now pass custom environment variables to the lsp server
+  with the `haskell.serverEnvironment` config option per project basis,
+  thanks to [@jacobprudhomme](https://github.com/jacobprudhomme).
+  - For example: `"haskell.serverEnvironment": { "XDG_CACHE_HOME": "/path/to/my/cache" }`
+- With this version the extension will try to use the newer lsp server version
+  which supports the ghc used by the project being loaded, thanks to [@mduerig](https://github.com/mduerig)
+  - WARNING: This will suppose it will use an older version than the latest one,
+    without its features and bug fixes.
+- The extension has lot of more log traces now, which hopefully will help to
+  identify the cause of issues
+
+- Update supported ghc versions for hls-1.5.1
+  ([#514](https://github.com/haskell/vscode-haskell/pull/514)) by @jneira
+- Fix hole_severity option: Use integer instead of string
+  ([#511](https://github.com/haskell/vscode-haskell/pull/511)) by @mirko-plowtech
+- Update issue templates
+  ([#509](https://github.com/haskell/vscode-haskell/pull/509)) by @jneira
+- Add traces for download hls
+  ([#508](https://github.com/haskell/vscode-haskell/pull/508)) by @jneira
+- support old hls versions compatible with the requested ghc version
+  ([#506](https://github.com/haskell/vscode-haskell/pull/506)) by @mduerig
+- Fix ci: ensure we have a supported ghc version in PATH
+  ([#496](https://github.com/haskell/vscode-haskell/pull/496)) by @jneira
+- Trace environment variables
+  ([#495](https://github.com/haskell/vscode-haskell/pull/495)) by @jneira
+- Pass environment variables to LSP
+  ([#494](https://github.com/haskell/vscode-haskell/pull/494)) by @jacobprudhomme
+- Reorganize README
+  ([#491](https://github.com/haskell/vscode-haskell/pull/491)) by @jneira
+- Fix error handling of server exec discovery in windows
+  ([#486](https://github.com/haskell/vscode-haskell/pull/486)) by @jneira
+- Bump versions of ts, cheerio, mocha
+  ([#485](https://github.com/haskell/vscode-haskell/pull/485)) by @jneira
+- Improve serverExecutablePath description and error when pointing to a directory
+  ([#484](https://github.com/haskell/vscode-haskell/pull/484)) by @jneira
+- Add integration smoke test
+  ([#481](https://github.com/haskell/vscode-haskell/pull/481)) by @jneira
+- Setup the test suite
+  ([#475](https://github.com/haskell/vscode-haskell/pull/475)) by @jneira
+
+## 1.7.1
 
 - Bug fix release due to #471 and fixed with #469 thanks to [@berberman](https://github.com/berberman)
 
-### 1.7.0
+## 1.7.0
 
 - Add an option to set server command line arguments thanks to [@cdsmith](https://github.com/cdsmith) <https://github.com/haskell/vscode-haskell/pull/464>
   - It includes a new config option `haskell.serverExtraArgs` to being able to pass extra argument to the lsp server executable
@@ -17,16 +63,16 @@
 - Create output channel only if there are no existing clients thanks to [@pranaysashank](https://github.com/pranaysashank) <https://github.com/haskell/vscode-haskell/pull/448>
   - This fixes the creation of several output channels for the extension
 
-### 1.6.1
+## 1.6.1
 
 - Fix wrapper call to get project ghc version in windows with spaces in path (<https://github.com/haskell/vscode-haskell/pull/439>)
 
-### 1.6.0
+## 1.6.0
 
 - Bump up vscode version to 1.52.0 (#424) by [@berberman](https://github.com/berberman)
   - To match the lsp spec version used in haskell-language-version and fix <https://github.com/haskell/haskell-language-server/issues/2068>
 
-### 1.5.1
+## 1.5.1
 
 - Add much more logging in the client side, configured with `haskell.trace.client`
 - Fix error handling of `working out project ghc` and a bug when the path to the executable contains spaces (See #421)
@@ -34,18 +80,18 @@
   - Show the progress as a cancellable notification
 - Add commands `Start Haskell LSP server` and `Stop Haskell LSP server`
 
-### 1.5.0
+## 1.5.0
 
 - Emit warning about limited support for ghc-9.x on hls executable download
 - Fix `working out project ghc` progress notificacion
 - Fix tactics config, thanks to @isovector
 - Update server config to match haskell-language-server-1.3.0 one
 
-### 1.4.0
+## 1.4.0
 
 - Restore `resource` scope for `haskell.serverExecutablePath` temporary. The `machine` scope will be set again after giving users a period of time to let them adapt theirs workflows and changing or adding some option in the extension itself to help that adjustement (see #387).
 
-### 1.3.0
+## 1.3.0
 
 - Add `haskell.releasesURL` option to override where to look for HLS releases search for HLS downloads, thanks to @soiamsoNG
 - With this version _the only supported lsp server variant is [`haskell-language-server`](https://github.com/haskell/haskell-language-server)_
@@ -66,21 +112,21 @@
   - `haskell.completionSnippetsOn`: use `haskell.plugin.ghcide-completions.config.snippetsOn`
 - Fixed a small typo that caused the server not to be loaded in `.lhs` files, thanks to @Max7cd
 
-### 1.2.0
+## 1.2.0
 
 - Add option to open local documentation on Hackage (@DunetsNM)
 - Add `haskell.updateBehaviour` option to configure when to check for updates
   (@WorldSEnder)
 - Use locally installed servers on connection failure (@WorldSEnder)
 
-### 1.1.0
+## 1.1.0
 
 - Add Fourmolu as a plugin formatter provider (@georgefst)
 - Remove the `haskell.enable` configuration option, since VS Code now allows
   you to disable extensions on a per workspace basis
 - Display errors when fetching from the GitHub API properly
 
-### 1.0.1
+## 1.0.1
 
 - Switch the default formatter to Ormolu to match haskell-language-server
 - Fix `haskell.serverExecutablePath` not working with absolute paths on Windows
@@ -89,17 +135,17 @@
   is not found
 - Fix the rendering of the markdown table in the README (@Darren8098)
 
-### 1.0.0
+## 1.0.0
 
 - vscode-haskell now lives under the Haskell organisation
 - Can now download zip archived binaries, which the Windows binaries are now distributed as
 - Improve README (@pepeiborra @jaspervdj)
 
-### 0.1.1
+## 0.1.1
 
 - Fix the restart server and import identifier commands
 
-### 0.1.0
+## 0.1.0
 
 `vscode-hie-server`/`Haskell Language Server` is now just Haskell, and will soon
 be published under the Haskell organisation as `haskell-vscode`.
@@ -108,7 +154,7 @@ and automatically downloads and installs binaries. Installation from source is
 still supported though and any binaries located on your PATH for the selected
 langauge server will be used instead.
 
-#### Important!
+### Important!
 
 As part of this, your configuration may be reset as the keys move from
 `languageServerHaskell.completionSnippetsOn` to `haskell.completionSnippetsOn`.
@@ -121,7 +167,7 @@ As part of this, your configuration may be reset as the keys move from
   - HaRe commands
   - Case split commands
 
-### 0.0.40
+## 0.0.40
 
 Change the way the backend is configured, simplifying it.
 
@@ -130,15 +176,15 @@ Change the way the backend is configured, simplifying it.
   `ghcide` in the `hieVariant` setting.
 - this can be overridden by an explicit `hieExecutablePath`, as before.
 
-### 0.0.39
+## 0.0.39
 
 Remove verbose logging option, it is not longer supported.
 
-### 0.0.38
+## 0.0.38
 
 Bump dependencies
 
-### 0.0.37
+## 0.0.37
 
 Trying again, working 0.0.35
 
@@ -146,49 +192,49 @@ Trying again, working 0.0.35
 - Add Ormolu as a formatter option (@DavSanchez)
 - Update README
 
-### 0.0.36
+## 0.0.36
 
 - Roll back to 0.0.34
 
-### 0.0.35
+## 0.0.35
 
 - Add Restart command (@gdziadkiewicz)
 - Add Ormolu as a formatter option (@DavSanchez)
 - Update README
 
-### 0.0.34
+## 0.0.34
 
 - Remove --lsp parameter from hie-vscode.bat
 
-### 0.0.33
+## 0.0.33
 
 - Introduced configuration setting `noLspParam`, default `false` to control
   setting the `--lsp` flag for the hie server. So by default we will set the
   command line argument for the server, but it can be turned off.
 
-### 0.0.32
+## 0.0.32
 
 - Re-enable the `--lsp` flag for the hie server
 - Update some deps for security vulnerabilities
 
-### 0.0.31
+## 0.0.31
 
 - Log to stderr (vscode output) by default, add option for logfile (@bubba)
 
-### 0.0.30
+## 0.0.30
 
 - Bundle using webpack (@chrismwendt)
 - Bump protocol version to 3.15 prerelease (@alanz)
   This allows working progress reporting from hie.
 - Update casesplit plugin (@Avi-D-coder)
 
-### 0.0.29
+## 0.0.29
 
 - bump protocol version to 3.15 (prerelease) (@alanz)
 - upgrade deps, including avoiding vulnerabilities on lodash (@alanz)
 - warn about compile time and wrapped hie (@janat08)
 
-### 0.0.28
+## 0.0.28
 
 - remove unused `lsp` flag (@bubba)
 - do not start `hie` if `hie-wrapper` crashes (@bubba)
@@ -196,17 +242,17 @@ Trying again, working 0.0.35
 - Avoid CVE on `extend` package
 - Enable displaying window progress (@bubba)
 
-### 0.0.27
+## 0.0.27
 
 - Re-enable search feature for documentation (@anonimitoraf)
   Accesed via `ctrl-f`.
 
-### 0.0.26
+## 0.0.26
 
 - Show documentation content using Webview API (@EdAllonby)
 - npm audit fix (@alanz)
 
-### 0.0.25
+## 0.0.25
 
 - Add vsce dependency to "Contributing" document (@EdAllonby)
 - Add formatterProvider config (@bubba)
@@ -214,22 +260,22 @@ Trying again, working 0.0.35
 - Update settings to match hie version 0.7.0.0 (@alanz)
 - npm audit fix (@bubba)
 
-### 0.0.24
+## 0.0.24
 
 - Add snippet config option (@bubba)
 
-### 0.0.23
+## 0.0.23
 
 - Fix multi-process issue, where vscode would launch multiple hie instances.
   By @kfigiela
 
-### 0.0.22
+## 0.0.22
 
 - Add configuration option to enable liquid haskell processing. This
   is a preview feature of hie from
   ca2d3eaa19da8ec9d55521b461d8e2e8cffee697 on 2019-09-05.
 
-### 0.0.21
+## 0.0.21
 
 - Remove languageServerHaskell.useHieWrapper, We now use hie-wrapper
   by default.
@@ -238,63 +284,63 @@ Trying again, working 0.0.35
   first line that is (trimmed) `where` or ends with `where` or ends
   with `)where`. (@mpilgrem)
 
-### 0.0.20
+## 0.0.20
 
 - Add the case-split function (@txsmith). Required hie >= 0.2.1.0
 - Update the vscode-languageclient to v4.2.0 (@Bubba)
 - Use the hie-wrapper executable now installed with hie to choose the
   right version of hie to use for the given project.
 
-### 0.0.19
+## 0.0.19
 
 - Fix hie launch on windows with logging off (#90). Thanks @Tehnix.
 
-### 0.0.18
+## 0.0.18
 
 - Support GHC 8.4.3 in the wrapper file
 - The `languageServerHaskell.trace.server` parameter now affects
   `/tmp/hie.log`, as well as ghc-mod `--vomit` output.
 - Add an Import identifier command, by @chrismwendt
 
-### 0.0.17
+## 0.0.17
 
 - Support GHC 8.4.2 in the wrapper file
 - Update dependencies to avoid security vulnerability.
 - Use os.tmpdir() for the hie.log file
 
-### 0.0.15
+## 0.0.15
 
 Support the new webview-api for the documentation browser, thanks to @AlexeyRaga.
 
-### 0.0.14
+## 0.0.14
 
 Revert `vscode-languageclient` dependency to version 3.5.0, since version 4.x for some
 reason breaks the documentation browser.
 
-### 0.0.13
+## 0.0.13
 
 Add configuration to set the path to your HIE executable, if it's not on your PATH. Note
 that this adds the `--lsp` argument to the call of this executable.
 
-### 0.0.12
+## 0.0.12
 
 Add configuration to enable/disable HIE, useful for multi-root workspaces.
 
-### 0.0.11
+## 0.0.11
 
 Add additional marketplace categories.
 
-### 0.0.10
+## 0.0.10
 
 Add support for multi-root workspaces, thanks to @tehnix. See the README section
 on [_Using multi-root workspaces_](https://github.com/alanz/vscode-hie-server#using-multi-root-workspaces) for more.
 
-### 0.0.9
+## 0.0.9
 
 Publish to the visual studio marketplace through travis CI via git tags. E.g.
 `git tag -a 0.0.9 -m "Version 0.0.9"` and then `git push origin 0.0.9`.
 
-### 0.0.8
+## 0.0.8
 
 Add new haskell-ide-engine logo, thanks to @damienflament
 
@@ -304,7 +350,7 @@ other platforms, please jump in with appropriate scripts) and requires
 `haskell-ide-engine` built via the `Makefile` added in
 https://github.com/haskell/haskell-ide-engine/pull/447. Thanks to @Tehnix
 
-### 0.0.7
+## 0.0.7
 
 Update `package-lock.json` to fresh dependencies.
 
@@ -316,7 +362,7 @@ command menu, by @halhenke
 Moved the configuration setting about showing trace information into the proper
 scope, by @halhenke
 
-### 0.0.6
+## 0.0.6
 
 Update `package-lock.json` to fresh dependencies.
 
@@ -324,7 +370,7 @@ Update the installation check on Win32 platforms, by @soylens.
 
 Use `tslint` on the plugin sources, by @halhenke.
 
-### 0.0.5
+## 0.0.5
 
 Stop the output channel from taking focus on startup, by @Tehnix and @halhenke
 
@@ -332,13 +378,13 @@ Rework and improve the document layout, for gihub and the marketplace, by @Tehni
 
 Set up Travis testing an potential auto-deply to marketplace, by @Tehnix
 
-### 0.0.4
+## 0.0.4
 
 Show documents in a tab, by @AlexeyRaga
 
 Add a configuration option to enable/disable `hlint`.
 
-### 0.0.3
+## 0.0.3
 
 Add "Haskell: Show type" command, bound to Ctrl-alt-t (Cmd-alt-t on mac). This
 calls the `ghc-mod` `type` command on the current cursor location or highlighted
@@ -347,10 +393,10 @@ region. Thanks to @AlexeyRaga
 Add a check for having the `hie` executable in the path on startup, to prevent
 an endless failure to start if the executable is not there. Thanks to @DavidEichman
 
-### 0.0.2
+## 0.0.2
 
 Add some HaRe commands, accesible via the command palette.
 
-### 0.0.1
+## 0.0.1
 
 Initial release of haskell-ide-engine VS Code extension, for brave pioneers.
