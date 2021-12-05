@@ -57,9 +57,9 @@ This supposes it could be used to execute arbitrary programs adding a `.vscode/s
 For this reason its scope will be changed to `machine` so users only will be able to change it globally.
 See #387 for more details.
 
-### Set additional evironment variables for the server
+### Set additional environment variables for the server
 
-You can add additional evironment variables for only the lsp server using the configuration option `haskell.serverEnvironment`. For example, to change the cache directory used by the server you could set:
+You can add additional environment variables for only the lsp server using the configuration option `haskell.serverEnvironment`. For example, to change the cache directory used by the server you could set:
 
 ```json
 { "XDG_CACHE_HOME": "/path/to/my/cache" }
@@ -127,7 +127,7 @@ Please include the output when filing any issues on the [haskell-language-server
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
   Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
 - Usually the error or unexpected behaviour is already reported in the [haskell language server issue tracker](https://github.com/haskell/haskell-language-server/issues). Finding the issue could be useful to help resolve it and sometimes includes a workaround for the issue.
-- You can also check the troubleshooting section in the server documentation: <https://haskell-language-server.readthedocs.io/en/latest/troubleshooting.html>
+- You can also check the [troubleshooting section](https://haskell-language-server.readthedocs.io/en/latest/troubleshooting.html) in the server documentation.
 
 ## Contributing
 
