@@ -69,7 +69,12 @@ as the server uses the XDG specification for cache directories.
 
 ### Downloaded binaries
 
-This extension will download `haskell-language-server` binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
+This extension will download `haskell-language-server` binaries to a specific location depending on your system.
+
+It will download the newer version of the server which has support for the required ghc.
+That means it could use an older version than the latest one, without the last features and bug fixes.
+
+If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
 
 | Platform | Path                                                                      |
 | -------- | ------------------------------------------------------------------------- |
@@ -105,8 +110,8 @@ The language server is now started for each workspace folder you have in your mu
 ## Investigating and reporting problems
 
 1. Go to extensions and right click `Haskell Language Server` and choose `Extensions Settings`
-2. Scroll down to `Haskell › Trace: Server` and set it to `messages`
-3. Set `Haskell › Trace: Client` to `debug`
+2. Scroll down to `Haskell › Trace: Server` and set it to `messages`.
+3. Set `Haskell › Trace: Client` to `debug`. It will print all the environment variables so take care it does not contain any sensible information before sharing it.
 4. Restart vscode and reproduce your problem
 5. Go to the main menu and choose `View -> Output` (`Ctrl + Shift + U`)
 6. On the new Output panel that opens on the right side in the drop down menu choose `Haskell (<your project>)`
@@ -115,9 +120,14 @@ Please include the output when filing any issues on the [haskell-language-server
 
 ### Troubleshooting
 
+- In Linux/MacOS systems, opening vscode in the windows system could not use the `$PATH` set in the shell
+  so it will not see required tools as ghc, cabal or stack. This usually happens if you have installed them
+  via ghcup. It could be fixed changing the `$PATH` variable in the init config file used by the windows system (f.e. `~/.profile`, but i can vary depending on your system setup).
+  See [this stackoverflow question](https://stackoverflow.com/questions/43983718/set-global-path-environment-variable-in-vs-code) for more tricks.
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
   Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
 - Usually the error or unexpected behaviour is already reported in the [haskell language server issue tracker](https://github.com/haskell/haskell-language-server/issues). Finding the issue could be useful to help resolve it and sometimes includes a workaround for the issue.
+- You can also check the troubleshooting section in the server documentation: <https://haskell-language-server.readthedocs.io/en/latest/troubleshooting.html>
 
 ## Contributing
 
