@@ -71,7 +71,7 @@ Note that if `haskell-language-server-wrapper`/`haskell-language-server` is alre
 
 ### Supported GHC versions
 
-These are the versions of GHC that there are binaries of `haskell-language-server` for. Building from source may support more versions!
+These are the versions of GHC that there are binaries of `haskell-language-server-1.5.1` for. Building from source may support more versions!
 
 | GHC                                                                              | Linux | macOS | Windows |
 | -------------------------------------------------------------------------------- | ----- | ----- | ------- |
@@ -79,13 +79,9 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | 8.10.7                                                                           | ✓     | ✓     | ✓       |
 | 8.10.6                                                                           | ✓     | ✓     | ✓       |
 | 8.10.5                                                                           | ✓     | ✓     | ✓       |
-| 8.10.4                                                                           | ✓     | ✓     | ✓       |
-| 8.10.3                                                                           | ✓     | ✓     | ✓       |
-| 8.10.2                                                                           | ✓     | ✓     | ✓       |
 | 8.8.4                                                                            | ✓     | ✓     | ✓       |
 | 8.8.3                                                                            | ✓     | ✓     |         |
 | 8.6.5                                                                            | ✓     | ✓     | ✓       |
-| 8.6.4                                                                            | ✓     | ✓     | ✓       |
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>  
 You can check the current GHC versions support status and the policy followed for deprecations [here](https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html).
