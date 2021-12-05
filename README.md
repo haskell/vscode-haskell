@@ -2,7 +2,7 @@
 
 [![vsmarketplacebadge](https://vsmarketplacebadge.apphb.com/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
 
-This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).  
+This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
 As almost all features are provided by the server you might find interesting read its [documentation](https://haskell-language-server.readthedocs.io).
 
 ## Features
@@ -57,6 +57,16 @@ This supposes it could be used to execute arbitrary programs adding a `.vscode/s
 For this reason its scope will be changed to `machine` so users only will be able to change it globally.
 See #387 for more details.
 
+### Set additional evironment variables for the server
+
+You can add additional evironment variables for only the lsp server using the configuration option `haskell.serverEnvironment`. For example, to change the cache directory used by the server you could set:
+
+```json
+{ "XDG_CACHE_HOME": "/path/to/my/cache" }
+```
+
+as the server uses the XDG specification for cache directories.
+
 ### Downloaded binaries
 
 This extension will download `haskell-language-server` binaries to a specific location depending on your system. If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
@@ -67,7 +77,7 @@ This extension will download `haskell-language-server` binaries to a specific lo
 | Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell`                       |
 | Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell`                   |
 
-Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH, then the extension will launch it directly instead of downloading binaries.
+Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH or you have set the `haskell.serverExecutablePath` option, then the extension will launch it directly instead of downloading binaries, even if the version of the former is older then the latter.
 
 ### Supported GHC versions
 
@@ -83,7 +93,7 @@ These are the versions of GHC that there are binaries of `haskell-language-serve
 | 8.8.3                                                                            | ✓     | ✓     |         |
 | 8.6.5                                                                            | ✓     | ✓     | ✓       |
 
-The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>  
+The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
 You can check the current GHC versions support status and the policy followed for deprecations [here](https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html).
 
 ## Using multi-root workspaces
