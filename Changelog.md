@@ -15,6 +15,8 @@ This release includes some interesting new features:
 - The extension has lot of more log traces now, which hopefully will help to
   identify the cause of issues
 
+### Pull requests merged for 1.8.0
+
 - Update supported ghc versions for hls-1.5.1
   ([#514](https://github.com/haskell/vscode-haskell/pull/514)) by @jneira
 - Fix hole_severity option: Use integer instead of string
