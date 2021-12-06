@@ -59,13 +59,15 @@ See #387 for more details.
 
 ### Set additional environment variables for the server
 
-You can add additional environment variables for only the lsp server using the configuration option `haskell.serverEnvironment`. For example, to change the cache directory used by the server you could set:
+You can add additional environment variables for the lsp server using the configuration option `haskell.serverEnvironment`. For example, to change the cache directory used by the server you could set:
 
 ```json
-{ "XDG_CACHE_HOME": "/path/to/my/cache" }
+{ "haskell.serverEnvironment": { "XDG_CACHE_HOME": "/path/to/my/cache" } }
 ```
 
 as the server uses the XDG specification for cache directories.
+
+The environment _only will be visible for the lsp server_, not for other extension tasks like find the server executable.
 
 ### Downloaded binaries
 
