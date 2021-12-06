@@ -133,7 +133,7 @@ Please include the output when filing any issues on the [haskell-language-server
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
   Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
   
-### `Cradle requires ghc/cabal/stack but it isn't installed`
+#### `Cradle requires ghc/cabal/stack but it isn't installed`
 
 - In Linux/MacOS systems, opening vscode in the windows system could not use the `$PATH` set in the shell
   so it will not see required tools as ghc, cabal or stack. This usually happens if you have installed them
