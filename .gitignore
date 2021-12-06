@@ -5,3 +5,4 @@ test-workspace
 .DS_Store
 dist
 *.vsix
+.husky
