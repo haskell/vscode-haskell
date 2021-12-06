@@ -73,8 +73,9 @@ The environment _only will be visible for the lsp server_, not for other extensi
 
 This extension will download `haskell-language-server` binaries to a specific location depending on your system.
 
-It will download the newer version of the server which has support for the required ghc.
+It will download the newest version of haskell-language-server which has support for the required ghc.
 That means it could use an older version than the latest one, without the last features and bug fixes.
+For example, if a project needs ghc-8.10.4 the extension will download and use haskell-language-server-1.4.0, the lastest version which supported ghc-8.10.4. Even if the lastest global haskell language-server version is 1.5.1.
 
 If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
 
