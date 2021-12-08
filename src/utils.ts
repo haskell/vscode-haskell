@@ -288,6 +288,13 @@ export function directoryExists(path: string): boolean {
   return fs.existsSync(path) && fs.lstatSync(path).isDirectory();
 }
 
+export function expandHomeDir(path: string): string {
+  if (path.startsWith('~')) {
+    return path.replace('~', os.homedir);
+  }
+  return path;
+}
+
 export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) {
   path = path.replace('${HOME}', os.homedir).replace('${home}', os.homedir).replace(/^~/, os.homedir);
   if (folder) {
