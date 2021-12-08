@@ -42,7 +42,9 @@ jobs:
           path: test-workspace/hls.log
       - name: Package tested extension
         if: runner.os == 'Linux'
-        run: vsce package
+        run: |
+          npm install vsce
+          npx vsce package
       - name: Upload extension vsix to workflow artifacts
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v2
