@@ -23,7 +23,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 14
       - name: Ensure there is a supported ghc versions
         uses: haskell/actions/setup@v1
         with:
@@ -42,9 +42,7 @@ jobs:
           path: test-workspace/hls.log
       - name: Package tested extension
         if: runner.os == 'Linux'
-        run: |
-          npm install vsce
-          npx vsce package
+        run: npx vsce package
       - name: Upload extension vsix to workflow artifacts
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v2
