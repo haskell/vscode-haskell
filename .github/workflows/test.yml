@@ -40,4 +40,10 @@ jobs:
         with:
           name: extension-${{ matrix.os }}.log
           path: test-workspace/hls.log
-
+      - name: Package tested extension
+        run: vsce package
+      - name: Upload extension vsix to workflow artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: haskell-${{ github.sha }}.vsix
+          path: haskell-*.vsix
