@@ -281,7 +281,7 @@ export function executableExists(exe: string): boolean {
   const isWindows = process.platform === 'win32';
   const cmd: string = isWindows ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0 || (!isWindows && (which.sync(exe, { nothrow: true }) ?? '') !== '');
+  return out.status === 0 || (which.sync(exe, { nothrow: true }) ?? '') !== '';
 }
 
 export function directoryExists(path: string): boolean {
