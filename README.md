@@ -64,7 +64,7 @@ It should be used carefully cause you could set options incompatible with the de
 
 Actual arguments which could be set:
 
-- `-j NUM`: Number of threads used by the server (0: automatic) (default: 0). Due to a bug it *can not set to 1*.
+- `-j NUM`: Number of threads used by the server (0: automatic) (default: 0). Due to a bug it *can not be set to 1*.
 - `--shake-profiling DIR`: Dump profiling reports to this directory
 
 ### Set additional environment variables for the server
