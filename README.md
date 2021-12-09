@@ -57,6 +57,16 @@ This supposes it could be used to execute arbitrary programs adding a `.vscode/s
 For this reason its scope will be changed to `machine` so users only will be able to change it globally.
 See #387 for more details.
 
+### Set additional arguments for the server executable
+
+You can set additional arguments to the server executable through the `haskell.serverExtraArgs` config option.
+It should be used carefully cause you could set options incompatible with the default functionality needed by the extension.
+
+Actual arguments which could be set:
+
+- `-j NUM`: Number of threads used by the server (0: automatic) (default: 0). Due to a bug it *can not set to 1*.
+- `--shake-profiling DIR`: Dump profiling reports to this directory
+
 ### Set additional environment variables for the server
 
 You can add additional environment variables for the lsp server using the configuration option `haskell.serverEnvironment`. For example, to change the cache directory used by the server you could set:
