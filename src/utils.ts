@@ -10,6 +10,7 @@ import * as url from 'url';
 import { promisify } from 'util';
 import { OutputChannel, ProgressLocation, window, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
+import * as which from 'which';
 import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
 
@@ -18,7 +19,7 @@ enum LogLevel {
   Error,
   Warn,
   Info,
-  Debug
+  Debug,
 }
 export class ExtensionLogger implements Logger {
   public readonly name: string;
@@ -52,7 +53,7 @@ export class ExtensionLogger implements Logger {
     let now = new Date();
     // Ugly hack to make js date iso format similar to hls one
     const offset = now.getTimezoneOffset();
-    now = new Date(now.getTime() - (offset * 60 * 1000));
+    now = new Date(now.getTime() - offset * 60 * 1000);
     const timedMsg = `${new Date().toISOString().replace('T', ' ').replace('Z', '0000')} ${msg}`;
     this.channel.appendLine(timedMsg);
     if (this.logFile) {
@@ -161,87 +162,90 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
     fs.unlinkSync(downloadDest);
   }
 
-  const downloadTask = window.withProgress(
-    {
-      location: ProgressLocation.Notification,
-      title: titleMsg,
-      cancellable: false,
-    },
-    async (progress) => {
-      const p = new Promise<void>((resolve, reject) => {
-        const srcUrl = url.parse(src);
-        const opts: https.RequestOptions = {
-          host: srcUrl.host,
-          path: srcUrl.path,
-          protocol: srcUrl.protocol,
-          port: srcUrl.port,
-          headers: userAgentHeader,
-        };
-        getWithRedirects(opts, (res) => {
-          const totalSize = parseInt(res.headers['content-length'] || '1', 10);
-          const fileStream = fs.createWriteStream(downloadDest, { mode: 0o744 });
-          let curSize = 0;
+  const downloadTask = window
+    .withProgress(
+      {
+        location: ProgressLocation.Notification,
+        title: titleMsg,
+        cancellable: false,
+      },
+      async (progress) => {
+        const p = new Promise<void>((resolve, reject) => {
+          const srcUrl = url.parse(src);
+          const opts: https.RequestOptions = {
+            host: srcUrl.host,
+            path: srcUrl.path,
+            protocol: srcUrl.protocol,
+            port: srcUrl.port,
+            headers: userAgentHeader,
+          };
+          getWithRedirects(opts, (res) => {
+            const totalSize = parseInt(res.headers['content-length'] || '1', 10);
+            const fileStream = fs.createWriteStream(downloadDest, { mode: 0o744 });
+            let curSize = 0;
 
-          // Decompress it if it's a gzip or zip
-          const needsGunzip =
-            res.headers['content-type'] === 'application/gzip' || extname(srcUrl.path ?? '') === '.gz';
-          const needsUnzip = res.headers['content-type'] === 'application/zip' || extname(srcUrl.path ?? '') === '.zip';
-          if (needsGunzip) {
-            const gunzip = createGunzip();
-            gunzip.on('error', reject);
-            res.pipe(gunzip).pipe(fileStream);
-          } else if (needsUnzip) {
-            const zipDest = downloadDest + '.zip';
-            const zipFs = fs.createWriteStream(zipDest);
-            zipFs.on('error', reject);
-            zipFs.on('close', () => {
-              yazul.open(zipDest, (err, zipfile) => {
-                if (err) {
-                  throw err;
-                }
-                if (!zipfile) {
-                  throw Error("Couldn't decompress zip");
-                }
+            // Decompress it if it's a gzip or zip
+            const needsGunzip =
+              res.headers['content-type'] === 'application/gzip' || extname(srcUrl.path ?? '') === '.gz';
+            const needsUnzip =
+              res.headers['content-type'] === 'application/zip' || extname(srcUrl.path ?? '') === '.zip';
+            if (needsGunzip) {
+              const gunzip = createGunzip();
+              gunzip.on('error', reject);
+              res.pipe(gunzip).pipe(fileStream);
+            } else if (needsUnzip) {
+              const zipDest = downloadDest + '.zip';
+              const zipFs = fs.createWriteStream(zipDest);
+              zipFs.on('error', reject);
+              zipFs.on('close', () => {
+                yazul.open(zipDest, (err, zipfile) => {
+                  if (err) {
+                    throw err;
+                  }
+                  if (!zipfile) {
+                    throw Error("Couldn't decompress zip");
+                  }
 
-                // We only expect *one* file inside each zip
-                zipfile.on('entry', (entry: yazul.Entry) => {
-                  zipfile.openReadStream(entry, (err2, readStream) => {
-                    if (err2) {
-                      throw err2;
-                    }
-                    readStream?.pipe(fileStream);
+                  // We only expect *one* file inside each zip
+                  zipfile.on('entry', (entry: yazul.Entry) => {
+                    zipfile.openReadStream(entry, (err2, readStream) => {
+                      if (err2) {
+                        throw err2;
+                      }
+                      readStream?.pipe(fileStream);
+                    });
                   });
                 });
               });
+              res.pipe(zipFs);
+            } else {
+              res.pipe(fileStream);
+            }
+
+            function toMB(bytes: number) {
+              return bytes / (1024 * 1024);
+            }
+
+            res.on('data', (chunk: Buffer) => {
+              curSize += chunk.byteLength;
+              const msg = `${toMB(curSize).toFixed(1)}MB / ${toMB(totalSize).toFixed(1)}MB`;
+              progress.report({ message: msg, increment: (chunk.length / totalSize) * 100 });
             });
-            res.pipe(zipFs);
-          } else {
-            res.pipe(fileStream);
-          }
-
-          function toMB(bytes: number) {
-            return bytes / (1024 * 1024);
-          }
-
-          res.on('data', (chunk: Buffer) => {
-            curSize += chunk.byteLength;
-            const msg = `${toMB(curSize).toFixed(1)}MB / ${toMB(totalSize).toFixed(1)}MB`;
-            progress.report({ message: msg, increment: (chunk.length / totalSize) * 100 });
-          });
-          res.on('error', reject);
-          fileStream.on('close', resolve);
-        }).on('error', reject);
-      });
-      try {
-        await p;
-        // Finally rename it to the actual dest
-        fs.renameSync(downloadDest, dest);
-      } finally {
-        // And remember to remove it from the list of current downloads
-        inFlightDownloads.get(src)?.delete(dest);
+            res.on('error', reject);
+            fileStream.on('close', resolve);
+          }).on('error', reject);
+        });
+        try {
+          await p;
+          // Finally rename it to the actual dest
+          fs.renameSync(downloadDest, dest);
+        } finally {
+          // And remember to remove it from the list of current downloads
+          inFlightDownloads.get(src)?.delete(dest);
+        }
       }
-    }
-  ).then(_ => true);
+    )
+    .then((_) => true);
 
   try {
     if (inFlightDownloads.has(src)) {
@@ -277,15 +281,18 @@ export function executableExists(exe: string): boolean {
   const isWindows = process.platform === 'win32';
   const cmd: string = isWindows ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0 || (isWindows && fileExists(exe));
+  return out.status === 0 || (which.sync(exe, { nothrow: true }) ?? '') !== '';
 }
 
 export function directoryExists(path: string): boolean {
   return fs.existsSync(path) && fs.lstatSync(path).isDirectory();
 }
 
-function fileExists(path: string): boolean {
-  return fs.existsSync(path) && fs.lstatSync(path).isFile();
+export function expandHomeDir(path: string): string {
+  if (path.startsWith('~')) {
+    return path.replace('~', os.homedir);
+  }
+  return path;
 }
 
 export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) {

@@ -23,7 +23,7 @@ import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
 import { downloadHaskellLanguageServer } from './hlsBinaries';
-import { directoryExists, executableExists, ExtensionLogger, resolvePathPlaceHolders } from './utils';
+import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
 // Used for environment variables later on
 interface IEnvVars {
@@ -171,11 +171,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
   const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
-  const logFile = workspace.getConfiguration('haskell', uri).logFile;
+  const logFile: string = workspace.getConfiguration('haskell', uri).logFile;
 
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
-  const logFilePath = logFile ? path.resolve(currentWorkingDir, logFile) : undefined;
+  const logFilePath = logFile !== '' ? path.resolve(currentWorkingDir, expandHomeDir(logFile)) : undefined;
   const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel, logFilePath);
   if (logFilePath) {
     logger.info(`Writing client log to file ${logFilePath}`);
