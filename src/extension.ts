@@ -175,7 +175,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const outputChannel: OutputChannel = window.createOutputChannel(langName);
 
-  const logFilePath = path.resolve(currentWorkingDir, expandHomeDir(logFile));
+  const logFilePath = logFile !== '' ? path.resolve(currentWorkingDir, expandHomeDir(logFile)) : undefined;
   const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel, logFilePath);
   if (logFilePath) {
     logger.info(`Writing client log to file ${logFilePath}`);
