@@ -113,7 +113,7 @@ The language server is now started for each workspace folder you have in your mu
 
 ## Investigating and reporting problems
 
-1. Go to extensions and right click `Haskell Language Server` and choose `Extensions Settings`
+1. Go to extensions and right click `Haskell` and choose `Extensions Settings`
 2. Scroll down to `Haskell › Trace: Server` and set it to `messages`.
 3. Set `Haskell › Trace: Client` to `debug`. It will print all the environment variables so take care it does not contain any sensible information before sharing it.
 4. Restart vscode and reproduce your problem
