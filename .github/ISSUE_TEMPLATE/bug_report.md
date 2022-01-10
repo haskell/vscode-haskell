@@ -28,7 +28,7 @@ Which OS do you use:
 <!-- Tell us what happens instead. -->
 
 ### Include debug information
-Execute in the root of your project the command `haskell-language-server-wrapper --debug .` and paste the logs here (you can find the executable location [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)):
+Execute in the root of your project the command `haskell-language-server --debug .` and paste the logs here (you can find the executable location [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)):
 
 <details>
 <summary>
