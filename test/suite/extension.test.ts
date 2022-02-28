@@ -96,8 +96,8 @@ suite('Extension Test Suite', () => {
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     // Setting up watchers before actual tests start, to ensure we will got the created event
-    filesCreated.set('wrapper', existsWorkspaceFile(`bin/haskell-language-server-wrapper*${exeExt}`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`bin/haskell-language-server-[1-9]*${exeExt}`, pred));
+    filesCreated.set('wrapper', existsWorkspaceFile(`bin/.ghcup/bin/haskell-language-server-wrapper${exeExt}`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`bin/.ghcup/bin/haskell-language-server-[1-9]*${exeExt}`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
@@ -120,8 +120,8 @@ suite('Extension Test Suite', () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     console.log('Testing wrapper');
     assert.ok(
-      await withTimeout(30, filesCreated.get('wrapper')!),
-      'The wrapper executable was not downloaded in 30 seconds'
+      await withTimeout(60, filesCreated.get('wrapper')!),
+      'The wrapper executable was not downloaded in 60 seconds'
     );
     console.log('Testing server');
     assert.ok(
