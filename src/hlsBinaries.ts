@@ -239,6 +239,23 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
 }
 
 // also serves as sanity check
+export async function validateHLSToolchain(
+    wrapper: string,
+    workingDir: string,
+    logger: Logger
+): Promise<void> {
+    const ghc = await getProjectGHCVersion(wrapper, workingDir, logger);
+    const wrapperDir = path.dirname(wrapper);
+    const hlsExe = path.join(wrapperDir, `haskell-language-server-${ghc}${exeExt}`)
+    const hlsVer = await callAsync(wrapper, ["--numeric-version"], workingDir, logger);
+    if (!executableExists(hlsExe)) {
+        const msg = `Couldn't find ${hlsExe}. Your project ghc version ${ghc} may not be supported! Consider building HLS from source, e.g.: ghcup compile hls --jobs 8 --ghc ${ghc} ${hlsVer}`;
+        window.showErrorMessage(msg);
+        throw new Error(msg);
+    }
+}
+
+// also serves as sanity check
 export async function getProjectGHCVersion(
     wrapper: string,
     workingDir: string,

@@ -22,7 +22,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { IEnvVars, addPathToProcessPath, downloadHaskellLanguageServer, downloadGHCup, getProjectGHCVersion } from './hlsBinaries';
+import { IEnvVars, addPathToProcessPath, downloadHaskellLanguageServer, downloadGHCup, validateHLSToolchain } from './hlsBinaries';
 import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
 
@@ -190,7 +190,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       // If not, then try to download haskell-language-server binaries if it's selected
       await downloadGHCup(context, logger);
       serverExecutable = await downloadHaskellLanguageServer(context, logger);
-      await getProjectGHCVersion(serverExecutable, currentWorkingDir, logger)
+      await validateHLSToolchain(serverExecutable, currentWorkingDir, logger)
       addInternalServerPath = path.dirname(serverExecutable);
       if (!serverExecutable) {
         return;
