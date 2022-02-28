@@ -137,7 +137,11 @@ async function callAsync(
  * Downloads the latest haskell-language-server binaries via ghcup.
  * Returns null if it can't find any match.
  */
-export async function downloadHaskellLanguageServer(context: ExtensionContext, logger: Logger, workingDir: string): Promise<string> {
+export async function downloadHaskellLanguageServer(
+    context: ExtensionContext,
+    logger: Logger,
+    workingDir: string
+): Promise<string> {
     logger.info('Downloading haskell-language-server');
 
     const storagePath: string = await getStoragePath(context);
@@ -148,21 +152,24 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
     }
 
     const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
-    const downloadedWrapper = path.join(
-        storagePath,
-        '.ghcup',
-        'bin',
-        `haskell-language-server-wrapper${exeExt}`
-    );
+    const downloadedWrapper = path.join(storagePath, '.ghcup', 'bin', `haskell-language-server-wrapper${exeExt}`);
     let wrapper: string | undefined;
-    if (localWrapper) { // first try PATH
+    if (localWrapper) {
+        // first try PATH
         wrapper = localWrapper;
-    } else if (executableExists(downloadedWrapper)) { // then try internal ghcup
+    } else if (executableExists(downloadedWrapper)) {
+        // then try internal ghcup
         wrapper = downloadedWrapper;
     }
 
     const ghcup = path.join(storagePath, 'ghcup');
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
+    const [installable_hls, latest_hls_version, project_ghc] = await getLatestSuitableHLS(
+        context,
+        logger,
+        workingDir,
+        wrapper
+    );
 
     // check if we need to update HLS
     if (wrapper == null) {
@@ -182,39 +189,20 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
         }
         await callAsync(
             ghcup,
-            ['--no-verbose', 'install', 'hls', 'latest'],
+            ['--no-verbose', 'install', 'hls', installable_hls],
             storagePath,
             logger,
-            `Installing latest HLS`,
+            `Installing HLS ${installable_hls}`,
             true,
             { GHCUP_INSTALL_BASE_PREFIX: storagePath }
         );
-        await callAsync(
-            ghcup,
-            ['--no-verbose', 'set', 'hls', 'latest'],
-            storagePath,
-            logger,
-            undefined,
-            false,
-            { GHCUP_INSTALL_BASE_PREFIX: storagePath }
-        );
+        await callAsync(ghcup, ['--no-verbose', 'set', 'hls', installable_hls], storagePath, logger, undefined, false, {
+            GHCUP_INSTALL_BASE_PREFIX: storagePath,
+        });
         return downloadedWrapper;
     } else {
-
         // version of active hls wrapper
         const set_version = await callAsync(wrapper, ['--numeric-version'], storagePath, logger);
-
-        // get latest hls version
-        const hls_versions = await callAsync(ghcup, ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'], storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
-        const latest_hls_version = hls_versions.split(/\r?\n/).pop()!.split(' ')[1];
-
-        // get project GHC version
-        // TODO: we may run this function twice on startup (e.g. in extension.ts)
-        const project_ghc = await getProjectGHCVersion(wrapper, workingDir, logger);
-
-        // get installable HLS that supports the project GHC version (this might not be the most recent)
-        const latest_metadata_hls = (project_ghc != null) ? await getLatestHLSforGHC(context, storagePath, project_ghc, logger) : null;
-        const installable_hls = (latest_metadata_hls != null) ? latest_metadata_hls : latest_hls_version;
 
         const downgrade: boolean = comparePVP(latest_hls_version, installable_hls) > 0;
 
@@ -238,9 +226,9 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
                 let promptMessage: string;
                 if (downgrade) {
                     promptMessage = `A different (lower) version of the haskell-language-server is required to support ${project_ghc}, would you like to upgrade now?`;
-
                 } else {
-                    promptMessage = 'A new version of the haskell-language-server is available, would you like to upgrade now?';
+                    promptMessage =
+                        'A new version of the haskell-language-server is available, would you like to upgrade now?';
                 }
 
                 const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
@@ -249,7 +237,11 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
                 }
             } else {
                 if (downgrade && need_install) {
-                    const decision = await window.showInformationMessage(`Cannot install the latest HLS version ${latest_hls_version}, because it does not support GHC ${project_ghc}. Installing HLS ${installable_hls} instead?`, 'Continue', "Abort");
+                    const decision = await window.showInformationMessage(
+                        `Cannot install the latest HLS version ${latest_hls_version}, because it does not support GHC ${project_ghc}. Installing HLS ${installable_hls} instead?`,
+                        'Continue',
+                        'Abort'
+                    );
                     if (decision !== 'Continue') {
                         return wrapper;
                     }
@@ -262,8 +254,7 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
             const symHLSPath = path.join(storagePath, 'hls', installable_hls);
             await callAsync(
                 ghcup,
-                [ '--no-verbose', 'run', '--hls', installable_hls
-                , '-b', symHLSPath, '-i'],
+                ['--no-verbose', 'run', '--hls', installable_hls, '-b', symHLSPath, '-i'],
                 storagePath,
                 logger,
                 need_install ? `Installing HLS ${installable_hls}` : undefined,
@@ -274,6 +265,42 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
         }
         return wrapper;
     }
+}
+
+async function getLatestSuitableHLS(
+    context: ExtensionContext,
+    logger: Logger,
+    workingDir: string,
+    wrapper?: string
+): Promise<[string, string, string | null]> {
+    const storagePath: string = await getStoragePath(context);
+    const ghcup = path.join(storagePath, 'ghcup');
+
+    // get latest hls version
+    const hls_versions = await callAsync(
+        ghcup,
+        ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'],
+        storagePath,
+        logger,
+        undefined,
+        false,
+        { GHCUP_INSTALL_BASE_PREFIX: storagePath }
+    );
+    const latest_hls_version = hls_versions.split(/\r?\n/).pop()!.split(' ')[1];
+
+    // get project GHC version
+    // TODO: we may run this function twice on startup (e.g. in extension.ts)
+    const project_ghc =
+        wrapper == undefined
+            ? await callAsync('ghc', ['--numeric-version'], storagePath, logger, undefined, false)
+            : await getProjectGHCVersion(wrapper, workingDir, logger);
+
+    // get installable HLS that supports the project GHC version (this might not be the most recent)
+    const latest_metadata_hls =
+        project_ghc != null ? await getLatestHLSforGHC(context, storagePath, project_ghc, logger) : null;
+    const installable_hls = latest_metadata_hls != null ? latest_metadata_hls : latest_hls_version;
+
+    return [installable_hls, latest_hls_version, project_ghc];
 }
 
 // also serves as sanity check
