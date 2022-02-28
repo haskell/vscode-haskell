@@ -7,6 +7,10 @@ import { Logger } from 'vscode-languageclient';
 import { downloadFile, executableExists, resolvePathPlaceHolders } from './utils';
 import { match } from 'ts-pattern';
 
+// Used for environment variables later on
+export interface IEnvVars {
+  [key: string]: string;
+}
 
 type UpdateBehaviour = 'keep-up-to-date' | 'prompt' | 'never-check';
 
@@ -58,6 +62,7 @@ async function callAsync(
     logger: Logger,
     title?: string,
     cancellable?: boolean,
+    envAdd?: IEnvVars,
     callback?: (
         error: ExecException | null,
         stdout: string,
@@ -79,13 +84,14 @@ async function callAsync(
                 token.onCancellationRequested(() => {
                     logger.warn(`User canceled the execution of '${command}'`);
                 });
+                const newEnv = (envAdd != undefined) ? Object.assign(process.env, envAdd) : process.env;
                 // Need to set the encoding to 'utf8' in order to get back a string
                 // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
                 const childProcess = child_process
                     .execFile(
                         process.platform === 'win32' ? `"${binary}"` : binary,
                         args,
-                        { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32' },
+                        { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32', env: newEnv },
                         (err, stdout, stderr) => {
                             if (callback !== undefined) {
                                 callback(err, stdout, stderr, resolve, reject);
@@ -182,7 +188,8 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
             storagePath,
             logger,
             `Installing latest HLS`,
-            true
+            true,
+            { GHCUP_INSTALL_BASE_PREFIX: storagePath }
         );
         return downloadedWrapper;
     } else {
@@ -190,7 +197,7 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
         const version = await callAsync(wrapper, args, storagePath, logger);
 
         const args2 = ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'];
-        const hls_versions = await callAsync(ghcup, args2, storagePath, logger, undefined, false);
+        const hls_versions = await callAsync(ghcup, args2, storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
         const latest_hls_version = hls_versions.split(/\r?\n/).pop()!.split(' ')[1];
 
         const cmp = comparePVP(version, latest_hls_version);
@@ -223,7 +230,8 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
                 storagePath,
                 logger,
                 `Upgrading HLS to ${latest_hls_version}`,
-                true
+                true,
+                { GHCUP_INSTALL_BASE_PREFIX: storagePath }
             );
         }
         return wrapper;
@@ -240,7 +248,7 @@ export async function getProjectGHCVersion(
     logger.info(title);
     let args = ['--project-ghc-version'];
     const callWrapper = (wrapper: string) =>
-        callAsync(wrapper, args, workingDir, logger, title, false, (err, stdout, stderr, resolve, reject) => {
+        callAsync(wrapper, args, workingDir, logger, title, false, undefined, (err, stdout, stderr, resolve, reject) => {
             const command: string = wrapper + ' ' + args.join(' ');
             if (err) {
                 logger.error(`Error executing '${command}' with error code ${err.code}`);
@@ -283,7 +291,7 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
     // ghcup exists, just upgrade
     if (fs.existsSync(path.join(storagePath, 'ghcup'))) {
         const args = ['upgrade', '-i'];
-        await callAsync(ghcup, args, storagePath, logger, undefined, false);
+        await callAsync(ghcup, args, storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
     } else {
         // needs to download ghcup
         const plat = match(process.platform)

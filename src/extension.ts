@@ -22,13 +22,9 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { addPathToProcessPath, downloadHaskellLanguageServer, downloadGHCup, getProjectGHCVersion } from './hlsBinaries';
+import { IEnvVars, addPathToProcessPath, downloadHaskellLanguageServer, downloadGHCup, getProjectGHCVersion } from './hlsBinaries';
 import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
-// Used for environment variables later on
-interface IEnvVars {
-  [key: string]: string;
-}
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
