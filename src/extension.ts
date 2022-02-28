@@ -189,7 +189,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     if (serverExecutable === null) {
       // If not, then try to download haskell-language-server binaries if it's selected
       await downloadGHCup(context, logger);
-      serverExecutable = await downloadHaskellLanguageServer(context, logger);
+      serverExecutable = await downloadHaskellLanguageServer(context, logger, currentWorkingDir);
       await validateHLSToolchain(serverExecutable, currentWorkingDir, logger)
       addInternalServerPath = path.dirname(serverExecutable);
       if (!serverExecutable) {
