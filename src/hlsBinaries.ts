@@ -52,9 +52,10 @@ class MissingToolError extends Error {
 async function callAsync(
     binary: string,
     args: string[],
-    title: string,
     dir: string,
     logger: Logger,
+    title?: string,
+    cancellable?: boolean,
     callback?: (
         error: ExecException | null,
         stdout: string,
@@ -66,8 +67,8 @@ async function callAsync(
     return window.withProgress(
         {
             location: ProgressLocation.Notification,
-            title: `${title}`,
-            cancellable: true,
+            title: title,
+            cancellable: cancellable,
         },
         async (_, token) => {
             return new Promise<string>((resolve, reject) => {
@@ -176,19 +177,18 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
         await callAsync(
             ghcup,
             ['--no-verbose', 'install', 'hls', '--isolate', storagePath, '--force', 'latest'],
-            `Installing latest HLS`,
             storagePath,
-            logger
+            logger,
+            `Installing latest HLS`,
+            true
         );
         return downloadedWrapper;
     } else {
-        const title = 'Determining current HLS version';
         const args = ['--numeric-version'];
-        const version = await callAsync(wrapper, args, title, storagePath, logger);
+        const version = await callAsync(wrapper, args, storagePath, logger);
 
-        const title2 = 'Determining latest HLS version';
         const args2 = ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'];
-        const hls_versions = await callAsync(ghcup, args2, title2, storagePath, logger);
+        const hls_versions = await callAsync(ghcup, args2, storagePath, logger, undefined, false);
         const latest_hls_version = hls_versions.split(/\r?\n/).pop()!.split(' ')[1];
 
         const cmp = comparePVP(version, latest_hls_version);
@@ -218,9 +218,10 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
             await callAsync(
                 ghcup,
                 ['--no-verbose', 'install', 'hls', '--isolate', storagePath, '--force', latest_hls_version],
-                `Upgrading HLS to ${latest_hls_version}`,
                 storagePath,
-                logger
+                logger,
+                `Upgrading HLS to ${latest_hls_version}`,
+                true
             );
         }
         return wrapper;
@@ -237,7 +238,7 @@ export async function getProjectGHCVersion(
     logger.info(title);
     let args = ['--project-ghc-version'];
     const callWrapper = (wrapper: string) =>
-        callAsync(wrapper, args, title, workingDir, logger, (err, stdout, stderr, resolve, reject) => {
+        callAsync(wrapper, args, workingDir, logger, title, false, (err, stdout, stderr, resolve, reject) => {
             const command: string = wrapper + ' ' + args.join(' ');
             if (err) {
                 logger.error(`Error executing '${command}' with error code ${err.code}`);
@@ -279,9 +280,8 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
     const ghcup = path.join(storagePath, 'ghcup');
     // ghcup exists, just upgrade
     if (fs.existsSync(path.join(storagePath, 'ghcup'))) {
-        const title = 'Updating internal ghcup';
         const args = ['upgrade', '-i'];
-        await callAsync(ghcup, args, title, storagePath, logger);
+        await callAsync(ghcup, args, storagePath, logger, undefined, false);
     } else {
         // needs to download ghcup
         const plat = match(process.platform)
