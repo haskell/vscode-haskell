@@ -169,7 +169,7 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
         // install new hls
         if (updateBehaviour === 'never-check') {
             throw new Error(
-                "No version of HLS installed or found and updateBehaviour set to 'never-check'" + 'giving up...'
+                "No version of HLS installed or found and updateBehaviour set to 'never-check' giving up..."
             );
         } else if (updateBehaviour === 'prompt') {
             const promptMessage =
@@ -177,7 +177,7 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
 
             const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
             if (decision !== 'Download') {
-                throw new Error('No version of HLS installed or found and installation was denied' + 'giving up...');
+                throw new Error('No version of HLS installed or found and installation was denied, giving up...');
             }
         }
         await callAsync(
