@@ -358,3 +358,11 @@ export async function getStoragePath(context: ExtensionContext): Promise<string>
 
     return storagePath;
 }
+
+export function addPathToProcessPath(path: string): string {
+    const pathSep = process.platform === 'win32' ? ';' : ':';
+    const PATH = process.env.PATH!.split(pathSep);
+    PATH.unshift(path);
+    return PATH.join(pathSep);
+}
+
