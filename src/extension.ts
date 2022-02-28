@@ -22,7 +22,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { downloadHaskellLanguageServer, downloadGHCup, getProjectGHCVersion } from './hlsBinaries';
+import { addPathToProcessPath, downloadHaskellLanguageServer, downloadGHCup, getProjectGHCVersion } from './hlsBinaries';
 import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
 // Used for environment variables later on
@@ -243,10 +243,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
   if (addInternalServerPath != undefined) {
-      const pathSep = process.platform === 'win32' ? ';' : ':';
-      const PATH = process.env.PATH!.split(pathSep);
-      PATH.unshift(addInternalServerPath);
-      serverEnvironment["PATH"] = PATH.join(pathSep);
+      const newPath = addPathToProcessPath(addInternalServerPath);
+      serverEnvironment = {
+        PATH: newPath,
+        ... serverEnvironment
+      };
   }
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
