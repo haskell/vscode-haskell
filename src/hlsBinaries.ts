@@ -145,20 +145,15 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
     const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
     const downloadedWrapper = path.join(
         storagePath,
-        process.platform === 'win32' ? '' : 'bin',
-        `haskell-language-server-wrapper${exeExt}`
-    );
-    const downloadedLegacyWrapper = path.join(
-        storagePath,
+        '.ghcup',
+        'bin',
         `haskell-language-server-wrapper${exeExt}`
     );
     let wrapper: string | undefined;
-    if (localWrapper) {
+    if (localWrapper) { // first try PATH
         wrapper = localWrapper;
-    } else if (executableExists(downloadedWrapper)) {
+    } else if (executableExists(downloadedWrapper)) { // then try internal ghcup
         wrapper = downloadedWrapper;
-    } else if (executableExists(downloadedLegacyWrapper)) {
-        wrapper = downloadedLegacyWrapper;
     }
 
     const ghcup = path.join(storagePath, 'ghcup');
@@ -182,7 +177,7 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
         }
         await callAsync(
             ghcup,
-            ['--no-verbose', 'install', 'hls', '--isolate', storagePath, '--force', 'latest'],
+            ['--no-verbose', 'install', 'hls', '--set', 'latest'],
             storagePath,
             logger,
             `Installing latest HLS`,
@@ -219,12 +214,19 @@ export async function downloadHaskellLanguageServer(context: ExtensionContext, l
 
             // there's a new version
             // delete old HLS
-            await fs.rm(path.join(storagePath, 'bin'), { recursive: true, force: true }, () => {});
-            await fs.rm(path.join(storagePath, 'lib'), { recursive: true, force: true }, () => {});
+            await callAsync(
+                ghcup,
+                ['--no-verbose', 'rm', 'hls', version],
+                storagePath,
+                logger,
+                `Removing old HLS ${version}`,
+                false,
+                { GHCUP_INSTALL_BASE_PREFIX: storagePath }
+            );
             // install new hls
             await callAsync(
                 ghcup,
-                ['--no-verbose', 'install', 'hls', '--isolate', storagePath, '--force', latest_hls_version],
+                ['--no-verbose', 'install', 'hls', '--set', latest_hls_version],
                 storagePath,
                 logger,
                 `Upgrading HLS to ${latest_hls_version}`,
@@ -305,7 +307,7 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
     const ghcup = path.join(storagePath, 'ghcup');
     // ghcup exists, just upgrade
     if (fs.existsSync(path.join(storagePath, 'ghcup'))) {
-        const args = ['upgrade', '-i'];
+        const args = ['--no-verbose', 'upgrade', '-i'];
         await callAsync(ghcup, args, storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
     } else {
         // needs to download ghcup
