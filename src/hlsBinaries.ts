@@ -1,43 +1,15 @@
 import * as child_process from 'child_process';
+import { ExecException } from 'child_process';
 import * as fs from 'fs';
-import * as https from 'https';
-import * as os from 'os';
 import * as path from 'path';
-import * as url from 'url';
-import { promisify } from 'util';
-import { env, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import { ExtensionContext, ProgressLocation, Uri, window, workspace } from 'vscode';
 import { Logger } from 'vscode-languageclient';
-import { downloadFile, executableExists, httpsGetSilently, resolvePathPlaceHolders } from './utils';
-import * as validate from './validation';
+import { downloadFile, executableExists, resolvePathPlaceHolders } from './utils';
+import { match } from 'ts-pattern';
 
-/** GitHub API release */
-interface IRelease {
-  assets: IAsset[];
-  tag_name: string;
-  prerelease: boolean;
-}
-/** GitHub API asset */
-interface IAsset {
-  browser_download_url: string;
-  name: string;
-}
 
 type UpdateBehaviour = 'keep-up-to-date' | 'prompt' | 'never-check';
 
-const assetValidator: validate.Validator<IAsset> = validate.object({
-  browser_download_url: validate.string(),
-  name: validate.string(),
-});
-
-const releaseValidator: validate.Validator<IRelease> = validate.object({
-  assets: validate.array(assetValidator),
-  tag_name: validate.string(),
-  prerelease: validate.boolean(),
-});
-
-const githubReleaseApiValidator: validate.Validator<IRelease[]> = validate.array(releaseValidator);
-
-const cachedReleaseValidator: validate.Validator<IRelease[] | null> = validate.optional(githubReleaseApiValidator);
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
@@ -77,364 +49,310 @@ class MissingToolError extends Error {
   }
 }
 
-// tslint:disable-next-line: max-classes-per-file
-class NoBinariesError extends Error {
-  constructor(hlsVersion: string, ghcVersion?: string) {
-    const supportedReleasesLink =
-      '[See the list of supported versions here](https://github.com/haskell/vscode-haskell#supported-ghc-versions)';
-    if (ghcVersion) {
-      super(`haskell-language-server ${hlsVersion} or earlier for GHC ${ghcVersion} is not available on ${os.type()}. ${supportedReleasesLink}`);
-    } else {
-      super(`haskell-language-server ${hlsVersion} is not available on ${os.type()}. ${supportedReleasesLink}`);
-    }
-  }
-}
-
-/** Works out what the project's ghc version is, downloading haskell-language-server-wrapper
- * if needed. Returns null if there was an error in either downloading the wrapper or
- * in working out the ghc version
- */
-async function getProjectGhcVersion(
-  context: ExtensionContext,
-  logger: Logger,
-  dir: string,
-  release: IRelease,
-  storagePath: string
+async function callAsync(
+    binary: string,
+    args: string[],
+    title: string,
+    dir: string,
+    logger: Logger,
+    callback?: (
+        error: ExecException | null,
+        stdout: string,
+        stderr: string,
+        resolve: (value: string | PromiseLike<string>) => void,
+        reject: (reason?: any) => void
+    ) => void
 ): Promise<string> {
-  const title: string = 'Working out the project GHC version. This might take a while...';
-  logger.info(title);
-  const callWrapper = (wrapper: string) => {
     return window.withProgress(
-      {
-        location: ProgressLocation.Notification,
-        title: `${title}`,
-        cancellable: true,
-      },
-      async (progress, token) => {
-        return new Promise<string>((resolve, reject) => {
-          const args = ['--project-ghc-version'];
-          const command: string = wrapper + ' ' + args.join(' ');
-          logger.info(`Executing '${command}' in cwd '${dir}' to get the project or file ghc version`);
-          token.onCancellationRequested(() => {
-            logger.warn(`User canceled the execution of '${command}'`);
-          });
-          // Need to set the encoding to 'utf8' in order to get back a string
-          // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
-          const childProcess = child_process
-            .execFile(
-              getGithubOS() === 'Windows' ? `"${wrapper}"` : wrapper,
-              args,
-              { encoding: 'utf8', cwd: dir, shell: getGithubOS() === 'Windows' },
-              (err, stdout, stderr) => {
-                if (err) {
-                  logger.error(`Error executing '${command}' with error code ${err.code}`);
-                  logger.error(`stderr: ${stderr}`);
-                  if (stdout) {
-                    logger.error(`stdout: ${stdout}`);
-                  }
-                  const regex = /Cradle requires (.+) but couldn't find it/;
-                  const res = regex.exec(stderr);
-                  if (res) {
-                    reject(new MissingToolError(res[1]));
-                  }
-                  reject(
-                    Error(`${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`)
-                  );
-                } else {
-                  logger.info(`The GHC version for the project or file: ${stdout?.trim()}`);
-                  resolve(stdout?.trim());
-                }
-              }
-            )
-            .on('exit', (code, signal) => {
-              const msg =
-                `Execution of '${command}' terminated with code ${code}` + (signal ? `and signal ${signal}` : '');
-              logger.info(msg);
-            })
-            .on('error', (err) => {
-              if (err) {
-                logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
-                reject(err);
-              }
+        {
+            location: ProgressLocation.Notification,
+            title: `${title}`,
+            cancellable: true,
+        },
+        async (_, token) => {
+            return new Promise<string>((resolve, reject) => {
+                const command: string = binary + ' ' + args.join(' ');
+                logger.info(`Executing '${command}' in cwd '${dir}'`);
+                token.onCancellationRequested(() => {
+                    logger.warn(`User canceled the execution of '${command}'`);
+                });
+                // Need to set the encoding to 'utf8' in order to get back a string
+                // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
+                const childProcess = child_process
+                    .execFile(
+                        process.platform === 'win32' ? `"${binary}"` : binary,
+                        args,
+                        { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32' },
+                        (err, stdout, stderr) => {
+                            if (callback !== undefined) {
+                                callback(err, stdout, stderr, resolve, reject);
+                            } else {
+                                if (err) {
+                                    logger.error(`Error executing '${command}' with error code ${err.code}`);
+                                    logger.error(`stderr: ${stderr}`);
+                                    if (stdout) {
+                                        logger.error(`stdout: ${stdout}`);
+                                    }
+                                    reject(
+                                        Error(`${command} exited with exit code ${err.code}:\n${stdout}\n${stderr}`)
+                                    );
+                                } else {
+                                    resolve(stdout?.trim());
+                                }
+                            }
+                        }
+                    )
+                    .on('exit', (code, signal) => {
+                        const msg =
+                            `Execution of '${command}' terminated with code ${code}` +
+                            (signal ? `and signal ${signal}` : '');
+                        logger.info(msg);
+                    })
+                    .on('error', (err) => {
+                        if (err) {
+                            logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
+                            reject(err);
+                        }
+                    });
+                token.onCancellationRequested((_) => childProcess.kill());
             });
-          token.onCancellationRequested((_) => childProcess.kill());
-        });
-      }
+        }
     );
-  };
-
-  const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
-  if (localWrapper) {
-    return callWrapper(localWrapper);
-  }
-
-  // Otherwise search to see if we previously downloaded the wrapper
-
-  const wrapperName = `haskell-language-server-wrapper-${release.tag_name}-${process.platform}${exeExt}`;
-  const downloadedWrapper = path.join(storagePath, wrapperName);
-
-  if (executableExists(downloadedWrapper)) {
-    return callWrapper(downloadedWrapper);
-  }
-
-  // Otherwise download the wrapper
-
-  const githubOS = getGithubOS();
-  if (githubOS === null) {
-    // Don't have any binaries available for this platform
-    throw new NoBinariesError(release.tag_name);
-  }
-
-  const assetName = `haskell-language-server-wrapper-${githubOS}${exeExt}`;
-  const wrapperAsset = release.assets.find((x) => x.name.startsWith(assetName));
-
-  if (!wrapperAsset) {
-    throw new NoBinariesError(release.tag_name);
-  }
-
-  await downloadFile(
-    'Downloading haskell-language-server-wrapper',
-    wrapperAsset.browser_download_url,
-    downloadedWrapper
-  );
-
-  return callWrapper(downloadedWrapper);
 }
 
-async function getReleaseMetadata(
-  context: ExtensionContext,
-  storagePath: string,
-  logger: Logger
-): Promise<IRelease[] | null> {
-  const releasesUrl = workspace.getConfiguration('haskell').releasesURL
-    ? url.parse(workspace.getConfiguration('haskell').releasesURL)
-    : undefined;
-  const opts: https.RequestOptions = releasesUrl
-    ? {
-      host: releasesUrl.host,
-      path: releasesUrl.path,
-    }
-    : {
-      host: 'api.github.com',
-      path: '/repos/haskell/haskell-language-server/releases',
-    };
 
-  const offlineCache = path.join(storagePath, 'approvedReleases.cache.json');
-  const offlineCacheOldFormat = path.join(storagePath, 'latestApprovedRelease.cache.json');
-
-  // Migrate existing old cache file latestApprovedRelease.cache.json to the new cache file
-  // approvedReleases.cache.json if no such file exists yet.
-  if (!fs.existsSync(offlineCache)) {
-    try {
-      const oldCachedInfo = await promisify(fs.readFile)(offlineCacheOldFormat, { encoding: 'utf-8' });
-      const oldCachedInfoParsed = validate.parseAndValidate(oldCachedInfo, validate.optional(releaseValidator));
-      if (oldCachedInfoParsed !== null) {
-        await promisify(fs.writeFile)(offlineCache, JSON.stringify([oldCachedInfoParsed]), { encoding: 'utf-8' });
-      }
-      logger.info(`Successfully migrated ${offlineCacheOldFormat} to ${offlineCache}`);
-    } catch (err: any) {
-      // Ignore if old cache file does not exist
-      if (err.code !== 'ENOENT') {
-        logger.error(`Failed to migrate ${offlineCacheOldFormat} to ${offlineCache}: ${err}`);
-      }
-    }
-  }
-
-  async function readCachedReleaseData(): Promise<IRelease[] | null> {
-    try {
-      logger.info(`Reading cached release data at ${offlineCache}`);
-      const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
-      return validate.parseAndValidate(cachedInfo, cachedReleaseValidator);
-    } catch (err: any) {
-      // If file doesn't exist, return null, otherwise consider it a failure
-      if (err.code === 'ENOENT') {
-        logger.warn(`No cached release data found at ${offlineCache}`);
-        return null;
-      }
-      throw err;
-    }
-  }
-  // Not all users want to upgrade right away, in that case prompt
-  const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
-
-  if (updateBehaviour === 'never-check') {
-    logger.warn("As 'haskell.updateBehaviour' config option is set to 'never-check' " +
-      'we try to use the possibly obsolete cached release data');
-    return readCachedReleaseData();
-  }
-
-  try {
-    const releaseInfo = await httpsGetSilently(opts);
-    const releaseInfoParsed =
-      validate.parseAndValidate(releaseInfo, githubReleaseApiValidator).filter((x) => !x.prerelease) || null;
-
-    if (updateBehaviour === 'prompt') {
-      const cachedInfoParsed = await readCachedReleaseData();
-
-      if (
-        releaseInfoParsed !== null && releaseInfoParsed.length > 0 &&
-        (cachedInfoParsed === null || cachedInfoParsed.length === 0
-          || releaseInfoParsed[0].tag_name !== cachedInfoParsed[0].tag_name)
-      ) {
-        const promptMessage =
-          cachedInfoParsed === null
-            ? 'No version of the haskell-language-server is installed, would you like to install it now?'
-            : 'A new version of the haskell-language-server is available, would you like to upgrade now?';
-
-        const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
-        if (decision !== 'Download') {
-          // If not upgrade, bail and don't overwrite cached version information
-          return cachedInfoParsed;
-        }
-      }
-    }
-
-    // Cache the latest successfully fetched release information
-    await promisify(fs.writeFile)(offlineCache, JSON.stringify(releaseInfoParsed), { encoding: 'utf-8' });
-    return releaseInfoParsed;
-  } catch (githubError: any) {
-    // Attempt to read from the latest cached file
-    try {
-      const cachedInfoParsed = await readCachedReleaseData();
-
-      window.showWarningMessage(
-        "Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead: " +
-        githubError.message
-      );
-      return cachedInfoParsed;
-    } catch (fileError) {
-      throw new Error("Couldn't get the latest haskell-language-server releases from GitHub: " +
-        githubError.message);
-    }
-  }
-}
 /**
- * Downloads the latest haskell-language-server binaries from GitHub releases.
- * Returns null if it can't find any that match.
+ * Downloads the latest haskell-language-server binaries via ghcup.
+ * Returns null if it can't find any match.
  */
-export async function downloadHaskellLanguageServer(
-  context: ExtensionContext,
-  logger: Logger,
-  resource: Uri,
-  folder?: WorkspaceFolder
-): Promise<string | null> {
-  // Make sure to create this before getProjectGhcVersion
-  logger.info('Downloading haskell-language-server');
+export async function downloadHaskellLanguageServer(context: ExtensionContext, logger: Logger): Promise<string> {
+    logger.info('Downloading haskell-language-server');
 
-  let storagePath: string | undefined = await workspace.getConfiguration('haskell').get('releasesDownloadStoragePath');
+    const storagePath: string = await getStoragePath(context);
+    logger.info(`Using ${storagePath} to store downloaded binaries`);
 
-  if (!storagePath) {
-    storagePath = context.globalStorageUri.fsPath;
-  } else {
-    storagePath = resolvePathPlaceHolders(storagePath);
-  }
-  logger.info(`Using ${storagePath} to store downloaded binaries`);
-
-  if (!fs.existsSync(storagePath)) {
-    fs.mkdirSync(storagePath);
-  }
-
-  const githubOS = getGithubOS();
-  if (githubOS === null) {
-    // Don't have any binaries available for this platform
-    window.showErrorMessage(`Couldn't find any pre-built haskell-language-server binaries for ${process.platform}`);
-    return null;
-  }
-
-  logger.info('Fetching the latest release from GitHub or from cache');
-  const releases = await getReleaseMetadata(context, storagePath, logger);
-  const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
-  if (!releases) {
-    let message = "Couldn't find any pre-built haskell-language-server binaries";
-    if (updateBehaviour === 'never-check') {
-      message += ' (and checking for newer versions is disabled)';
+    if (!fs.existsSync(storagePath)) {
+        fs.mkdirSync(storagePath);
     }
-    window.showErrorMessage(message);
-    return null;
-  }
-  logger.info(`The latest known release is ${releases[0].tag_name}`);
-  logger.info('Figure out the ghc version to use or advertise an installation link for missing components');
-  const dir: string = folder?.uri?.fsPath ?? path.dirname(resource.fsPath);
-  let ghcVersion: string;
-  try {
-    ghcVersion = await getProjectGhcVersion(context, logger, dir, releases[0], storagePath);
-  } catch (error) {
-    if (error instanceof MissingToolError) {
-      const link = error.installLink();
-      if (link) {
-        if (await window.showErrorMessage(error.message, `Install ${error.tool}`)) {
-          env.openExternal(link);
+
+    const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
+    const downloadedWrapper = path.join(
+        storagePath,
+        process.platform === 'win32' ? '' : 'bin',
+        `haskell-language-server-wrapper${exeExt}`
+    );
+    const downloadedLegacyWrapper = path.join(
+        storagePath,
+        `haskell-language-server-wrapper${exeExt}`
+    );
+    let wrapper: string | undefined;
+    if (localWrapper) {
+        wrapper = localWrapper;
+    } else if (executableExists(downloadedWrapper)) {
+        wrapper = downloadedWrapper;
+    } else if (executableExists(downloadedLegacyWrapper)) {
+        wrapper = downloadedLegacyWrapper;
+    }
+
+    const ghcup = path.join(storagePath, 'ghcup');
+    const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
+
+    // check if we need to update HLS
+    if (wrapper == null) {
+        // install new hls
+        if (updateBehaviour === 'never-check') {
+            throw new Error(
+                "No version of HLS installed or found and updateBehaviour set to 'never-check'" + 'giving up...'
+            );
+        } else if (updateBehaviour === 'prompt') {
+            const promptMessage =
+                'No version of the haskell-language-server is installed, would you like to install it now?';
+
+            const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
+            if (decision !== 'Download') {
+                throw new Error('No version of HLS installed or found and installation was denied' + 'giving up...');
+            }
         }
-      } else {
-        await window.showErrorMessage(error.message);
-      }
-    } else if (error instanceof NoBinariesError) {
-      window.showInformationMessage(error.message);
-    } else if (error instanceof Error) {
-      // We couldn't figure out the right ghc version to download
-      window.showErrorMessage(`Couldn't figure out what GHC version the project is using: ${error.message}`);
-    }
-    return null;
-  }
+        await callAsync(
+            ghcup,
+            ['--no-verbose', 'install', 'hls', '--isolate', storagePath, '--force', 'latest'],
+            `Installing latest HLS`,
+            storagePath,
+            logger
+        );
+        return downloadedWrapper;
+    } else {
+        const title = 'Determining current HLS version';
+        const args = ['--numeric-version'];
+        const version = await callAsync(wrapper, args, title, storagePath, logger);
 
-  // When searching for binaries, use startsWith because the compression may differ
-  // between .zip and .gz
-  const assetName = `haskell-language-server-${githubOS}-${ghcVersion}${exeExt}`;
-  logger.info(`Search for binary ${assetName} in release assets`);
-  const release = releases?.find(r => r.assets.find((x) => x.name.startsWith(assetName)));
-  const asset = release?.assets.find((x) => x.name.startsWith(assetName));
-  if (!asset) {
-    let msg = new NoBinariesError(releases[0].tag_name, ghcVersion).message;
-    if (updateBehaviour === 'never-check') {
-      msg += ". Consider set 'haskell.updateBehaviour' to 'up-to-date' to check if another release includes the missing binary";
-    }
-    logger.error(msg);
-    window.showErrorMessage(msg);
-    return null;
-  }
+        const title2 = 'Determining latest HLS version';
+        const args2 = ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'];
+        const hls_versions = await callAsync(ghcup, args2, title2, storagePath, logger);
+        const latest_hls_version = hls_versions.split(/\r?\n/).pop()!.split(' ')[1];
 
-  const serverName = `haskell-language-server-${release?.tag_name}-${process.platform}-${ghcVersion}${exeExt}`;
-  const binaryDest = path.join(storagePath, serverName);
+        const cmp = comparePVP(version, latest_hls_version);
+        if (cmp < 0) {
+            // only update if the user wants to
+            if (updateBehaviour === 'never-check') {
+                logger.warn(
+                    "As 'haskell.updateBehaviour' config option is set to 'never-check' " +
+                        'we try to use the possibly obsolete cached release data'
+                );
+                return wrapper;
+            } else if (updateBehaviour === 'prompt') {
+                const promptMessage =
+                    'A new version of the haskell-language-server is available, would you like to upgrade now?';
 
-  logger.info(`Looking for an existing ${binaryDest} or download it from release assets`);
-  const title = `Downloading haskell-language-server ${release?.tag_name} for GHC ${ghcVersion}`;
+                const decision = await window.showInformationMessage(promptMessage, 'Download', 'Nevermind');
+                if (decision !== 'Download') {
+                    return wrapper;
+                }
+            }
 
-  const downloaded = await downloadFile(title, asset.browser_download_url, binaryDest);
-  if (ghcVersion.startsWith('9.')) {
-    const warning =
-      'Currently, HLS supports GHC 9 only partially. ' +
-      'See [issue #297](https://github.com/haskell/haskell-language-server/issues/297) for more details.';
-    logger.warn(warning);
-    if (downloaded) {
-      window.showWarningMessage(warning);
+            // there's a new version
+            // delete old HLS
+            await fs.rm(path.join(storagePath, 'bin'), { recursive: true, force: true }, () => {});
+            await fs.rm(path.join(storagePath, 'lib'), { recursive: true, force: true }, () => {});
+            // install new hls
+            await callAsync(
+                ghcup,
+                ['--no-verbose', 'install', 'hls', '--isolate', storagePath, '--force', latest_hls_version],
+                `Upgrading HLS to ${latest_hls_version}`,
+                storagePath,
+                logger
+            );
+        }
+        return wrapper;
     }
-  }
-  if (release?.tag_name !== releases[0].tag_name) {
-    const warning =
-      `haskell-language-server ${releases[0].tag_name} for GHC ${ghcVersion} is not available on ${os.type()}.  ` +
-      `Falling back to haskell-language-server ${release?.tag_name}`;
-    logger.warn(warning);
-    if (downloaded) {
-      window.showWarningMessage(warning);
-    }
-  }
-  return binaryDest;
 }
 
-/** Get the OS label used by GitHub for the current platform */
-function getGithubOS(): string | null {
-  function platformToGithubOS(x: string): string | null {
-    switch (x) {
-      case 'darwin':
-        return 'macOS';
-      case 'linux':
-        return 'Linux';
-      case 'win32':
-        return 'Windows';
-      default:
-        return null;
-    }
-  }
+// also serves as sanity check
+export async function getProjectGHCVersion(
+    wrapper: string,
+    workingDir: string,
+    logger: Logger
+): Promise<string | null> {
+    const title = 'Working out the project GHC version. This might take a while...';
+    logger.info(title);
+    let args = ['--project-ghc-version'];
+    const callWrapper = (wrapper: string) =>
+        callAsync(wrapper, args, title, workingDir, logger, (err, stdout, stderr, resolve, reject) => {
+            const command: string = wrapper + ' ' + args.join(' ');
+            if (err) {
+                logger.error(`Error executing '${command}' with error code ${err.code}`);
+                logger.error(`stderr: ${stderr}`);
+                if (stdout) {
+                    logger.error(`stdout: ${stdout}`);
+                }
+                const regex = /Cradle requires (.+) but couldn't find it/;
+                const res = regex.exec(stderr);
+                if (res) {
+                    reject(new MissingToolError(res[1]));
+                }
+                reject(
+                    Error(`${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`)
+                );
+            } else {
+                logger.info(`The GHC version for the project or file: ${stdout?.trim()}`);
+                resolve(stdout?.trim());
+            }
+        });
 
-  return platformToGithubOS(process.platform);
+    return callWrapper(wrapper);
+}
+
+/**
+ * Downloads the latest ghcup binary.
+ * Returns null if it can't find any for the given architecture/platform.
+ */
+export async function downloadGHCup(context: ExtensionContext, logger: Logger): Promise<string | null> {
+    logger.info('Downloading ghcup');
+
+    const storagePath: string = await getStoragePath(context);
+    logger.info(`Using ${storagePath} to store downloaded binaries`);
+
+    if (!fs.existsSync(storagePath)) {
+        fs.mkdirSync(storagePath);
+    }
+
+    const ghcup = path.join(storagePath, 'ghcup');
+    // ghcup exists, just upgrade
+    if (fs.existsSync(path.join(storagePath, 'ghcup'))) {
+        const title = 'Updating internal ghcup';
+        const args = ['upgrade', '-i'];
+        await callAsync(ghcup, args, title, storagePath, logger);
+    } else {
+        // needs to download ghcup
+        const plat = match(process.platform)
+            .with('darwin', (_) => 'apple-darwin')
+            .with('linux', (_) => 'linux')
+            .with('win32', (_) => 'mingw64')
+            .with('freebsd', (_) => 'freebsd12')
+            .otherwise((_) => null);
+        if (plat === null) {
+            window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
+            return null;
+        }
+        const arch = match(process.arch)
+            .with('arm', (_) => 'armv7')
+            .with('arm64', (_) => 'aarch64')
+            .with('x32', (_) => 'i386')
+            .with('x64', (_) => 'x86_64')
+            .otherwise((_) => null);
+        if (arch === null) {
+            window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
+            return null;
+        }
+        const title = 'Downloading ghcup';
+        const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
+        const downloaded = await downloadFile(title, dlUri, ghcup);
+        if (!downloaded) {
+            window.showErrorMessage(`Couldn't download ${dlUri} as ${ghcup}`);
+        }
+    }
+    return ghcup;
+}
+
+export function comparePVP(l: string, r: string): number {
+    const al = l.split('.');
+    const ar = r.split('.');
+
+    let eq = 0;
+
+    for (let i = 0; i < Math.max(al.length, ar.length); i++) {
+        const el = parseInt(al[i]) || undefined;
+        const er = parseInt(ar[i]) || undefined;
+
+        if (el == undefined && er == undefined) {
+            break;
+        } else if (el != undefined && er == undefined) {
+            eq = 1;
+            break;
+        } else if (el == undefined && er != undefined) {
+            eq = -1;
+            break;
+        } else if (el != undefined && er != undefined && el > er) {
+            eq = 1;
+            break;
+        } else if (el != undefined && er != undefined && el < er) {
+            eq = -1;
+            break;
+        }
+    }
+    return eq;
+}
+
+export async function getStoragePath(context: ExtensionContext): Promise<string> {
+    let storagePath: string | undefined = await workspace
+        .getConfiguration('haskell')
+        .get('releasesDownloadStoragePath');
+
+    if (!storagePath) {
+        storagePath = context.globalStorageUri.fsPath;
+    } else {
+        storagePath = resolvePathPlaceHolders(storagePath);
+    }
+
+    return storagePath;
 }

@@ -22,7 +22,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { downloadHaskellLanguageServer } from './hlsBinaries';
+import { downloadHaskellLanguageServer, downloadGHCup, getProjectGHCVersion } from './hlsBinaries';
 import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
 
 // Used for environment variables later on
@@ -193,12 +193,16 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   });
 
   let serverExecutable;
+  let addInternalServerPath: string | undefined = undefined; // if we download HLS, add that bin dir to PATH
   try {
     // Try and find local installations first
     serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
     if (serverExecutable === null) {
       // If not, then try to download haskell-language-server binaries if it's selected
-      serverExecutable = await downloadHaskellLanguageServer(context, logger, uri, folder);
+      await downloadGHCup(context, logger);
+      serverExecutable = await downloadHaskellLanguageServer(context, logger);
+      await getProjectGHCVersion(serverExecutable, currentWorkingDir, logger)
+      addInternalServerPath = path.dirname(serverExecutable);
       if (!serverExecutable) {
         return;
       }
@@ -237,7 +241,13 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
   logger.info(cwdMsg);
 
-  const serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
+  let serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
+  if (addInternalServerPath != undefined) {
+      const pathSep = process.platform === 'win32' ? ';' : ':';
+      const PATH = process.env.PATH!.split(pathSep);
+      PATH.unshift(addInternalServerPath);
+      serverEnvironment["PATH"] = PATH.join(pathSep);
+  }
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
     env: Object.assign(process.env, serverEnvironment),

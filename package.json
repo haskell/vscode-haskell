@@ -406,7 +406,10 @@
     "@types/vscode": "^1.52.0",
     "@types/which": "^2.0.1",
     "@types/yauzl": "^2.9.1",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
     "@vscode/test-electron": "^1.6.2",
+    "eslint": "^8.10.0",
     "glob": "^7.1.4",
     "husky": "^7.0.2",
     "mocha": "^9.1.2",
@@ -431,6 +434,7 @@
     "lru-cache": "^4.1.5",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
+    "ts-pattern": "^3.3.5",
     "vscode-languageclient": "^7.0.0",
     "which": "^2.0.1",
     "yauzl": "^2.10.0"
