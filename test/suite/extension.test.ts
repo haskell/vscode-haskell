@@ -95,7 +95,7 @@ suite('Extension Test Suite', () => {
       if (type === vscode.FileType.Directory && fp === 'bin') {
         return false;
       }
-      if (type === vscode.FileType.Directory && fp === '.ghcup') {
+      if (type === vscode.FileType.Directory && fp === (process.platform === 'win32' ? 'ghcup' : '.ghcup')) {
         return false;
       }
       if (type === vscode.FileType.Directory && fp === 'cache') {
@@ -115,9 +115,8 @@ suite('Extension Test Suite', () => {
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     // Setting up watchers before actual tests start, to ensure we will got the created event
-    filesCreated.set('ghcup', existsWorkspaceFile(`bin/ghcup${exeExt}`, pred));
-    filesCreated.set('wrapper', existsWorkspaceFile(`bin/.ghcup/bin/haskell-language-server-wrapper${exeExt}`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`bin/.ghcup/bin/haskell-language-server-[1-9]*${exeExt}`, pred));
+    filesCreated.set('wrapper', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-wrapper${exeExt}`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-[1-9]*${exeExt}`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
@@ -136,21 +135,19 @@ suite('Extension Test Suite', () => {
     assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
   });
 
+
   test('HLS executables should be downloaded', async () => {
+    await delay(30);
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     console.log('Testing wrapper');
     assert.ok(
-      await withTimeout(60, filesCreated.get('ghcup')!),
-      'The ghcup executable was not downloaded in 60 seconds'
-    );
-    assert.ok(
-      await withTimeout(60, filesCreated.get('wrapper')!),
-      'The wrapper executable was not downloaded in 60 seconds'
+      await withTimeout(90, filesCreated.get('wrapper')!),
+      'The wrapper executable was not downloaded in 90 seconds'
     );
     console.log('Testing server');
     assert.ok(
-      await withTimeout(60, filesCreated.get('server')!),
-      'The server executable was not downloaded in 60 seconds'
+      await withTimeout(90, filesCreated.get('server')!),
+      'The server executable was not downloaded in 90 seconds'
     );
   });
 

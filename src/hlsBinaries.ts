@@ -152,7 +152,7 @@ export async function downloadHaskellLanguageServer(
     }
 
     const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
-    const downloadedWrapper = path.join(storagePath, '.ghcup', 'bin', `haskell-language-server-wrapper${exeExt}`);
+    const downloadedWrapper = path.join(storagePath, process.platform === 'win32' ? 'ghcup' : '.ghcup', 'bin', `haskell-language-server-wrapper${exeExt}`);
     let wrapper: string | undefined;
     if (localWrapper) {
         // first try PATH
@@ -208,7 +208,7 @@ export async function downloadHaskellLanguageServer(
 
         const projectHlsWrapper = path.join(
             storagePath,
-            '.ghcup',
+            process.platform === 'win32' ? 'ghcup' : '.ghcup',
             'bin',
             `haskell-language-server-wrapper-${installable_hls}${exeExt}`
         );
@@ -360,7 +360,7 @@ export async function getProjectGHCVersion(
  * Returns null if it can't find any for the given architecture/platform.
  */
 export async function downloadGHCup(context: ExtensionContext, logger: Logger): Promise<string | null> {
-    logger.info('Downloading ghcup');
+    logger.info('Checking for ghcup installation');
 
     const storagePath: string = await getStoragePath(context);
     logger.info(`Using ${storagePath} to store downloaded binaries`);
@@ -372,6 +372,7 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
     const ghcup = path.join(storagePath, `ghcup${exeExt}`);
     // ghcup exists, just upgrade
     if (fs.existsSync(ghcup)) {
+        logger.info('ghcup already installed, trying to upgrade');
         const args = ['--no-verbose', 'upgrade', '-i'];
         await callAsync(ghcup, args, storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
     } else {
@@ -398,6 +399,7 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
         }
         const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
         const title = `Downloading ${dlUri}`;
+        logger.info(`Downloading ${dlUri}`);
         const downloaded = await downloadFile(title, dlUri, ghcup);
         if (!downloaded) {
             window.showErrorMessage(`Couldn't download ${dlUri} as ${ghcup}`);
