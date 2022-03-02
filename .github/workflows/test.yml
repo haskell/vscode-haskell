@@ -30,8 +30,6 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
       - run: |
           mkdir -p test-workspace/bin/
-          export GHCUP_USE_XDG_DIRS=1
-          export XDG_BIN_HOME=$(pwd)/test-workspace/bin/.ghcup/bin
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
           echo $XDG_BIN_HOME $GHCUP_INSTALL_BASE_PREFIX
           ghcup --no-verbose prefetch hls 1.4.0

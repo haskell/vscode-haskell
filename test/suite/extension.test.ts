@@ -32,6 +32,11 @@ function getWorkspaceFile(name: string) {
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
 }
 
+// function getWorkspaceGhcupCacheDirectory() {
+//   const wsroot = getWorkspaceRoot().uri;
+//   return wsroot.with({ path: path.posix.join(wsroot.path, 'bin/.ghcup/cache') });
+// }
+
 async function deleteWorkspaceFiles(pred?: (fileType: [string, vscode.FileType]) => boolean) {
   await deleteFiles(getWorkspaceRoot().uri, pred);
 }
@@ -83,7 +88,21 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
-    await deleteWorkspaceFiles(([fp, _]) => fp !== 'settings.json');
+    await deleteWorkspaceFiles(([fp, type]) => {
+      if (type === vscode.FileType.Directory && fp === '.vscode') {
+        return false;
+      }
+      if (type === vscode.FileType.Directory && fp === 'bin') {
+        return false;
+      }
+      if (type === vscode.FileType.Directory && fp === '.ghcup') {
+        return false;
+      }
+      if (type === vscode.FileType.Directory && fp === 'cache') {
+        return false;
+      }
+      return true;
+    });
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
