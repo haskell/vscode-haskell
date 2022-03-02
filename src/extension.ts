@@ -187,8 +187,15 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverExecutable;
   try {
+    let localServer: string | null;
+    if (workspace.getConfiguration('haskell').get('ignorePATH') === true) {
+      localServer = null;
+      logger.info('Ignoring haskell-language-server on PATH');
+    } else {
+      localServer = findLocalServer(context, logger, uri, folder);
+    }
     // Try and find local installations first
-    serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
+    serverExecutable = findManualExecutable(logger, uri, folder) ?? localServer;
     if (serverExecutable === null) {
       // If not, then try to download haskell-language-server binaries if it's selected
       serverExecutable = await downloadHaskellLanguageServer(context, logger, uri, folder);
