@@ -83,7 +83,7 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
-    await deleteWorkspaceFiles();
+    await deleteWorkspaceFiles(([fp, _]) => fp !== 'settings.json');
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
@@ -96,6 +96,7 @@ suite('Extension Test Suite', () => {
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     // Setting up watchers before actual tests start, to ensure we will got the created event
+    filesCreated.set('ghcup', existsWorkspaceFile(`bin/ghcup${exeExt}`, pred));
     filesCreated.set('wrapper', existsWorkspaceFile(`bin/.ghcup/bin/haskell-language-server-wrapper${exeExt}`, pred));
     filesCreated.set('server', existsWorkspaceFile(`bin/.ghcup/bin/haskell-language-server-[1-9]*${exeExt}`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
@@ -119,6 +120,10 @@ suite('Extension Test Suite', () => {
   test('HLS executables should be downloaded', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     console.log('Testing wrapper');
+    assert.ok(
+      await withTimeout(60, filesCreated.get('ghcup')!),
+      'The ghcup executable was not downloaded in 60 seconds'
+    );
     assert.ok(
       await withTimeout(60, filesCreated.get('wrapper')!),
       'The wrapper executable was not downloaded in 60 seconds'
