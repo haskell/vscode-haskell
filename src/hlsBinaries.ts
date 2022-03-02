@@ -162,7 +162,7 @@ export async function downloadHaskellLanguageServer(
         wrapper = downloadedWrapper;
     }
 
-    const ghcup = path.join(storagePath, 'ghcup');
+    const ghcup = path.join(storagePath, `ghcup${exeExt}`);
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
     const [installable_hls, latest_hls_version, project_ghc] = await getLatestSuitableHLS(
         context,
@@ -274,7 +274,7 @@ async function getLatestSuitableHLS(
     wrapper?: string
 ): Promise<[string, string, string | null]> {
     const storagePath: string = await getStoragePath(context);
-    const ghcup = path.join(storagePath, 'ghcup');
+    const ghcup = path.join(storagePath, `ghcup${exeExt}`);
 
     // get latest hls version
     const hls_versions = await callAsync(
@@ -292,7 +292,7 @@ async function getLatestSuitableHLS(
     // TODO: we may run this function twice on startup (e.g. in extension.ts)
     const project_ghc =
         wrapper == undefined
-            ? await callAsync('ghc', ['--numeric-version'], storagePath, logger, undefined, false)
+            ? await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false)
             : await getProjectGHCVersion(wrapper, workingDir, logger);
 
     // get installable HLS that supports the project GHC version (this might not be the most recent)
@@ -369,9 +369,9 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
         fs.mkdirSync(storagePath);
     }
 
-    const ghcup = path.join(storagePath, 'ghcup');
+    const ghcup = path.join(storagePath, `ghcup${exeExt}`);
     // ghcup exists, just upgrade
-    if (fs.existsSync(path.join(storagePath, 'ghcup'))) {
+    if (fs.existsSync(ghcup)) {
         const args = ['--no-verbose', 'upgrade', '-i'];
         await callAsync(ghcup, args, storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
     } else {
@@ -396,8 +396,8 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
             window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
             return null;
         }
-        const title = 'Downloading ghcup';
         const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
+        const title = `Downloading ${dlUri}`;
         const downloaded = await downloadFile(title, dlUri, ghcup);
         if (!downloaded) {
             window.showErrorMessage(`Couldn't download ${dlUri} as ${ghcup}`);
