@@ -67,6 +67,7 @@ async function deleteFiles(dir: vscode.Uri, pred?: (fileType: [string, vscode.Fi
   });
 }
 
+
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
   const filesCreated: Map<string, Promise<vscode.Uri>> = new Map();
