@@ -122,8 +122,15 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   return exePath;
 }
 
-/** Searches the PATH for whatever is set in serverVariant */
+/** Searches the PATH for whatever is set in serverVariant
+ *
+ * return null when **haskell.ignorePATH** set
+ */
 function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
+  if (workspace.getConfiguration('haskell').get('ignorePATH') === true) {
+    logger.info('Ignoring haskell-language-server on PATH');
+    return null;
+  }
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
   logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
   logger.info(`$PATH environment variable: ${process.env.PATH}`);
@@ -187,15 +194,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverExecutable;
   try {
-    let localServer: string | null;
-    if (workspace.getConfiguration('haskell').get('ignorePATH') === true) {
-      localServer = null;
-      logger.info('Ignoring haskell-language-server on PATH');
-    } else {
-      localServer = findLocalServer(context, logger, uri, folder);
-    }
     // Try and find local installations first
-    serverExecutable = findManualExecutable(logger, uri, folder) ?? localServer;
+    serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
     if (serverExecutable === null) {
       // If not, then try to download haskell-language-server binaries if it's selected
       serverExecutable = await downloadHaskellLanguageServer(context, logger, uri, folder);
