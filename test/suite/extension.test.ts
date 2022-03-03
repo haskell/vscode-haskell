@@ -1,7 +1,7 @@
 // tslint:disable: no-console
 import * as assert from 'assert';
 import * as fs from 'fs';
-import * as os from 'os';
+// import * as os from 'os';
 import * as path from 'path';
 import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
@@ -87,6 +87,7 @@ async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (file
   }
 }
 
+const ghcupBaseDir = `bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}`;
 
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
@@ -124,10 +125,10 @@ suite('Extension Test Suite', () => {
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
 
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
-    const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
+    // const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     // Setting up watchers before actual tests start, to ensure we will got the created event
-    filesCreated.set('wrapper', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-wrapper${exeExt}`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-[1-9]*${exeExt}`, pred));
+    filesCreated.set('wrapper', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-wrapper*`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-[1-9]*`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
