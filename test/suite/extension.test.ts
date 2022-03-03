@@ -77,7 +77,7 @@ async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (file
           .then((contents) => Promise.resolve(contents.length === 0));
         if (isEmptyNow) {
           await vscode.workspace.fs.delete(subDirectory, {
-            recursive: false,
+            recursive: true,
             useTrash: false,
           });
         }
