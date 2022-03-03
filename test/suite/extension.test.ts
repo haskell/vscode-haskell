@@ -23,22 +23,21 @@ function getHaskellConfig() {
   return vscode.workspace.getConfiguration('haskell');
 }
 
-function getWorkspaceRoot() {
+function getWorkspaceRoot(): vscode.WorkspaceFolder {
   return vscode.workspace.workspaceFolders![0];
 }
 
-function getWorkspaceFile(name: string) {
+function getWorkspaceFile(name: string): vscode.Uri {
   const wsroot = getWorkspaceRoot().uri;
   return wsroot.with({ path: path.posix.join(wsroot.path, name) });
 }
 
-// function getWorkspaceGhcupCacheDirectory() {
-//   const wsroot = getWorkspaceRoot().uri;
-//   return wsroot.with({ path: path.posix.join(wsroot.path, 'bin/.ghcup/cache') });
-// }
+function joinUri(root: vscode.Uri, ...pathSegments: string[]): vscode.Uri {
+  return root.with({ path: path.posix.join(root.path, ...pathSegments) });
+}
 
-async function deleteWorkspaceFiles(pred?: (fileType: [string, vscode.FileType]) => boolean) {
-  await deleteFiles(getWorkspaceRoot().uri, pred);
+async function deleteWorkspaceFiles(keepDirs: vscode.Uri[], pred?: (fileName: string) => boolean): Promise<void> {
+  await deleteFiles(getWorkspaceRoot().uri, keepDirs, pred);
 }
 
 function getExtensionLogContent(): string | undefined {
@@ -52,17 +51,37 @@ function getExtensionLogContent(): string | undefined {
   }
 }
 
-async function deleteFiles(dir: vscode.Uri, pred?: (fileType: [string, vscode.FileType]) => boolean) {
+async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (fileType: string) => boolean) {
+  if (keepDirs.includes(dir)) {
+    console.log(`Keeping ${dir}`);
+    return;
+  };
   const dirContents = await vscode.workspace.fs.readDirectory(dir);
   console.log(`Deleting ${dir} contents: ${dirContents}`);
   dirContents.forEach(async ([name, type]) => {
-    const uri: vscode.Uri = getWorkspaceFile(name);
-    if (!pred || pred([name, type])) {
-      console.log(`Deleting ${uri}`);
-      await vscode.workspace.fs.delete(getWorkspaceFile(name), {
-        recursive: true,
-        useTrash: false,
-      });
+    const uri: vscode.Uri = joinUri(dir, name);
+    if (type === vscode.FileType.File) {
+      if (!pred || pred(name)) {
+        console.log(`Deleting ${uri}`);
+        await vscode.workspace.fs.delete(joinUri(dir, name), {
+          recursive: false,
+          useTrash: false,
+        });
+      }
+    } else if (type === vscode.FileType.Directory) {
+      const subDirectory = joinUri(dir, name);
+      console.log(`Recursing into ${subDirectory}`);
+      await deleteFiles(subDirectory, keepDirs, pred);
+
+      // remove directory if it is empty now
+      const isEmptyNow = await vscode.workspace.fs.readDirectory(subDirectory)
+        .then((contents) => Promise.resolve(contents.length === 0));
+      if (isEmptyNow) {
+        await vscode.workspace.fs.delete(subDirectory, {
+          recursive: false,
+          useTrash: false,
+        });
+      }
     }
   });
 }
@@ -89,21 +108,11 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
-    await deleteWorkspaceFiles(([fp, type]) => {
-      if (type === vscode.FileType.Directory && fp === '.vscode') {
-        return false;
-      }
-      if (type === vscode.FileType.Directory && fp === 'bin') {
-        return false;
-      }
-      if (type === vscode.FileType.Directory && fp === (process.platform === 'win32' ? 'ghcup' : '.ghcup')) {
-        return false;
-      }
-      if (type === vscode.FileType.Directory && fp === 'cache') {
-        return false;
-      }
-      return true;
-    });
+    await deleteWorkspaceFiles(
+      [ joinUri(getWorkspaceRoot().uri, '.vscode')
+      , joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache')
+      ]
+    );
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
@@ -180,6 +189,6 @@ suite('Extension Test Suite', () => {
       console.log(logContent);
     }
     console.log('Deleting test workspace contents');
-    await deleteWorkspaceFiles(([name, type]) => !name.includes('.log'));
+    await deleteWorkspaceFiles([], (name) => !name.includes('.log'));
   });
 });
