@@ -127,7 +127,7 @@ suite('Extension Test Suite', () => {
     const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     // Setting up watchers before actual tests start, to ensure we will got the created event
     filesCreated.set('wrapper', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-wrapper${exeExt}`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-[1-9\.]+${exeExt}`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}/bin/haskell-language-server-[1-9]*${exeExt}`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
