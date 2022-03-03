@@ -52,11 +52,11 @@ function getExtensionLogContent(): string | undefined {
 }
 
 async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (fileType: string) => boolean) {
+  const dirContents = await vscode.workspace.fs.readDirectory(dir);
+  console.log(`Looking at ${dir} contents: ${dirContents}`);
   if (keepDirs.findIndex((val) => val.path === dir.path) !== -1) {
     console.log(`Keeping ${dir}`);
   } else {
-    const dirContents = await vscode.workspace.fs.readDirectory(dir);
-    console.log(`Deleting ${dir} contents: ${dirContents}`);
     dirContents.forEach(async ([name, type]) => {
       const uri: vscode.Uri = joinUri(dir, name);
       if (type === vscode.FileType.File) {
@@ -76,6 +76,7 @@ async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (file
         const isEmptyNow = await vscode.workspace.fs.readDirectory(subDirectory)
           .then((contents) => Promise.resolve(contents.length === 0));
         if (isEmptyNow) {
+          console.log(`Deleting ${subDirectory}`);
           await vscode.workspace.fs.delete(subDirectory, {
             recursive: true,
             useTrash: false,
