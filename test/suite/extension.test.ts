@@ -179,6 +179,8 @@ suite('Extension Test Suite', () => {
   });
 
   suiteTeardown(async () => {
+    const binDir = await vscode.workspace.fs.readDirectory(joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'bin'));
+    console.log(`bin dir before deleting: ${binDir}`);
     console.log('Disposing all resources');
     disposables.forEach((d) => d.dispose());
     console.log('Stopping the lsp server');
