@@ -52,38 +52,38 @@ function getExtensionLogContent(): string | undefined {
 }
 
 async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (fileType: string) => boolean) {
-  if (keepDirs.includes(dir)) {
+  if (keepDirs.findIndex((val) => val.path === dir.path) !== -1) {
     console.log(`Keeping ${dir}`);
-    return;
-  };
-  const dirContents = await vscode.workspace.fs.readDirectory(dir);
-  console.log(`Deleting ${dir} contents: ${dirContents}`);
-  dirContents.forEach(async ([name, type]) => {
-    const uri: vscode.Uri = joinUri(dir, name);
-    if (type === vscode.FileType.File) {
-      if (!pred || pred(name)) {
-        console.log(`Deleting ${uri}`);
-        await vscode.workspace.fs.delete(joinUri(dir, name), {
-          recursive: false,
-          useTrash: false,
-        });
-      }
-    } else if (type === vscode.FileType.Directory) {
-      const subDirectory = joinUri(dir, name);
-      console.log(`Recursing into ${subDirectory}`);
-      await deleteFiles(subDirectory, keepDirs, pred);
+  } else {
+    const dirContents = await vscode.workspace.fs.readDirectory(dir);
+    console.log(`Deleting ${dir} contents: ${dirContents}`);
+    dirContents.forEach(async ([name, type]) => {
+      const uri: vscode.Uri = joinUri(dir, name);
+      if (type === vscode.FileType.File) {
+        if (!pred || pred(name)) {
+          console.log(`Deleting ${uri}`);
+          await vscode.workspace.fs.delete(joinUri(dir, name), {
+            recursive: false,
+            useTrash: false,
+          });
+        }
+      } else if (type === vscode.FileType.Directory) {
+        const subDirectory = joinUri(dir, name);
+        console.log(`Recursing into ${subDirectory}`);
+        await deleteFiles(subDirectory, keepDirs, pred);
 
-      // remove directory if it is empty now
-      const isEmptyNow = await vscode.workspace.fs.readDirectory(subDirectory)
-        .then((contents) => Promise.resolve(contents.length === 0));
-      if (isEmptyNow) {
-        await vscode.workspace.fs.delete(subDirectory, {
-          recursive: false,
-          useTrash: false,
-        });
+        // remove directory if it is empty now
+        const isEmptyNow = await vscode.workspace.fs.readDirectory(subDirectory)
+          .then((contents) => Promise.resolve(contents.length === 0));
+        if (isEmptyNow) {
+          await vscode.workspace.fs.delete(subDirectory, {
+            recursive: false,
+            useTrash: false,
+          });
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 
