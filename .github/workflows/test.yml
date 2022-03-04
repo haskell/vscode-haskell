@@ -47,6 +47,11 @@ jobs:
         with:
           name: extension-${{ matrix.os }}.log
           path: test-workspace/hls.log
+      - name: Delete test artefacts
+        run: |
+          tree -a test-workspace/
+          rm -rf test-workspace/
+        shell: bash
       - name: Package tested extension
         if: runner.os == 'Linux'
         run: npx vsce package
