@@ -70,9 +70,7 @@ class MissingToolError extends Error {
         return Uri.parse('https://docs.haskellstack.org/en/stable/install_and_upgrade/');
       case 'Cabal':
       case 'GHC':
-        return process.platform === 'win32'
-          ? Uri.parse('https://www.haskell.org/platform/index.html#windows')
-          : Uri.parse('https://www.haskell.org/ghcup/');
+        return Uri.parse('https://www.haskell.org/ghcup/');
       default:
         return null;
     }
