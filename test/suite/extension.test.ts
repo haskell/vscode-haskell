@@ -144,7 +144,7 @@ suite('Extension Test Suite', () => {
 
   test('Extension should create the extension log file', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
+    assert.ok(await withTimeout(90, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
   });
 
 
@@ -165,7 +165,7 @@ suite('Extension Test Suite', () => {
 
   test('Extension log should have server output', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    await delay(20);
+    await delay(90);
     const logContents = getExtensionLogContent();
     assert.ok(logContents, 'Extension log file does not exist');
     assert.match(logContents, /INFO hls:\s+Registering ide configuration/, 'Extension log file has no hls output');
@@ -174,7 +174,7 @@ suite('Extension Test Suite', () => {
   test('Server should inherit environment variables defined in the settings', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
-      await withTimeout(30, filesCreated.get('cache')!),
+      await withTimeout(90, filesCreated.get('cache')!),
       'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
     );
   });
