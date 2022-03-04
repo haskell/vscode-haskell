@@ -23,7 +23,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 17
       # Setup the environment for the tests
       - name: Ensure there is a supported ghc versions
         uses: haskell/actions/setup@v1
