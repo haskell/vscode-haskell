@@ -24,10 +24,17 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
+      # Setup the environment for the tests
       - name: Ensure there is a supported ghc versions
         uses: haskell/actions/setup@v1
         with:
           ghc-version: ${{ matrix.ghc }}
+          run: xvfb-run -s '-screen 0 640x480x16' -a npm test
+      - name: "Install `tree` for MacOs"
+        run: |
+          brew update
+          brew install tree
+        if: runner.os == 'macOS'
       - run: |
           mkdir -p test-workspace/bin/
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
@@ -35,18 +42,26 @@ jobs:
           ghcup --no-verbose prefetch hls 1.4.0
           ghcup --no-verbose prefetch hls latest
         shell: bash
+
+      # Install test dependencies
       - run: npm ci
       - run: npm run webpack
+
+      # Run the tests
       - run: xvfb-run -s '-screen 0 640x480x16' -a npm test
         if: runner.os == 'Linux'
       - run: npm test
         if: runner.os != 'Linux'
+
+      # Upload test artefacts
       - name: Upload log file to workflow artifacts on error
         if: failure()
         uses: actions/upload-artifact@v2
         with:
           name: extension-${{ matrix.os }}.log
           path: test-workspace/hls.log
+
+      # Create package artefacts
       - name: Delete test artefacts
         run: |
           tree -a test-workspace/
