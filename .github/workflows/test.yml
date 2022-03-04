@@ -35,6 +35,10 @@ jobs:
           brew update
           brew install tree
         if: runner.os == 'macOS'
+      - name: "Install `tree` for Windows"
+        run: |
+          choco install tree
+        if: runner.os == 'Windows'
       - run: |
           mkdir -p test-workspace/bin/
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
