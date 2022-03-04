@@ -122,8 +122,15 @@ function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder
   return exePath;
 }
 
-/** Searches the PATH for whatever is set in serverVariant */
+/** Searches the PATH for whatever is set in serverVariant
+ *
+ * return null when **haskell.ignorePATH** set
+ */
 function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
+  if (workspace.getConfiguration('haskell').get('ignorePATH') === true) {
+    logger.info('Ignoring haskell-language-server on PATH');
+    return null;
+  }
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
   logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
   logger.info(`$PATH environment variable: ${process.env.PATH}`);
