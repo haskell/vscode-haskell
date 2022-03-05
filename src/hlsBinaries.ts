@@ -57,6 +57,22 @@ class MissingToolError extends Error {
   }
 }
 
+/**
+ * Call a process asynchronously.
+ * While doing so, update the windows with progress information.
+ * If you need to run a process, consider preferring this over running
+ * the command directly.
+ *
+ * @param binary Name of the binary to invoke.
+ * @param args Arguments passed directly to the binary.
+ * @param dir Directory in which the process shall be executed.
+ * @param logger Logger for progress updates.
+ * @param title Title of the action, shown to users if available.
+ * @param cancellable Can the user cancel this process invocation?
+ * @param envAdd Extra environment variables for this process only.
+ * @param callback Upon process termination, execute this callback. If given, must resolve promise.
+ * @returns Stdout of the process invocation, trimmed off newlines, or whatever the `callback` resolved to.
+ */
 async function callAsync(
     binary: string,
     args: string[],
@@ -133,7 +149,14 @@ async function callAsync(
 
 /**
  * Downloads the latest haskell-language-server binaries via ghcup.
- * Returns null if it can't find any match.
+ * If we figure out the correct GHC version, but it isn't compatible with
+ * the latest HLS executables, we download the latest compatible HLS binaries
+ * as a fallback.
+ *
+ * @param context Context of the extension, required for metadata.
+ * @param logger Logger for progress updates.
+ * @param workingDir Directory in which the process shall be executed.
+ * @returns Path to haskell-language-server-wrapper
  */
 export async function downloadHaskellLanguageServer(
     context: ExtensionContext,
@@ -318,17 +341,25 @@ export async function validateHLSToolchain(
     }
 }
 
-// also serves as sanity check
+/**
+ * Obtain the project ghc version from the HLS - Wrapper.
+ * Also, serves as a sanity check.
+ * @param wrapper Path to the Haskell-Language-Server wrapper
+ * @param workingDir Directory to run the process, usually the root of the workspace.
+ * @param logger Logger for feedback.
+ * @returns The GHC version, or fail with an `Error`.
+ */
 export async function getProjectGHCVersion(
     wrapper: string,
     workingDir: string,
     logger: Logger
-): Promise<string | null> {
+): Promise<string> {
     const title = 'Working out the project GHC version. This might take a while...';
     logger.info(title);
     const args = ['--project-ghc-version'];
-    const callWrapper = () =>
-        callAsync(wrapper, args, workingDir, logger, title, false, undefined, (err, stdout, stderr, resolve, reject) => {
+
+    return callAsync(wrapper, args, workingDir, logger, title, false, undefined,
+        (err, stdout, stderr, resolve, reject) => {
             const command: string = wrapper + ' ' + args.join(' ');
             if (err) {
                 logger.error(`Error executing '${command}' with error code ${err.code}`);
@@ -348,9 +379,8 @@ export async function getProjectGHCVersion(
                 logger.info(`The GHC version for the project or file: ${stdout?.trim()}`);
                 resolve(stdout?.trim());
             }
-        });
-
-    return callWrapper();
+        }
+    );
 }
 
 /**
@@ -406,6 +436,14 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
     return ghcup;
 }
 
+/**
+ * Compare the PVP versions of two strings.
+ * Details: https://github.com/haskell/pvp/
+ *
+ * @param l First version
+ * @param r second version
+ * @returns `1` if l is newer than r, `0` if they are equal and `-1` otherwise.
+ */
 export function comparePVP(l: string, r: string): number {
     const al = l.split('.');
     const ar = r.split('.');
@@ -456,6 +494,16 @@ export function addPathToProcessPath(extraPath: string): string {
     return PATH.join(pathSep);
 }
 
+/**
+ * Given a GHC version, download at least one HLS version that can be used.
+ * This also honours the OS architecture we are on.
+ *
+ * @param context Context of the extension, required for metadata.
+ * @param storagePath Path to store binaries, caching information, etc...
+ * @param targetGhc GHC version we want a HLS for.
+ * @param logger Logger for feedback
+ * @returns
+ */
 async function getLatestHLSforGHC(
   context: ExtensionContext,
   storagePath: string,
@@ -507,6 +555,14 @@ async function getLatestHLSforGHC(
   return curHls;
 }
 
+/**
+ * Download GHCUP metadata.
+ *
+ * @param context Extension context.
+ * @param storagePath Path to put in binary files and caches.
+ * @param logger Logger for feedback.
+ * @returns Metadata of releases, or null if the cache can not be found.
+ */
 async function getReleaseMetadata(
   context: ExtensionContext,
   storagePath: string,
