@@ -39,6 +39,9 @@ jobs:
         run: |
           choco install tree
         if: runner.os == 'Windows'
+      # Pre-fetch HLS binaries before the tests because otherwise
+      # we run into timeouts. Downloading takes longer, since we download
+      # per HLS version one HLS binary per GHC version. 
       - run: |
           mkdir -p test-workspace/bin/
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
@@ -67,6 +70,9 @@ jobs:
 
       # Create package artefacts
       - name: Delete test artefacts
+        # The test-suite doesn't clean up correctly after itself.
+        # This is a poor man's workaround that after test execution,
+        # the test-workspace still contains binaries and caches.
         run: |
           tree -a test-workspace/
           rm -rf test-workspace/
