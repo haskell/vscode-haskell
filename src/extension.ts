@@ -22,9 +22,8 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { IEnvVars, addPathToProcessPath, downloadHaskellLanguageServer, downloadGHCup, validateHLSToolchain } from './hlsBinaries';
+import { addPathToProcessPath, downloadGHCup, downloadHaskellLanguageServer, IEnvVars, validateHLSToolchain } from './hlsBinaries';
 import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
-
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -189,7 +188,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   });
 
   let serverExecutable;
-  let addInternalServerPath: string | undefined = undefined; // if we download HLS, add that bin dir to PATH
+  let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
   try {
     // Try and find local installations first
     serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
@@ -197,7 +196,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       // If not, then try to download haskell-language-server binaries if it's selected
       await downloadGHCup(context, logger);
       serverExecutable = await downloadHaskellLanguageServer(context, logger, currentWorkingDir);
-      await validateHLSToolchain(serverExecutable, currentWorkingDir, logger)
+      await validateHLSToolchain(serverExecutable, currentWorkingDir, logger);
       addInternalServerPath = path.dirname(serverExecutable);
       if (!serverExecutable) {
         return;
@@ -238,7 +237,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   logger.info(cwdMsg);
 
   let serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
-  if (addInternalServerPath != undefined) {
+  if (addInternalServerPath !== undefined) {
       const newPath = addPathToProcessPath(addInternalServerPath);
       serverEnvironment = {
         PATH: newPath,

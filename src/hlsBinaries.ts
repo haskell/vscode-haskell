@@ -1,14 +1,14 @@
 import * as child_process from 'child_process';
 import { ExecException } from 'child_process';
 import * as fs from 'fs';
+import * as https from 'https';
 import * as path from 'path';
-import { ExtensionContext, ProgressLocation, Uri, window, workspace } from 'vscode';
-import { Logger } from 'vscode-languageclient';
-import { httpsGetSilently, downloadFile, executableExists, resolvePathPlaceHolders } from './utils';
 import { match } from 'ts-pattern';
 import * as url from 'url';
-import * as https from 'https';
 import { promisify } from 'util';
+import { ExtensionContext, ProgressLocation, Uri, window, workspace } from 'vscode';
+import { Logger } from 'vscode-languageclient';
+import { downloadFile, executableExists, httpsGetSilently,  resolvePathPlaceHolders } from './utils';
 
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
@@ -18,7 +18,6 @@ export interface IEnvVars {
 }
 
 type UpdateBehaviour = 'keep-up-to-date' | 'prompt' | 'never-check';
-
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
@@ -77,8 +76,8 @@ async function callAsync(
     return window.withProgress(
         {
             location: ProgressLocation.Notification,
-            title: title,
-            cancellable: cancellable,
+            title,
+            cancellable,
         },
         async (_, token) => {
             return new Promise<string>((resolve, reject) => {
@@ -87,7 +86,7 @@ async function callAsync(
                 token.onCancellationRequested(() => {
                     logger.warn(`User canceled the execution of '${command}'`);
                 });
-                const newEnv = (envAdd != undefined) ? Object.assign(process.env, envAdd) : process.env;
+                const newEnv = (envAdd !== undefined) ? Object.assign(process.env, envAdd) : process.env;
                 // Need to set the encoding to 'utf8' in order to get back a string
                 // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
                 const childProcess = child_process
@@ -126,12 +125,11 @@ async function callAsync(
                             reject(err);
                         }
                     });
-                token.onCancellationRequested((_) => childProcess.kill());
+                token.onCancellationRequested(() => childProcess.kill());
             });
         }
     );
 }
-
 
 /**
  * Downloads the latest haskell-language-server binaries via ghcup.
@@ -164,7 +162,7 @@ export async function downloadHaskellLanguageServer(
 
     const ghcup = path.join(storagePath, `ghcup${exeExt}`);
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
-    const [installable_hls, latest_hls_version, project_ghc] = await getLatestSuitableHLS(
+    const [installableHls, latestHlsVersion, projectGhc] = await getLatestSuitableHLS(
         context,
         logger,
         workingDir,
@@ -172,7 +170,7 @@ export async function downloadHaskellLanguageServer(
     );
 
     // check if we need to update HLS
-    if (wrapper == null) {
+    if (wrapper === undefined) {
         // install new hls
         if (updateBehaviour === 'never-check') {
             throw new Error(
@@ -189,32 +187,32 @@ export async function downloadHaskellLanguageServer(
         }
         await callAsync(
             ghcup,
-            ['--no-verbose', 'install', 'hls', installable_hls],
+            ['--no-verbose', 'install', 'hls', installableHls],
             storagePath,
             logger,
-            `Installing HLS ${installable_hls}`,
+            `Installing HLS ${installableHls}`,
             true,
             { GHCUP_INSTALL_BASE_PREFIX: storagePath }
         );
-        await callAsync(ghcup, ['--no-verbose', 'set', 'hls', installable_hls], storagePath, logger, undefined, false, {
+        await callAsync(ghcup, ['--no-verbose', 'set', 'hls', installableHls], storagePath, logger, undefined, false, {
             GHCUP_INSTALL_BASE_PREFIX: storagePath,
         });
         return downloadedWrapper;
     } else {
         // version of active hls wrapper
-        const set_version = await callAsync(wrapper, ['--numeric-version'], storagePath, logger);
+        const setVersion = await callAsync(wrapper, ['--numeric-version'], storagePath, logger);
 
-        const downgrade: boolean = comparePVP(latest_hls_version, installable_hls) > 0;
+        const downgrade: boolean = comparePVP(latestHlsVersion, installableHls) > 0;
 
         const projectHlsWrapper = path.join(
             storagePath,
             process.platform === 'win32' ? 'ghcup' : '.ghcup',
             'bin',
-            `haskell-language-server-wrapper-${installable_hls}${exeExt}`
+            `haskell-language-server-wrapper-${installableHls}${exeExt}`
         );
-        const need_install = !executableExists(projectHlsWrapper);
+        const needInstall = !executableExists(projectHlsWrapper);
 
-        if (comparePVP(set_version, installable_hls) != 0) {
+        if (comparePVP(setVersion, installableHls) !== 0) {
             // only update if the user wants to
             if (updateBehaviour === 'never-check') {
                 logger.warn(
@@ -222,10 +220,10 @@ export async function downloadHaskellLanguageServer(
                         'we try to use the possibly obsolete cached release data'
                 );
                 return wrapper;
-            } else if (updateBehaviour === 'prompt' && need_install) {
+            } else if (updateBehaviour === 'prompt' && needInstall) {
                 let promptMessage: string;
                 if (downgrade) {
-                    promptMessage = `A different (lower) version of the haskell-language-server is required to support ${project_ghc}, would you like to upgrade now?`;
+                    promptMessage = `A different (lower) version of the haskell-language-server is required to support ${projectGhc}, would you like to upgrade now?`;
                 } else {
                     promptMessage =
                         'A new version of the haskell-language-server is available, would you like to upgrade now?';
@@ -236,9 +234,9 @@ export async function downloadHaskellLanguageServer(
                     return wrapper;
                 }
             } else {
-                if (downgrade && need_install) {
+                if (downgrade && needInstall) {
                     const decision = await window.showInformationMessage(
-                        `Cannot install the latest HLS version ${latest_hls_version}, because it does not support GHC ${project_ghc}. Installing HLS ${installable_hls} instead?`,
+                        `Cannot install the latest HLS version ${latestHlsVersion}, because it does not support GHC ${projectGhc}. Installing HLS ${installableHls} instead?`,
                         'Continue',
                         'Abort'
                     );
@@ -251,14 +249,14 @@ export async function downloadHaskellLanguageServer(
             // we use this command to both install a HLS, but also create a nice
             // isolated symlinked dir with only the given HLS in place, so
             // this works for installing and setting
-            const symHLSPath = path.join(storagePath, 'hls', installable_hls);
+            const symHLSPath = path.join(storagePath, 'hls', installableHls);
             await callAsync(
                 ghcup,
-                ['--no-verbose', 'run', '--hls', installable_hls, '-b', symHLSPath, '-i'],
+                ['--no-verbose', 'run', '--hls', installableHls, '-b', symHLSPath, '-i'],
                 storagePath,
                 logger,
-                need_install ? `Installing HLS ${installable_hls}` : undefined,
-                need_install,
+                needInstall ? `Installing HLS ${installableHls}` : undefined,
+                needInstall,
                 { GHCUP_INSTALL_BASE_PREFIX: storagePath }
             );
             return path.join(symHLSPath, `haskell-language-server-wrapper${exeExt}`);
@@ -277,7 +275,7 @@ async function getLatestSuitableHLS(
     const ghcup = path.join(storagePath, `ghcup${exeExt}`);
 
     // get latest hls version
-    const hls_versions = await callAsync(
+    const hlsVersions = await callAsync(
         ghcup,
         ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'],
         storagePath,
@@ -286,21 +284,21 @@ async function getLatestSuitableHLS(
         false,
         { GHCUP_INSTALL_BASE_PREFIX: storagePath }
     );
-    const latest_hls_version = hls_versions.split(/\r?\n/).pop()!.split(' ')[1];
+    const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
 
     // get project GHC version
     // TODO: we may run this function twice on startup (e.g. in extension.ts)
-    const project_ghc =
-        wrapper == undefined
+    const projectGhc =
+        wrapper === undefined
             ? await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false)
             : await getProjectGHCVersion(wrapper, workingDir, logger);
 
     // get installable HLS that supports the project GHC version (this might not be the most recent)
-    const latest_metadata_hls =
-        project_ghc != null ? await getLatestHLSforGHC(context, storagePath, project_ghc, logger) : null;
-    const installable_hls = latest_metadata_hls != null ? latest_metadata_hls : latest_hls_version;
+    const latestMetadataHls =
+        projectGhc !== null ? await getLatestHLSforGHC(context, storagePath, projectGhc, logger) : null;
+    const installableHls = latestMetadataHls !== null ? latestMetadataHls : latestHlsVersion;
 
-    return [installable_hls, latest_hls_version, project_ghc];
+    return [installableHls, latestHlsVersion, projectGhc];
 }
 
 // also serves as sanity check
@@ -311,8 +309,8 @@ export async function validateHLSToolchain(
 ): Promise<void> {
     const ghc = await getProjectGHCVersion(wrapper, workingDir, logger);
     const wrapperDir = path.dirname(wrapper);
-    const hlsExe = path.join(wrapperDir, `haskell-language-server-${ghc}${exeExt}`)
-    const hlsVer = await callAsync(wrapper, ["--numeric-version"], workingDir, logger);
+    const hlsExe = path.join(wrapperDir, `haskell-language-server-${ghc}${exeExt}`);
+    const hlsVer = await callAsync(wrapper, ['--numeric-version'], workingDir, logger);
     if (!executableExists(hlsExe)) {
         const msg = `Couldn't find ${hlsExe}. Your project ghc version ${ghc} may not be supported! Consider building HLS from source, e.g.: ghcup compile hls --jobs 8 --ghc ${ghc} ${hlsVer}`;
         window.showErrorMessage(msg);
@@ -328,8 +326,8 @@ export async function getProjectGHCVersion(
 ): Promise<string | null> {
     const title = 'Working out the project GHC version. This might take a while...';
     logger.info(title);
-    let args = ['--project-ghc-version'];
-    const callWrapper = (wrapper: string) =>
+    const args = ['--project-ghc-version'];
+    const callWrapper = () =>
         callAsync(wrapper, args, workingDir, logger, title, false, undefined, (err, stdout, stderr, resolve, reject) => {
             const command: string = wrapper + ' ' + args.join(' ');
             if (err) {
@@ -352,7 +350,7 @@ export async function getProjectGHCVersion(
             }
         });
 
-    return callWrapper(wrapper);
+    return callWrapper();
 }
 
 /**
@@ -415,21 +413,21 @@ export function comparePVP(l: string, r: string): number {
     let eq = 0;
 
     for (let i = 0; i < Math.max(al.length, ar.length); i++) {
-        const el = parseInt(al[i]) || undefined;
-        const er = parseInt(ar[i]) || undefined;
+        const el = parseInt(al[i], 10) || undefined;
+        const er = parseInt(ar[i], 10) || undefined;
 
-        if (el == undefined && er == undefined) {
+        if (el === undefined && er === undefined) {
             break;
-        } else if (el != undefined && er == undefined) {
+        } else if (el !== undefined && er === undefined) {
             eq = 1;
             break;
-        } else if (el == undefined && er != undefined) {
+        } else if (el === undefined && er !== undefined) {
             eq = -1;
             break;
-        } else if (el != undefined && er != undefined && el > er) {
+        } else if (el !== undefined && er !== undefined && el > er) {
             eq = 1;
             break;
-        } else if (el != undefined && er != undefined && el < er) {
+        } else if (el !== undefined && er !== undefined && el < er) {
             eq = -1;
             break;
         }
@@ -451,10 +449,10 @@ export async function getStoragePath(context: ExtensionContext): Promise<string>
     return storagePath;
 }
 
-export function addPathToProcessPath(path: string): string {
+export function addPathToProcessPath(extraPath: string): string {
     const pathSep = process.platform === 'win32' ? ';' : ':';
     const PATH = process.env.PATH!.split(pathSep);
-    PATH.unshift(path);
+    PATH.unshift(extraPath);
     return PATH.join(pathSep);
 }
 
@@ -464,49 +462,49 @@ async function getLatestHLSforGHC(
   targetGhc: string,
   logger: Logger
 ): Promise<string | null> {
-	const metadata = await getReleaseMetadata(context, storagePath, logger);
-	if (metadata === null) {
-		window.showErrorMessage(`Could not get release metadata`);
-		return null;
-	}
-	const plat = match(process.platform)
-		.with('darwin', (_) => 'Darwin')
-		.with('linux', (_) => 'Linux_UnknownLinux')
-		.with('win32', (_) => 'Windows')
-		.with('freebsd', (_) => 'FreeBSD')
-		.otherwise((_) => null);
-	if (plat === null) {
-		window.showErrorMessage(`Unknown platform ${process.platform}`);
-		return null;
-	}
-	const arch = match(process.arch)
-		.with('arm', (_) => 'A_ARM')
-		.with('arm64', (_) => 'A_ARM64')
-		.with('x32', (_) => 'A_32')
-		.with('x64', (_) => 'A_64')
-		.otherwise((_) => null);
-	if (arch === null) {
-		window.showErrorMessage(`Unknown architecture ${process.arch}`);
-		return null;
-	}
+  const metadata = await getReleaseMetadata(context, storagePath, logger);
+  if (metadata === null) {
+    window.showErrorMessage('Could not get release metadata');
+    return null;
+  }
+  const plat = match(process.platform)
+    .with('darwin', (_) => 'Darwin')
+    .with('linux', (_) => 'Linux_UnknownLinux')
+    .with('win32', (_) => 'Windows')
+    .with('freebsd', (_) => 'FreeBSD')
+    .otherwise((_) => null);
+  if (plat === null) {
+    window.showErrorMessage(`Unknown platform ${process.platform}`);
+    return null;
+  }
+  const arch = match(process.arch)
+    .with('arm', (_) => 'A_ARM')
+    .with('arm64', (_) => 'A_ARM64')
+    .with('x32', (_) => 'A_32')
+    .with('x64', (_) => 'A_64')
+    .otherwise((_) => null);
+  if (arch === null) {
+    window.showErrorMessage(`Unknown architecture ${process.arch}`);
+    return null;
+  }
 
-    let cur_hls: string | null = null;
+  let curHls: string | null = null;
 
-    const map: ReleaseMetadata = new Map(Object.entries(metadata));
-    map.forEach((value, key) => {
-        const value_ = new Map(Object.entries(value));
-        const archValues = new Map(Object.entries(value_.get(arch)));
-        const versions: string[] = archValues.get(plat) as string[];
-        if (versions != undefined && versions.some((el, _ix, _arr) => el === targetGhc)) {
-            if (cur_hls == null) {
-                cur_hls = key;
-            } else if (comparePVP(key, cur_hls) > 0) {
-                cur_hls = key;
-            }
-        }
-    });
+  const map: ReleaseMetadata = new Map(Object.entries(metadata));
+  map.forEach((value, key) => {
+          const value_ = new Map(Object.entries(value));
+          const archValues = new Map(Object.entries(value_.get(arch)));
+          const versions: string[] = archValues.get(plat) as string[];
+          if (versions !== undefined && versions.some((el) => el === targetGhc)) {
+              if (curHls === null) {
+                  curHls = key;
+              } else if (comparePVP(key, curHls) > 0) {
+                  curHls = key;
+              }
+          }
+      });
 
-    return cur_hls;
+  return curHls;
 }
 
 async function getReleaseMetadata(
@@ -534,7 +532,7 @@ async function getReleaseMetadata(
       logger.info(`Reading cached release data at ${offlineCache}`);
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
         // export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
-	  const value: ReleaseMetadata = JSON.parse(cachedInfo);
+      const value: ReleaseMetadata = JSON.parse(cachedInfo);
       return value;
     } catch (err: any) {
       // If file doesn't exist, return null, otherwise consider it a failure

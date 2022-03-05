@@ -1,7 +1,6 @@
 // tslint:disable: no-console
 import * as assert from 'assert';
 import * as fs from 'fs';
-// import * as os from 'os';
 import * as path from 'path';
 import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
@@ -146,7 +145,6 @@ suite('Extension Test Suite', () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(await withTimeout(90, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
   });
-
 
   test('HLS executables should be downloaded', async () => {
     await delay(30);
