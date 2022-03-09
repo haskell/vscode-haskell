@@ -577,8 +577,8 @@ async function getReleaseMetadata(
       path: releasesUrl.path,
     }
     : {
-      host: 'gist.githubusercontent.com',
-      path: '/hasufell/dd84df5f81a3a7e6e6fad8f122dba429/raw/73efc1078555d971076d3ccf31154f10ed683a82/hls-metadata.json',
+      host: 'raw.githubusercontent.com',
+      path: '/haskell/ghcup-metadata/master/hls-metadata-0.0.1.json',
     };
 
   const offlineCache = path.join(storagePath, 'ghcupReleases.cache.json');
