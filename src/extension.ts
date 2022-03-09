@@ -22,8 +22,8 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { addPathToProcessPath, downloadGHCup, downloadHaskellLanguageServer, IEnvVars, validateHLSToolchain } from './hlsBinaries';
-import { directoryExists, executableExists, expandHomeDir, ExtensionLogger, resolvePathPlaceHolders } from './utils';
+import { addPathToProcessPath, findHaskellLanguageServer, IEnvVars, validateHLSToolchain } from './hlsBinaries';
+import { expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -96,49 +96,6 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(openOnHackageDisposable);
 }
 
-function findManualExecutable(logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
-  let exePath = workspace.getConfiguration('haskell', uri).serverExecutablePath;
-  if (exePath === '') {
-    return null;
-  }
-  logger.info(`Trying to find the server executable in: ${exePath}`);
-  exePath = resolvePathPlaceHolders(exePath, folder);
-  logger.log(`Location after path variables substitution: ${exePath}`);
-
-  if (!executableExists(exePath)) {
-    let msg = `serverExecutablePath is set to ${exePath}`;
-    if (directoryExists(exePath)) {
-      msg += ' but it is a directory and the config option should point to the executable file full path';
-    } else {
-      msg += " but it doesn't exist and it is not on the PATH";
-    }
-    throw new Error(msg);
-  }
-  return exePath;
-}
-
-/** Searches the PATH for whatever is set in serverVariant
- *
- * return null when **haskell.ignorePATH** set
- */
-function findLocalServer(context: ExtensionContext, logger: Logger, uri: Uri, folder?: WorkspaceFolder): string | null {
-  if (workspace.getConfiguration('haskell').get('ignorePATH') === true) {
-    logger.info('Ignoring haskell-language-server on PATH');
-    return null;
-  }
-  const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
-  logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
-  logger.info(`$PATH environment variable: ${process.env.PATH}`);
-  for (const exe of exes) {
-    if (executableExists(exe)) {
-      logger.info(`Found server executable in $PATH: ${exe}`);
-      return exe;
-    }
-  }
-
-  return null;
-}
-
 async function activeServer(context: ExtensionContext, document: TextDocument) {
   // We are only interested in Haskell files.
   if (
@@ -190,17 +147,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   let serverExecutable;
   let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
   try {
-    // Try and find local installations first
-    serverExecutable = findManualExecutable(logger, uri, folder) ?? findLocalServer(context, logger, uri, folder);
-    if (serverExecutable === null) {
-      // If not, then try to download haskell-language-server binaries if it's selected
-      await downloadGHCup(context, logger);
-      serverExecutable = await downloadHaskellLanguageServer(context, logger, currentWorkingDir);
-      await validateHLSToolchain(serverExecutable, currentWorkingDir, logger);
-      addInternalServerPath = path.dirname(serverExecutable);
-      if (!serverExecutable) {
-        return;
-      }
+    serverExecutable = await findHaskellLanguageServer(context, logger, currentWorkingDir, folder);
+    await validateHLSToolchain(serverExecutable, currentWorkingDir, logger);
+    addInternalServerPath = path.dirname(serverExecutable);
+    if (!serverExecutable) {
+      return;
     }
   } catch (e) {
     if (e instanceof Error) {
