@@ -168,19 +168,26 @@ export async function downloadHaskellLanguageServer(
     const storagePath: string = await getStoragePath(context);
     logger.info(`Using ${storagePath} to store downloaded binaries`);
 
+    const ghcupBinDir = await callGHCup(context, logger, ['whereis', 'bindir'], undefined, false);
+
     if (!fs.existsSync(storagePath)) {
         fs.mkdirSync(storagePath);
     }
 
     const localWrapper = ['haskell-language-server-wrapper'].find(executableExists);
-    const downloadedWrapper = path.join(storagePath, process.platform === 'win32' ? 'ghcup' : '.ghcup', 'bin', `haskell-language-server-wrapper${exeExt}`);
     let wrapper: string | undefined;
     if (localWrapper) {
         // first try PATH
         wrapper = localWrapper;
-    } else if (executableExists(downloadedWrapper)) {
-        // then try internal ghcup
-        wrapper = downloadedWrapper;
+    } else {
+        // then try ghcup
+        const ghcupHlsWrapper = path.join(
+            ghcupBinDir,
+            `haskell-language-server-wrapper${exeExt}`
+        );
+        if (executableExists(ghcupHlsWrapper)) {
+            wrapper = ghcupHlsWrapper;
+        }
     }
 
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
@@ -207,30 +214,36 @@ export async function downloadHaskellLanguageServer(
                 throw new Error('No version of HLS installed or found and installation was denied, giving up...');
             }
         }
-        await callGHCup(
-            context,
-            logger,
-            ['install', 'hls', installableHls],
+        // we use this command to both install a HLS, but also create a nice
+        // isolated symlinked dir with only the given HLS in place, so
+        // this works for installing and setting
+        const symHLSPath = path.join(storagePath, 'hls', installableHls);
+        await callGHCup(context, logger,
+            ['run', '--hls', installableHls, '-b', symHLSPath, '-i'],
             `Installing HLS ${installableHls}`,
-            true,
+            true
         );
-        await callGHCup(context, logger, ['set', 'hls', installableHls], undefined, false);
-        return downloadedWrapper;
+        return path.join(symHLSPath, `haskell-language-server-wrapper${exeExt}`);
     } else {
         // version of active hls wrapper
         const setVersion = await callAsync(wrapper, ['--numeric-version'], storagePath, logger);
 
+        // is the currently set hls wrapper matching the required version?
+        const activeOk = comparePVP(setVersion, installableHls);
+
+        // do we need a downgrade?
         const downgrade: boolean = comparePVP(latestHlsVersion, installableHls) > 0;
 
-        const projectHlsWrapper = path.join(
-            storagePath,
-            process.platform === 'win32' ? 'ghcup' : '.ghcup',
-            'bin',
-            `haskell-language-server-wrapper-${installableHls}${exeExt}`
-        );
-        const needInstall = !executableExists(projectHlsWrapper);
+        if (activeOk !== 0) {
+            // Maybe there is a versioned wrapper from ghcup,
+            // indicating we don't need to install, just set this one as active.
+            // We check for this so that we can potentially have less annoying popups.
+            const projectHlsWrapper = path.join(
+                path.dirname(wrapper),
+                `haskell-language-server-wrapper-${installableHls}${exeExt}`
+            );
+            const needInstall = !executableExists(projectHlsWrapper);
 
-        if (comparePVP(setVersion, installableHls) !== 0) {
             // only update if the user wants to
             if (updateBehaviour === 'never-check') {
                 logger.warn(
@@ -287,10 +300,15 @@ async function callGHCup(
   cancellable?: boolean
 ): Promise<string> {
   const storagePath: string = await getStoragePath(context);
-  const ghcup = path.join(storagePath, `ghcup${exeExt}`);
-  return await callAsync(ghcup, ['--no-verbose'].concat(args), storagePath, logger, title, cancellable, {
-    GHCUP_INSTALL_BASE_PREFIX: storagePath,
-  });
+  const systemGHCup = workspace.getConfiguration('haskell').get('useSystemGHCup') as boolean;
+  if (systemGHCup) {
+      return await callAsync('ghcup', ['--no-verbose'].concat(args), storagePath, logger, title, cancellable);
+  } else {
+      const ghcup = path.join(storagePath, `ghcup${exeExt}`);
+      return await callAsync(ghcup, ['--no-verbose'].concat(args), storagePath, logger, title, cancellable, {
+        GHCUP_INSTALL_BASE_PREFIX: storagePath,
+      });
+  }
 }
 
 async function getLatestSuitableHLS(
@@ -304,7 +322,7 @@ async function getLatestSuitableHLS(
     // get latest hls version
     const hlsVersions = await callGHCup(
         context,
-		logger,
+        logger,
         ['list', '-t', 'hls', '-c', 'available', '-r'],
         undefined,
         false,
@@ -387,9 +405,15 @@ export async function getProjectGHCVersion(
 
 /**
  * Downloads the latest ghcup binary.
- * Returns null if it can't find any for the given architecture/platform.
+ * Returns undefined if it can't find any for the given architecture/platform.
  */
-export async function downloadGHCup(context: ExtensionContext, logger: Logger): Promise<string | null> {
+export async function downloadGHCup(context: ExtensionContext, logger: Logger): Promise<string | undefined> {
+    const systemGHCup = workspace.getConfiguration('haskell').get('useSystemGHCup') as boolean;
+    if (systemGHCup) {
+        const localGHCup = ['ghcup'].find(executableExists);
+        return localGHCup
+    }
+
     logger.info('Checking for ghcup installation');
 
     const storagePath: string = await getStoragePath(context);
@@ -415,7 +439,7 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
             .otherwise((_) => null);
         if (plat === null) {
             window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
-            return null;
+            return undefined;
         }
         const arch = match(process.arch)
             .with('arm', (_) => 'armv7')
@@ -425,7 +449,7 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
             .otherwise((_) => null);
         if (arch === null) {
             window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
-            return null;
+            return undefined;
         }
         const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
         const title = `Downloading ${dlUri}`;

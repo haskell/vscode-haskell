@@ -173,6 +173,12 @@
           "default": false,
           "description": "Whether to ignore haskell-language-server on PATH"
         },
+        "haskell.useSystemGHCup": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to use the system ghcup or an internal one for installing HLS."
+        },
         "haskell.checkProject": {
           "scope": "resource",
           "type": "boolean",
@@ -432,6 +438,7 @@
     "js-yaml": "^3.13.1",
     "lodash-es": "^4.17.15",
     "lru-cache": "^4.1.5",
+    "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "ts-pattern": "^3.3.5",
     "vscode-languageclient": "^7.0.0",
