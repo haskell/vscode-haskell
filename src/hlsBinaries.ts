@@ -183,7 +183,6 @@ export async function downloadHaskellLanguageServer(
         wrapper = downloadedWrapper;
     }
 
-    const ghcup = path.join(storagePath, `ghcup${exeExt}`);
     const updateBehaviour = workspace.getConfiguration('haskell').get('updateBehavior') as UpdateBehaviour;
     const [installableHls, latestHlsVersion, projectGhc] = await getLatestSuitableHLS(
         context,
@@ -208,18 +207,14 @@ export async function downloadHaskellLanguageServer(
                 throw new Error('No version of HLS installed or found and installation was denied, giving up...');
             }
         }
-        await callAsync(
-            ghcup,
-            ['--no-verbose', 'install', 'hls', installableHls],
-            storagePath,
+        await callGHCup(
+            context,
             logger,
+            ['install', 'hls', installableHls],
             `Installing HLS ${installableHls}`,
             true,
-            { GHCUP_INSTALL_BASE_PREFIX: storagePath }
         );
-        await callAsync(ghcup, ['--no-verbose', 'set', 'hls', installableHls], storagePath, logger, undefined, false, {
-            GHCUP_INSTALL_BASE_PREFIX: storagePath,
-        });
+        await callGHCup(context, logger, ['set', 'hls', installableHls], undefined, false);
         return downloadedWrapper;
     } else {
         // version of active hls wrapper
@@ -273,19 +268,29 @@ export async function downloadHaskellLanguageServer(
             // isolated symlinked dir with only the given HLS in place, so
             // this works for installing and setting
             const symHLSPath = path.join(storagePath, 'hls', installableHls);
-            await callAsync(
-                ghcup,
-                ['--no-verbose', 'run', '--hls', installableHls, '-b', symHLSPath, '-i'],
-                storagePath,
-                logger,
+            await callGHCup(context, logger,
+                ['run', '--hls', installableHls, '-b', symHLSPath, '-i'],
                 needInstall ? `Installing HLS ${installableHls}` : undefined,
-                needInstall,
-                { GHCUP_INSTALL_BASE_PREFIX: storagePath }
+                needInstall
             );
             return path.join(symHLSPath, `haskell-language-server-wrapper${exeExt}`);
         }
         return wrapper;
     }
+}
+
+async function callGHCup(
+  context: ExtensionContext,
+  logger: Logger,
+  args: string[],
+  title?: string,
+  cancellable?: boolean
+): Promise<string> {
+  const storagePath: string = await getStoragePath(context);
+  const ghcup = path.join(storagePath, `ghcup${exeExt}`);
+  return await callAsync(ghcup, ['--no-verbose'].concat(args), storagePath, logger, title, cancellable, {
+    GHCUP_INSTALL_BASE_PREFIX: storagePath,
+  });
 }
 
 async function getLatestSuitableHLS(
@@ -295,17 +300,14 @@ async function getLatestSuitableHLS(
     wrapper?: string
 ): Promise<[string, string, string | null]> {
     const storagePath: string = await getStoragePath(context);
-    const ghcup = path.join(storagePath, `ghcup${exeExt}`);
 
     // get latest hls version
-    const hlsVersions = await callAsync(
-        ghcup,
-        ['--no-verbose', 'list', '-t', 'hls', '-c', 'available', '-r'],
-        storagePath,
-        logger,
+    const hlsVersions = await callGHCup(
+        context,
+		logger,
+        ['list', '-t', 'hls', '-c', 'available', '-r'],
         undefined,
         false,
-        { GHCUP_INSTALL_BASE_PREFIX: storagePath }
     );
     const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
 
@@ -401,8 +403,8 @@ export async function downloadGHCup(context: ExtensionContext, logger: Logger): 
     // ghcup exists, just upgrade
     if (fs.existsSync(ghcup)) {
         logger.info('ghcup already installed, trying to upgrade');
-        const args = ['--no-verbose', 'upgrade', '-i'];
-        await callAsync(ghcup, args, storagePath, logger, undefined, false, { GHCUP_INSTALL_BASE_PREFIX: storagePath });
+        const args = ['upgrade', '-i'];
+        await callGHCup(context, logger, args, undefined, false);
     } else {
         // needs to download ghcup
         const plat = match(process.platform)
