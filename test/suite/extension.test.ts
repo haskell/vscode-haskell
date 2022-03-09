@@ -124,7 +124,6 @@ suite('Extension Test Suite', () => {
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
 
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
-    // const exeExt = os.platform.toString() === 'win32' ? '.exe' : '';
     // Setting up watchers before actual tests start, to ensure we will got the created event
     filesCreated.set('wrapper', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-wrapper*`, pred));
     filesCreated.set('server', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-[1-9]*`, pred));
@@ -147,7 +146,6 @@ suite('Extension Test Suite', () => {
   });
 
   test('HLS executables should be downloaded', async () => {
-    await delay(30);
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     console.log('Testing wrapper');
     assert.ok(
@@ -178,8 +176,6 @@ suite('Extension Test Suite', () => {
   });
 
   suiteTeardown(async () => {
-    const binDir = await vscode.workspace.fs.readDirectory(joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'bin'));
-    console.log(`bin dir before deleting: ${binDir}`);
     console.log('Disposing all resources');
     disposables.forEach((d) => d.dispose());
     console.log('Stopping the lsp server');
