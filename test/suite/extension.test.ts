@@ -161,7 +161,7 @@ suite('Extension Test Suite', () => {
 
   test('Extension log should have server output', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    await delay(90);
+    await delay(20);
     const logContents = getExtensionLogContent();
     assert.ok(logContents, 'Extension log file does not exist');
     assert.match(logContents, /INFO hls:\s+Registering ide configuration/, 'Extension log file has no hls output');
