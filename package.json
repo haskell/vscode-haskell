@@ -160,7 +160,7 @@
         "haskell.useSystemGHCup": {
           "scope": "resource",
           "type": "boolean",
-          "default": false,
+          "default": null,
           "description": "Whether to use the system ghcup or an internal one for installing HLS."
         },
         "haskell.checkProject": {
