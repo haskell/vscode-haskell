@@ -83,12 +83,11 @@ If you find yourself running out of disk space, you can try deleting old version
 | Platform | Path                                                                            |
 | -------- | ------------------------------------------------------------------------------- |
 | macOS    | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/.ghcup` |
-| Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell/ghcup`                       |
+| Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell\ghcup`                       |
 | Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell/.ghcup`                  |
 
-Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH or you have set the
-`haskell.serverExecutablePath` option, then the extension will try to launch it directly, and only fall back to
-downloading other binaries if these are unsuitable and `haskell.manageHLS` is set to `true`.
+If you want to manage HLS yourself, set `haskell.manageHLS` to `false` and make sure HLS is in your PATH
+or set `haskell.serverExecutablePath` to a valid executable.
 
 You can also tell HLS to use your system provided ghcup by setting `haskell.useSystemGHCup` to `true` (default is `false`).
 
