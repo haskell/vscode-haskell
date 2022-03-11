@@ -279,12 +279,14 @@ async function callGHCup(
   ) => void
 ): Promise<string> {
 
+  const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
+
   const storagePath: string = await getStoragePath(context);
   const ghcup = (systemGHCup === true) ? `ghcup${exeExt}` : path.join(storagePath, `ghcup${exeExt}`);
   if (systemGHCup) {
-      return await callAsync('ghcup', ['--no-verbose'].concat(args), storagePath, logger, title, cancellable, undefined, callback);
+      return await callAsync('ghcup', ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args), storagePath, logger, title, cancellable, undefined, callback);
   } else {
-      return await callAsync(ghcup, ['--no-verbose'].concat(args), storagePath, logger, title, cancellable, {
+      return await callAsync(ghcup, ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args), storagePath, logger, title, cancellable, {
         GHCUP_INSTALL_BASE_PREFIX: storagePath,
       }, callback);
   }

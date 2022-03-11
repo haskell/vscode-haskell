@@ -125,7 +125,13 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "An optional URL to override where to check for haskell-language-server releases"
+          "description": "An optional URL to override where ghcup checks for HLS-GHC compatibilty list (usually at: https://raw.githubusercontent.com/haskell/ghcup-metadata/master/hls-metadata-0.0.1.json)"
+        },
+        "haskell.metadataURL": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "description": "An optional URL to override where ghcup checks for tool download info (usually at: https://raw.githubusercontent.com/haskell/ghcup-metadata/master/ghcup-0.0.7.yaml)"
         },
         "haskell.releasesDownloadStoragePath": {
           "scope": "resource",

@@ -91,6 +91,8 @@ or set `haskell.serverExecutablePath` to a valid executable.
 
 You can also tell HLS to use your system provided ghcup by setting `haskell.useSystemGHCup` to `true` (default is `false`).
 
+If you need to set mirrors for ghcup download info, check the settings `haskell.metadataURL` and `haskell.releasesURL`.
+
 ### Supported GHC versions
 
 These are the versions of GHC that there are binaries of `haskell-language-server-1.6.1` for. Building from source may support more versions!
