@@ -22,7 +22,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { addPathToProcessPath, findHaskellLanguageServer, IEnvVars, validateHLSToolchain } from './hlsBinaries';
+import { addPathToProcessPath, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
 import { expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
@@ -147,9 +147,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   let serverExecutable;
   let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
   try {
-    const [serverExecutable_, projectGhc] = await findHaskellLanguageServer(context, logger, currentWorkingDir, folder);
-	serverExecutable = serverExecutable_;
-    await validateHLSToolchain(serverExecutable, projectGhc, currentWorkingDir, logger);
+    serverExecutable = await findHaskellLanguageServer(context, logger, currentWorkingDir, folder);
     addInternalServerPath = path.dirname(serverExecutable);
     if (!serverExecutable) {
       return;
