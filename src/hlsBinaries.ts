@@ -6,7 +6,7 @@ import * as path from 'path';
 import { match } from 'ts-pattern';
 import * as url from 'url';
 import { promisify } from 'util';
-import { ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder, ConfigurationTarget } from 'vscode';
+import { ConfigurationTarget, ExtensionContext, ProgressLocation, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import { downloadFile, executableExists, httpsGetSilently,  resolvePathPlaceHolders } from './utils';
 
@@ -223,7 +223,7 @@ export async function findHaskellLanguageServer(
             ['whereis', 'hls'],
             undefined,
             false,
-            (err, stdout, _stderr, resolve, _reject) => { err ? resolve('') : resolve(stdout?.trim()) }
+            (err, stdout, _stderr, resolve, _reject) => { err ? resolve('') : resolve(stdout?.trim()); }
         );
         if (wrapper === '') {
             // install recommended HLS... even if this doesn't support the project GHC, because
@@ -324,7 +324,6 @@ async function getLatestSuitableHLS(
     return installableHls;
 }
 
-
 /**
  * Obtain the project ghc version from the HLS - Wrapper.
  * Also, serves as a sanity check.
@@ -399,7 +398,6 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
         logger.info(`found system ghcup at ${localGHCup}`);
         return localGHCup;
     }
-
 
     const storagePath: string = await getStoragePath(context);
     logger.info(`Using ${storagePath} to store downloaded binaries`);
