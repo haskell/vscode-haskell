@@ -73,7 +73,6 @@ class MissingToolError extends Error {
  * @param callback Upon process termination, execute this callback. If given, must resolve promise.
  * @returns Stdout of the process invocation, trimmed off newlines, or whatever the `callback` resolved to.
  */
-
 async function callAsync(
     binary: string,
     args: string[],
@@ -177,14 +176,16 @@ function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?: Works
 }
 
 /**
- * Downloads the latest haskell-language-server binaries via ghcup.
+ * Downloads the latest haskell-language-server binaries via GHCup.
+ * Makes sure that either `ghcup` is available locally, otherwise installs
+ * it into an isolated location.
  * If we figure out the correct GHC version, but it isn't compatible with
  * the latest HLS executables, we download the latest compatible HLS binaries
  * as a fallback.
  *
  * @param context Context of the extension, required for metadata.
  * @param logger Logger for progress updates.
- * @param workingDir Directory in which the process shall be executed.
+ * @param workingDir Working directory in VSCode.
  * @returns Path to haskell-language-server-wrapper
  */
 export async function findHaskellLanguageServer(
@@ -308,9 +309,17 @@ async function getLatestSuitableHLS(
         undefined,
         false,
     );
+    // Output looks like:
+    // ```
+    // hls 1.5.1
+    // hls 1.6.0.0
+    // hls 1.6.1.0 latest,recommended
+    // hls 1.6.1.1                    stray
+    // ```
+    // and we want the `1.6.1.1`
     const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
 
-    // get project GHC version
+    // get project GHC version, but fallback to system ghc if necessary.
     const projectGhc =
         wrapper === undefined
             ? await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false)
@@ -350,6 +359,7 @@ export async function getProjectGHCVersion(
                 if (stdout) {
                     logger.error(`stdout: ${stdout}`);
                 }
+                // Error message emitted by HLS-wrapper
                 const regex = /Cradle requires (.+) but couldn't find it/;
                 const res = regex.exec(stderr);
                 if (res) {
