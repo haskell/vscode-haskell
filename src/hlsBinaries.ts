@@ -301,24 +301,6 @@ async function getLatestSuitableHLS(
 ): Promise<string> {
     const storagePath: string = await getStoragePath(context);
 
-    // get latest hls version
-    const hlsVersions = await callGHCup(
-        context,
-        logger,
-        ['list', '-t', 'hls', '-c', 'available', '-r'],
-        undefined,
-        false,
-    );
-    // Output looks like:
-    // ```
-    // hls 1.5.1
-    // hls 1.6.0.0
-    // hls 1.6.1.0 latest,recommended
-    // hls 1.6.1.1                    stray
-    // ```
-    // and we want the `1.6.1.1`
-    const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
-
     // get project GHC version, but fallback to system ghc if necessary.
     const projectGhc =
         wrapper === undefined
@@ -328,9 +310,13 @@ async function getLatestSuitableHLS(
     // get installable HLS that supports the project GHC version (this might not be the most recent)
     const latestMetadataHls =
         projectGhc !== null ? await getLatestHLSforGHC(context, storagePath, projectGhc, logger) : null;
-    const installableHls = latestMetadataHls !== null ? latestMetadataHls : latestHlsVersion;
-
-    return installableHls;
+    if (latestMetadataHls === null) {
+        const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
+        window.showErrorMessage(noMatchingHLS);
+        throw new Error(noMatchingHLS);
+    } else {
+        return latestMetadataHls;
+    }
 }
 
 /**
