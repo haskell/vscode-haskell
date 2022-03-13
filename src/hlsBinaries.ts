@@ -205,11 +205,13 @@ export async function findHaskellLanguageServer(
     workingDir: string,
     folder?: WorkspaceFolder
 ): Promise<string> {
-
     logger.info('Finding haskell-language-server');
 
+    if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string !== '') {
+      return findServerExecutable(context, logger, folder);
+    }
+
     const storagePath: string = await getStoragePath(context);
-    logger.info(`Using ${storagePath} to store downloaded binaries`);
 
     if (!fs.existsSync(storagePath)) {
         fs.mkdirSync(storagePath);
@@ -233,11 +235,7 @@ export async function findHaskellLanguageServer(
     }
 
     if (manageHLS === 'PATH' || manageHLS === null) {
-        if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string !== '') {
-          return findServerExecutable(context, logger, folder);
-        } else {
-          return findHLSinPATH(context, logger, folder);
-        }
+      return findHLSinPATH(context, logger, folder);
     } else {
         // we manage HLS, make sure ghcup is installed/available
         await getGHCup(context, logger);

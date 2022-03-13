@@ -90,7 +90,7 @@ and possible delete them:
 | Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell/.ghcup`                  |
 
 If you want to manage HLS yourself, set `haskell.manageHLS` to `PATH` and make sure HLS is in your PATH
-or set `haskell.serverExecutablePath` to a valid executable.
+or set `haskell.serverExecutablePath` (overrides all other settings) to a valid executable.
 
 If you need to set mirrors for ghcup download info, check the settings `haskell.metadataURL` and `haskell.releasesURL`.
 
