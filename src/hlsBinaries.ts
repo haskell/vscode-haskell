@@ -243,7 +243,7 @@ export async function findHaskellLanguageServer(
         }
         // now figure out the project GHC version and the latest supported HLS version
         // we need for it (e.g. this might in fact be a downgrade for old GHCs)
-        const installableHls = await getLatestSuitableHLS(
+        const installableHls = await getLatestHLS(
             context,
             logger,
             workingDir,
@@ -293,7 +293,7 @@ async function callGHCup(
   }
 }
 
-async function getLatestSuitableHLS(
+async function getLatestHLS(
     context: ExtensionContext,
     logger: Logger,
     workingDir: string,
@@ -308,14 +308,29 @@ async function getLatestSuitableHLS(
             : await getProjectGHCVersion(wrapper, workingDir, logger);
 
     // get installable HLS that supports the project GHC version (this might not be the most recent)
-    const latestMetadataHls =
-        projectGhc !== null ? await getLatestHLSforGHC(context, storagePath, projectGhc, logger) : null;
-    if (latestMetadataHls === null) {
-        const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
-        window.showErrorMessage(noMatchingHLS);
-        throw new Error(noMatchingHLS);
-    } else {
+    const latestMetadataHls = await getLatestHLSfromMetadata(context, storagePath, projectGhc, logger);
+    const latestGhcupHls = await getLatestHLSfromGHCup(context, storagePath, projectGhc, logger);
+
+    if (latestMetadataHls !== null && latestGhcupHls !== null) {
+      // both returned a result, compare versions
+      if (comparePVP(latestMetadataHls, latestGhcupHls) >= 0) {
+        logger.info("Picking HLS according to metadata");
         return latestMetadataHls;
+      } else {
+        logger.info("Picking a probably self compiled HLS via ghcup");
+        return latestGhcupHls;
+      }
+      
+    } else if (latestMetadataHls === null && latestGhcupHls !== null) {
+      logger.info("Picking a probably self compiled HLS via ghcup");
+      return latestGhcupHls;
+    } else if (latestMetadataHls !== null && latestGhcupHls === null) {
+      logger.info("Picking HLS according to metadata");
+      return latestMetadataHls;
+    } else {
+      const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
+      window.showErrorMessage(noMatchingHLS);
+      throw new Error(noMatchingHLS);
     }
 }
 
@@ -499,6 +514,37 @@ export function addPathToProcessPath(extraPath: string): string {
     return PATH.join(pathSep);
 }
 
+// complements getLatestHLSfromMetadata, by checking possibly locally compiled
+// HLS in ghcup
+async function getLatestHLSfromGHCup(
+  context: ExtensionContext,
+  storagePath: string,
+  targetGhc: string,
+  logger: Logger
+): Promise<string | null> {
+  const hlsVersions = await callGHCup(
+      context,
+      logger,
+      ['list', '-t', 'hls', '-c', 'installed', '-r'],
+      undefined,
+      false,
+  );
+  const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
+  logger.info(`LATEST GHCUP HLS: ${latestHlsVersion}`);
+  let bindir = await callGHCup(context, logger,
+      ['whereis', 'bindir'],
+      undefined,
+      false
+  );
+
+  const hlsBin = path.join(bindir, `haskell-language-server-${targetGhc}~${latestHlsVersion}`);
+  if (fs.existsSync(hlsBin)) {
+    return latestHlsVersion;
+  } else {
+    return null;
+  }
+}
+
 /**
  * Given a GHC version, download at least one HLS version that can be used.
  * This also honours the OS architecture we are on.
@@ -509,7 +555,7 @@ export function addPathToProcessPath(extraPath: string): string {
  * @param logger Logger for feedback
  * @returns
  */
-async function getLatestHLSforGHC(
+async function getLatestHLSfromMetadata(
   context: ExtensionContext,
   storagePath: string,
   targetGhc: string,
