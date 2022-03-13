@@ -11,11 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-11, ubuntu-latest, windows-latest]
-        ghc: [9.0.1]
-        include:
-          # To test a ghc version deprecated in newer hls versions
-          - os: ubuntu-latest
-            ghc: 8.10.4
+        ghc: [9.0.1, 8.10.4]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -41,7 +37,7 @@ jobs:
         if: runner.os == 'Windows'
       # Pre-fetch HLS binaries before the tests because otherwise
       # we run into timeouts. Downloading takes longer, since we download
-      # per HLS version one HLS binary per GHC version. 
+      # per HLS version one HLS binary per GHC version.
       - run: |
           mkdir -p test-workspace/bin/
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
