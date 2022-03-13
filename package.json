@@ -426,7 +426,7 @@
     "cheerio": "^1.0.0-rc.10",
     "extend": ">=3.0.2",
     "js-yaml": "^3.13.1",
-    "lodash-es": "^4.17.15",
+    "lodash-es": "^4.17.21",
     "lru-cache": "^4.1.5",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
