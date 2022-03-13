@@ -147,20 +147,25 @@ async function callAsync(
     );
 }
 
-/** Searches the PATH for whatever is set in 'serverExecutablePath'.
+/** Gets serverExecutablePath and fails if it's not set.
  */
-function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): string | null {
-  // try 'serverExecutablePath' setting
+function findServerExecutable(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): string {
   let exePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
-  if (exePath !== '') {
-    logger.info(`Trying to find the server executable in: ${exePath}`);
-    exePath = resolvePathPlaceHolders(exePath, folder);
-    logger.log(`Location after path variables substitution: ${exePath}`);
-    if (executableExists(exePath)) {
-        return exePath;
-    }
+  logger.info(`Trying to find the server executable in: ${exePath}`);
+  exePath = resolvePathPlaceHolders(exePath, folder);
+  logger.log(`Location after path variables substitution: ${exePath}`);
+  if (executableExists(exePath)) {
+      return exePath;
+  } else {
+    const msg = `Could not find a HLS binary at ${exePath}! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.`;
+    window.showErrorMessage(msg);
+    throw new Error(msg);
   }
+}
 
+/** Searches the PATH. Fails if nothing is found.
+ */
+function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): string {
   // try PATH
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
   logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
@@ -171,8 +176,9 @@ function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?: Works
       return exe;
     }
   }
-
-  return null;
+  const msg = 'Could not find a HLS binary in PATH! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.';
+  window.showErrorMessage(msg);
+  throw new Error(msg);
 }
 
 /**
@@ -209,13 +215,10 @@ export async function findHaskellLanguageServer(
     const manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as boolean;
 
     if (!manageHLS) {
-        const wrapper = findHLSinPATH(context, logger, folder);
-        if (!wrapper) {
-            const msg = 'Could not find a HLS binary! Consider installing HLS via ghcup or set "haskell.manageHLS" to true';
-            window.showErrorMessage(msg);
-            throw new Error(msg);
+        if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string !== '') {
+          return findServerExecutable(context, logger, folder);
         } else {
-            return wrapper;
+          return findHLSinPATH(context, logger, folder);
         }
     } else {
         // permissively check if we have HLS installed
