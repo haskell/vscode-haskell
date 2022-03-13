@@ -71,7 +71,8 @@ The environment _only will be visible for the lsp server_, not for other extensi
 
 ### Downloaded binaries
 
-This extension will download `haskell-language-server` binaries to a specific location depending on your system.
+This extension will download `haskell-language-server` binaries via an (internal) ghcup to a specific location depending
+on your system, unless you set the config option `haskell.manageHLS` to `false` (the default is `true`).
 
 It will download the newest version of haskell-language-server which has support for the required ghc.
 That means it could use an older version than the latest one, without the last features and bug fixes.
@@ -79,13 +80,18 @@ For example, if a project needs ghc-8.10.4 the extension will download and use h
 
 If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
 
-| Platform | Path                                                                      |
-| -------- | ------------------------------------------------------------------------- |
-| macOS    | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/` |
-| Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell`                       |
-| Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell`                   |
+| Platform | Path                                                                            |
+| -------- | ------------------------------------------------------------------------------- |
+| macOS    | `~/Library/Application\ Support/Code/User/globalStorage/haskell.haskell/.ghcup` |
+| Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell\ghcup`                       |
+| Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell/.ghcup`                  |
 
-Note that if `haskell-language-server-wrapper`/`haskell-language-server` is already on the PATH or you have set the `haskell.serverExecutablePath` option, then the extension will launch it directly instead of downloading binaries, even if the version of the former is older then the latter.
+If you want to manage HLS yourself, set `haskell.manageHLS` to `false` and make sure HLS is in your PATH
+or set `haskell.serverExecutablePath` to a valid executable.
+
+You can also tell HLS to use your system provided ghcup by setting `haskell.useSystemGHCup` to `true` (default is `false`).
+
+If you need to set mirrors for ghcup download info, check the settings `haskell.metadataURL` and `haskell.releasesURL`.
 
 ### Supported GHC versions
 
