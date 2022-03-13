@@ -131,7 +131,7 @@ suite('Extension Test Suite', () => {
       , joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache')
       ]
     );
-    await getHaskellConfig().update('useSystemGHCup', false);
+    await getHaskellConfig().update('manageHLS', 'internal-ghcup');
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));

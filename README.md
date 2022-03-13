@@ -71,14 +71,17 @@ The environment _only will be visible for the lsp server_, not for other extensi
 
 ### Downloaded binaries
 
-This extension will download `haskell-language-server` binaries via an (internal) ghcup to a specific location depending
-on your system, unless you set the config option `haskell.manageHLS` to `false` (the default is `true`).
+This extension will download `haskell-language-server` binaries either via an internal ghcup (it will download it automaticlaly)
+or via a system ghcup (which must be present), unless you set the config option `haskell.manageHLS` to `PATH` (the extension
+will ask you on first start).
 
-It will download the newest version of haskell-language-server which has support for the required ghc.
+It will then download the newest version of haskell-language-server which has support for the required ghc.
 That means it could use an older version than the latest one, without the last features and bug fixes.
 For example, if a project needs ghc-8.10.4 the extension will download and use haskell-language-server-1.4.0, the lastest version which supported ghc-8.10.4. Even if the lastest global haskell language-server version is 1.5.1.
 
-If you find yourself running out of disk space, you can try deleting old versions of language servers in this directory. The extension will redownload them, no strings attached.
+If you have disk space issues and use system ghcup, check `ghcup gc --help`.
+If you have disk space issues and use the internal ghcup, check the following directories, depending on your platform
+and possible delete them:
 
 | Platform | Path                                                                            |
 | -------- | ------------------------------------------------------------------------------- |
@@ -86,10 +89,8 @@ If you find yourself running out of disk space, you can try deleting old version
 | Windows  | `%APPDATA%\Code\User\globalStorage\haskell.haskell\ghcup`                       |
 | Linux    | `$HOME/.config/Code/User/globalStorage/haskell.haskell/.ghcup`                  |
 
-If you want to manage HLS yourself, set `haskell.manageHLS` to `false` and make sure HLS is in your PATH
+If you want to manage HLS yourself, set `haskell.manageHLS` to `PATH` and make sure HLS is in your PATH
 or set `haskell.serverExecutablePath` to a valid executable.
-
-You can also tell HLS to use your system provided ghcup by setting `haskell.useSystemGHCup` to `true` (default is `false`).
 
 If you need to set mirrors for ghcup download info, check the settings `haskell.metadataURL` and `haskell.releasesURL`.
 

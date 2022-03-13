@@ -17,12 +17,13 @@ export interface IEnvVars {
   [key: string]: string;
 }
 
-let systemGHCup = workspace.getConfiguration('haskell').get('useSystemGHCup') as boolean | null;
+type ManageHLS = 'system-ghcup' | 'internal-ghcup' | 'PATH';
+let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS | null;
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
 
-class MissingToolError extends Error {
+export class MissingToolError extends Error {
   public readonly tool: string;
   constructor(tool: string) {
     let prettyTool: string;
@@ -36,6 +37,9 @@ class MissingToolError extends Error {
       case 'ghc':
         prettyTool = 'GHC';
         break;
+      case 'ghcup':
+        prettyTool = 'GHCup';
+        break;
       default:
         prettyTool = tool;
         break;
@@ -48,6 +52,7 @@ class MissingToolError extends Error {
     switch (this.tool) {
       case 'Stack':
         return Uri.parse('https://docs.haskellstack.org/en/stable/install_and_upgrade/');
+      case 'GHCup':
       case 'Cabal':
       case 'GHC':
         return Uri.parse('https://www.haskell.org/ghcup/');
@@ -200,8 +205,6 @@ export async function findHaskellLanguageServer(
     workingDir: string,
     folder?: WorkspaceFolder
 ): Promise<string> {
-    // we manage HLS, make sure ghcup is installed/available
-    await getGHCup(context, logger);
 
     logger.info('Finding haskell-language-server');
 
@@ -212,38 +215,51 @@ export async function findHaskellLanguageServer(
         fs.mkdirSync(storagePath);
     }
 
-    const manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as boolean;
+    if (manageHLS === null) { // plugin needs initialization
+      const promptMessage =
+          'How do you want the extension to manage/discover HLS?';
 
-    if (!manageHLS) {
+      const decision = await window.showInformationMessage(promptMessage, 'system ghcup (recommended)', 'internal ghcup', 'PATH') || null;
+      if (decision === 'system ghcup (recommended)') {
+        manageHLS = 'system-ghcup';
+      } else if (decision === 'internal ghcup') {
+        manageHLS = 'internal-ghcup';
+      } else if (decision === 'PATH') {
+        manageHLS = 'PATH';
+      }
+      if (manageHLS !== null) {
+        workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
+      }
+    }
+
+    if (manageHLS === 'PATH' || manageHLS === null) {
         if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string !== '') {
           return findServerExecutable(context, logger, folder);
         } else {
           return findHLSinPATH(context, logger, folder);
         }
     } else {
-        // permissively check if we have HLS installed
-        // this is just to avoid a popup
-        let wrapper = await callGHCup(context, logger,
-            ['whereis', 'hls'],
-            undefined,
-            false,
-            (err, stdout, _stderr, resolve, _reject) => { err ? resolve('') : resolve(stdout?.trim()); }
-        );
-        if (wrapper === '') {
-            // install recommended HLS... even if this doesn't support the project GHC, because
-            // we need a HLS to find the correct project GHC in the first place
-            await callGHCup(context, logger,
+        // we manage HLS, make sure ghcup is installed/available
+        await getGHCup(context, logger);
+
+        // get a preliminary hls wrapper for finding project GHC version,
+        // later we may install a different HLS that supports the given GHC
+        let wrapper = await getLatestHLSfromGHCup(context, storagePath, logger).then(e =>
+          (e === null)
+          ?  callGHCup(context, logger,
                 ['install', 'hls'],
                 'Installing latest HLS',
                 true
-            );
-            // get path to just installed HLS
-            wrapper = await callGHCup(context, logger,
-                ['whereis', 'hls'],
-                undefined,
-                false
-            );
-        }
+             ).then(() =>
+               callGHCup(context, logger,
+                   ['whereis', 'hls'],
+                   undefined,
+                   false,
+                   (err, stdout, _stderr, resolve, _reject) => { err ? resolve('') : resolve(stdout?.trim()); })
+            )
+          : e[1]
+        );
+
         // now figure out the project GHC version and the latest supported HLS version
         // we need for it (e.g. this might in fact be a downgrade for old GHCs)
         const installableHls = await getLatestHLS(
@@ -286,13 +302,17 @@ async function callGHCup(
   const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
 
   const storagePath: string = await getStoragePath(context);
-  const ghcup = (systemGHCup === true) ? `ghcup${exeExt}` : path.join(storagePath, `ghcup${exeExt}`);
-  if (systemGHCup) {
+  const ghcup = (manageHLS === 'system-ghcup') ? `ghcup${exeExt}` : path.join(storagePath, `ghcup${exeExt}`);
+  if (manageHLS === 'system-ghcup') {
       return await callAsync('ghcup', ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args), storagePath, logger, title, cancellable, undefined, callback);
-  } else {
+  } else if (manageHLS === 'internal-ghcup') {
       return await callAsync(ghcup, ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args), storagePath, logger, title, cancellable, {
         GHCUP_INSTALL_BASE_PREFIX: storagePath,
       }, callback);
+  } else {
+    const msg = `Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`;
+    window.showErrorMessage(msg);
+    throw new Error(msg);
   }
 }
 
@@ -312,7 +332,7 @@ async function getLatestHLS(
 
     // get installable HLS that supports the project GHC version (this might not be the most recent)
     const latestMetadataHls = await getLatestHLSfromMetadata(context, storagePath, projectGhc, logger);
-    const latestGhcupHls = await getLatestHLSfromGHCup(context, storagePath, projectGhc, logger);
+    const latestGhcupHls = await getLatestHLSfromGHCup(context, storagePath, logger, projectGhc).then(e => e === null ? null : e[0]);
 
     if (latestMetadataHls !== null && latestGhcupHls !== null) {
       // both returned a result, compare versions
@@ -364,10 +384,15 @@ export async function getProjectGHCVersion(
                     logger.error(`stdout: ${stdout}`);
                 }
                 // Error message emitted by HLS-wrapper
-                const regex = /Cradle requires (.+) but couldn't find it/;
+                const regex = /Cradle requires (.+) but couldn't find it|The program \'(.+)\' version .* is required but the version of.*could.*not be determined|Cannot find the program \'(.+)\'\. User-specified/;
                 const res = regex.exec(stderr);
                 if (res) {
-                    reject(new MissingToolError(res[1]));
+                  for(let i = 1; i < res.length; i++){
+                      if (res[i]) {
+                        reject(new MissingToolError(res[i]));
+                      }
+                  }
+                  reject(new MissingToolError('unknown'));
                 }
                 reject(
                     Error(`${wrapper} --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`)
@@ -388,75 +413,64 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
     logger.info('Checking for ghcup installation');
     const localGHCup = ['ghcup'].find(executableExists);
 
-    if (systemGHCup === null) {
-        if (localGHCup !== undefined) {
-            const promptMessage =
-                'Detected system ghcup. Do you want VSCode to use it instead of an internal ghcup?';
-
-            systemGHCup = await window.showInformationMessage(promptMessage, 'Yes', 'No').then(b => b === 'Yes');
-            logger.info(`set useSystemGHCup to ${systemGHCup}`);
-
-        } else { // no local ghcup, disable
-            systemGHCup = false;
-        }
-    }
-    // set config globally
-    workspace.getConfiguration('haskell').update('useSystemGHCup', systemGHCup, ConfigurationTarget.Global);
-
-    if (systemGHCup === true) {
+    if (manageHLS === 'system-ghcup') {
         if (localGHCup === undefined) {
-            const msg = 'Could not find a system ghcup installation, please follow instructions at https://www.haskell.org/ghcup/';
-            window.showErrorMessage(msg);
-            throw new Error(msg);
+          return Promise.reject(new MissingToolError('ghcup'));
+        } else {
+          logger.info(`found system ghcup at ${localGHCup}`);
+          const args = ['upgrade'];
+          await callGHCup(context, logger, args, 'Upgrading ghcup', true);
+          return localGHCup;
         }
-        logger.info(`found system ghcup at ${localGHCup}`);
-        return localGHCup;
-    }
+    } else if (manageHLS === 'internal-ghcup') {
+      const storagePath: string = await getStoragePath(context);
+      let ghcup = path.join(storagePath, `ghcup${exeExt}`);
+      if (!fs.existsSync(storagePath)) {
+          fs.mkdirSync(storagePath);
+      }
 
-    const storagePath: string = await getStoragePath(context);
-    logger.info(`Using ${storagePath} to store downloaded binaries`);
+      // ghcup exists, just upgrade
+      if (fs.existsSync(ghcup)) {
+          logger.info('ghcup already installed, trying to upgrade');
+          const args = ['upgrade', '-i'];
+          await callGHCup(context, logger, args, 'Upgrading ghcup', true);
+      } else {
+          // needs to download ghcup
+          const plat = match(process.platform)
+              .with('darwin', (_) => 'apple-darwin')
+              .with('linux', (_) => 'linux')
+              .with('win32', (_) => 'mingw64')
+              .with('freebsd', (_) => 'freebsd12')
+              .otherwise((_) => null);
+          if (plat === null) {
+              window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
+              return undefined;
+          }
+          const arch = match(process.arch)
+              .with('arm', (_) => 'armv7')
+              .with('arm64', (_) => 'aarch64')
+              .with('x32', (_) => 'i386')
+              .with('x64', (_) => 'x86_64')
+              .otherwise((_) => null);
+          if (arch === null) {
+              window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
+              return undefined;
+          }
+          const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
+          const title = `Downloading ${dlUri}`;
+          logger.info(`Downloading ${dlUri}`);
+          const downloaded = await downloadFile(title, dlUri, ghcup);
+          if (!downloaded) {
+              window.showErrorMessage(`Couldn't download ${dlUri} as ${ghcup}`);
+          }
+      }
+      return ghcup;
 
-    if (!fs.existsSync(storagePath)) {
-        fs.mkdirSync(storagePath);
-    }
-
-    const ghcup = path.join(storagePath, `ghcup${exeExt}`);
-    // ghcup exists, just upgrade
-    if (fs.existsSync(ghcup)) {
-        logger.info('ghcup already installed, trying to upgrade');
-        const args = ['upgrade', '-i'];
-        await callGHCup(context, logger, args, undefined, false);
     } else {
-        // needs to download ghcup
-        const plat = match(process.platform)
-            .with('darwin', (_) => 'apple-darwin')
-            .with('linux', (_) => 'linux')
-            .with('win32', (_) => 'mingw64')
-            .with('freebsd', (_) => 'freebsd12')
-            .otherwise((_) => null);
-        if (plat === null) {
-            window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
-            return undefined;
-        }
-        const arch = match(process.arch)
-            .with('arm', (_) => 'armv7')
-            .with('arm64', (_) => 'aarch64')
-            .with('x32', (_) => 'i386')
-            .with('x64', (_) => 'x86_64')
-            .otherwise((_) => null);
-        if (arch === null) {
-            window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
-            return undefined;
-        }
-        const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
-        const title = `Downloading ${dlUri}`;
-        logger.info(`Downloading ${dlUri}`);
-        const downloaded = await downloadFile(title, dlUri, ghcup);
-        if (!downloaded) {
-            window.showErrorMessage(`Couldn't download ${dlUri} as ${ghcup}`);
-        }
+      const msg = `Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`;
+      window.showErrorMessage(msg);
+      throw new Error(msg);
     }
-    return ghcup;
 }
 
 /**
@@ -519,12 +533,14 @@ export function addPathToProcessPath(extraPath: string): string {
 
 // complements getLatestHLSfromMetadata, by checking possibly locally compiled
 // HLS in ghcup
+// If 'targetGhc' is omitted, picks the latest 'haskell-language-server-wrapper',
+// otherwise ensures the specified GHC is supported.
 async function getLatestHLSfromGHCup(
   context: ExtensionContext,
   storagePath: string,
-  targetGhc: string,
-  logger: Logger
-): Promise<string | null> {
+  logger: Logger,
+  targetGhc?: string
+): Promise<[string, string] | null> {
   const hlsVersions = await callGHCup(
       context,
       logger,
@@ -533,16 +549,21 @@ async function getLatestHLSfromGHCup(
       false,
   );
   const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
-  logger.info(`LATEST GHCUP HLS: ${latestHlsVersion}`);
   let bindir = await callGHCup(context, logger,
       ['whereis', 'bindir'],
       undefined,
       false
   );
 
-  const hlsBin = path.join(bindir, `haskell-language-server-${targetGhc}~${latestHlsVersion}`);
+  let hlsBin = '';
+  if (targetGhc) {
+    hlsBin = path.join(bindir, `haskell-language-server-${targetGhc}~${latestHlsVersion}`);
+  } else {
+    hlsBin = path.join(bindir, `haskell-language-server-wrapper-${latestHlsVersion}`);
+  }
+
   if (fs.existsSync(hlsBin)) {
-    return latestHlsVersion;
+    return [latestHlsVersion, hlsBin];
   } else {
     return null;
   }
