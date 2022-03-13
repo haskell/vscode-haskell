@@ -555,9 +555,9 @@ async function getLatestHLSfromGHCup(
 
   let hlsBin = '';
   if (targetGhc) {
-    hlsBin = path.join(bindir, `haskell-language-server-${targetGhc}~${latestHlsVersion}`);
+    hlsBin = path.join(bindir, `haskell-language-server-${targetGhc}~${latestHlsVersion}${exeExt}`);
   } else {
-    hlsBin = path.join(bindir, `haskell-language-server-wrapper-${latestHlsVersion}`);
+    hlsBin = path.join(bindir, `haskell-language-server-wrapper-${latestHlsVersion}${exeExt}`);
   }
 
   if (fs.existsSync(hlsBin)) {
