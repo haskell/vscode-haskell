@@ -1,6 +1,7 @@
 import * as child_process from 'child_process';
 import { ExecException } from 'child_process';
 import * as fs from 'fs';
+import { stat } from 'fs/promises';
 import * as https from 'https';
 import * as path from 'path';
 import { match } from 'ts-pattern';
@@ -242,7 +243,7 @@ export async function findHaskellLanguageServer(
 
         // get a preliminary hls wrapper for finding project GHC version,
         // later we may install a different HLS that supports the given GHC
-        let wrapper = await getLatestHLSfromGHCup(context, storagePath, logger).then(e =>
+        let wrapper = await getLatestWrapperFromGHCup(context, logger).then(e =>
           (e === null)
           ?  callGHCup(context, logger,
                 ['install', 'hls'],
@@ -255,7 +256,7 @@ export async function findHaskellLanguageServer(
                    false,
                    (err, stdout, _stderr, resolve, _reject) => { err ? resolve('') : resolve(stdout?.trim()); })
             )
-          : e[1]
+          : e
         );
 
         // now figure out the project GHC version and the latest supported HLS version
@@ -327,31 +328,24 @@ async function getLatestHLS(
         wrapper === undefined
             ? await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false)
             : await getProjectGHCVersion(wrapper, workingDir, logger);
+    const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
 
-    // get installable HLS that supports the project GHC version (this might not be the most recent)
-    const latestMetadataHls = await getLatestHLSfromMetadata(context, storagePath, projectGhc, logger);
-    const latestGhcupHls = await getLatestHLSfromGHCup(context, storagePath, logger, projectGhc).then(e => e === null ? null : e[0]);
+    // first we get supported GHC versions from available HLS bindists (whether installed or not)
+    const metadataMap = await getHLSesfromMetadata(context, storagePath, logger) || new Map<string, string[]>();
+    // then we get supported GHC versions from currently installed HLS versions
+    const ghcupMap = await getHLSesFromGHCup(context, storagePath, logger) || new Map<string, string[]>();
+    // since installed HLS versions may support a different set of GHC versions than the bindists
+    // (e.g. because the user ran 'ghcup compile hls'), we need to merge both maps, preferring
+    // values from already installed HLSes
+    const merged = new Map<string, string[]>([...metadataMap, ...ghcupMap]); // right-biased
+    // now sort and get the latest suitable version
+    const latest = [...merged].filter(([k, v]) => v.some(x => x === projectGhc)).sort(([k1, v1], [k2, v2]) => comparePVP(k1, k2)).pop();
 
-    if (latestMetadataHls !== null && latestGhcupHls !== null) {
-      // both returned a result, compare versions
-      if (comparePVP(latestMetadataHls, latestGhcupHls) >= 0) {
-        logger.info("Picking HLS according to metadata");
-        return latestMetadataHls;
-      } else {
-        logger.info("Picking a probably self compiled HLS via ghcup");
-        return latestGhcupHls;
-      }
-      
-    } else if (latestMetadataHls === null && latestGhcupHls !== null) {
-      logger.info("Picking a probably self compiled HLS via ghcup");
-      return latestGhcupHls;
-    } else if (latestMetadataHls !== null && latestGhcupHls === null) {
-      logger.info("Picking HLS according to metadata");
-      return latestMetadataHls;
-    } else {
-      const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
+    if (!latest) {
       window.showErrorMessage(noMatchingHLS);
       throw new Error(noMatchingHLS);
+    } else {
+      return latest[0];
     }
 }
 
@@ -529,16 +523,10 @@ export function addPathToProcessPath(extraPath: string): string {
     return PATH.join(pathSep);
 }
 
-// complements getLatestHLSfromMetadata, by checking possibly locally compiled
-// HLS in ghcup
-// If 'targetGhc' is omitted, picks the latest 'haskell-language-server-wrapper',
-// otherwise ensures the specified GHC is supported.
-async function getLatestHLSfromGHCup(
+async function getLatestWrapperFromGHCup(
   context: ExtensionContext,
-  storagePath: string,
-  logger: Logger,
-  targetGhc?: string
-): Promise<[string, string] | null> {
+  logger: Logger
+): Promise<string | null> {
   const hlsVersions = await callGHCup(
       context,
       logger,
@@ -546,26 +534,67 @@ async function getLatestHLSfromGHCup(
       undefined,
       false,
   );
-  const latestHlsVersion = hlsVersions.split(/\r?\n/).pop()!.split(' ')[1];
-  let bindir = await callGHCup(context, logger,
+  const installed = hlsVersions.split(/\r?\n/).pop();
+  if (installed) {
+      const latestHlsVersion = installed.split(' ')[1]
+
+      let bin = await callGHCup(context, logger,
+          ['whereis', 'hls', `${latestHlsVersion}`],
+          undefined,
+          false
+      );
+      return bin;
+  } else {
+      return null;
+  }
+}
+
+// complements getLatestHLSfromMetadata, by checking possibly locally compiled
+// HLS in ghcup
+// If 'targetGhc' is omitted, picks the latest 'haskell-language-server-wrapper',
+// otherwise ensures the specified GHC is supported.
+async function getHLSesFromGHCup(
+  context: ExtensionContext,
+  storagePath: string,
+  logger: Logger,
+): Promise<Map<string, string[]> | null> {
+  const hlsVersions = await callGHCup(
+      context,
+      logger,
+      ['list', '-t', 'hls', '-c', 'installed', '-r'],
+      undefined,
+      false,
+  );
+
+  const bindir = await callGHCup(context, logger,
       ['whereis', 'bindir'],
       undefined,
       false
   );
 
-  let hlsBin = '';
-  if (targetGhc) {
-    hlsBin = path.join(bindir, `haskell-language-server-${targetGhc}~${latestHlsVersion}${exeExt}`);
-  } else {
-    hlsBin = path.join(bindir, `haskell-language-server-wrapper-${latestHlsVersion}${exeExt}`);
-  }
+  const files = fs.readdirSync(bindir).filter(async e => {
+      return await stat(path.join(bindir, e)).then(s => s.isDirectory()).catch(() => false);
+  });
 
-  if (fs.existsSync(hlsBin)) {
-    return [latestHlsVersion, hlsBin];
+
+  const installed = hlsVersions.split(/\r?\n/).map(e => e.split(' ')[1]);
+  if (installed.length > 0) {
+      const myMap = new Map<string, string[]>();
+      installed.forEach(hls => {
+            const ghcs = files.filter(f => f.endsWith(`~${hls}${exeExt}`) && f.startsWith('haskell-language-server-'))
+                                .map(f => {
+                                    const rmPrefix = f.substring('haskell-language-server-'.length);
+                                    return rmPrefix.substring(0, rmPrefix.length - `~${hls}${exeExt}`.length);
+                                })
+            myMap.set(hls, ghcs);
+      });
+
+      return myMap;
   } else {
-    return null;
+      return null;
   }
 }
+
 
 /**
  * Given a GHC version, download at least one HLS version that can be used.
@@ -577,12 +606,11 @@ async function getLatestHLSfromGHCup(
  * @param logger Logger for feedback
  * @returns
  */
-async function getLatestHLSfromMetadata(
+async function getHLSesfromMetadata(
   context: ExtensionContext,
   storagePath: string,
-  targetGhc: string,
   logger: Logger
-): Promise<string | null> {
+): Promise<Map<string, string[]> | null> {
   const metadata = await getReleaseMetadata(context, storagePath, logger);
   if (metadata === null) {
     window.showErrorMessage('Could not get release metadata');
@@ -609,23 +637,16 @@ async function getLatestHLSfromMetadata(
     return null;
   }
 
-  let curHls: string | null = null;
-
   const map: ReleaseMetadata = new Map(Object.entries(metadata));
+  const newMap = new Map<string, string[]>();
   map.forEach((value, key) => {
           const value_ = new Map(Object.entries(value));
           const archValues = new Map(Object.entries(value_.get(arch)));
           const versions: string[] = archValues.get(plat) as string[];
-          if (versions !== undefined && versions.some((el) => el === targetGhc)) {
-              if (curHls === null) {
-                  curHls = key;
-              } else if (comparePVP(key, curHls) > 0) {
-                  curHls = key;
-              }
-          }
+          newMap.set(key, versions);
       });
 
-  return curHls;
+  return newMap;
 }
 
 /**
