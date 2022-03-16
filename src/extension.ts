@@ -198,11 +198,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
   if (addInternalServerPath !== undefined) {
-      const newPath = addPathToProcessPath(addInternalServerPath);
-      serverEnvironment = {
-        PATH: newPath,
-        ... serverEnvironment
-      };
+    const newPath = addPathToProcessPath(addInternalServerPath);
+    serverEnvironment = {
+      PATH: newPath,
+      ...serverEnvironment,
+    };
   }
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),

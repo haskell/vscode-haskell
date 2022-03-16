@@ -124,7 +124,7 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
             });
           });
         } else if (!res.statusCode || res.statusCode >= 400) {
-            reject(new Error(`Unexpected status code: ${res.statusCode}`));
+          reject(new Error(`Unexpected status code: ${res.statusCode}`));
         } else {
           res.on('data', (d) => (data += d));
           res.on('error', reject);

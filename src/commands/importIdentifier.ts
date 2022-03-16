@@ -9,25 +9,27 @@ import { CommandNames } from './constants';
 const askHoogle = async (variable: string): Promise<any> => {
   return await request({
     url: `https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`,
-    json: true
+    json: true,
   }).promise();
 };
 
-const withCache = <T, U>(theCache: LRU.Cache<T, U>, f: (a: T) => U) => (a: T) => {
-  const maybeB = theCache.get(a);
-  if (maybeB) {
-    return maybeB;
-  } else {
-    const b = f(a);
-    theCache.set(a, b);
-    return b;
-  }
-};
+const withCache =
+  <T, U>(theCache: LRU.Cache<T, U>, f: (a: T) => U) =>
+  (a: T) => {
+    const maybeB = theCache.get(a);
+    if (maybeB) {
+      return maybeB;
+    } else {
+      const b = f(a);
+      theCache.set(a, b);
+      return b;
+    }
+  };
 
 const cache: LRU.Cache<string, Promise<any>> = LRU({
   // 1 MB
   max: 1000 * 1000,
-  length: (r: any) => JSON.stringify(r).length
+  length: (r: any) => JSON.stringify(r).length,
 });
 
 const askHoogleCached = withCache(cache, askHoogle);
@@ -42,14 +44,14 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   const edit = new vscode.WorkspaceEdit();
 
   const lines = document.getText().split('\n');
-  const moduleLine = lines.findIndex(line => {
+  const moduleLine = lines.findIndex((line) => {
     const lineTrimmed = line.trim();
     return lineTrimmed === 'where' || lineTrimmed.endsWith(' where') || lineTrimmed.endsWith(')where');
   });
-  const revInputLine = lines.reverse().findIndex(l => l.startsWith('import'));
+  const revInputLine = lines.reverse().findIndex((l) => l.startsWith('import'));
   const nextInputLine = revInputLine !== -1 ? lines.length - 1 - revInputLine : moduleLine === -1 ? 0 : moduleLine + 1;
 
-  if (!lines.some(line => new RegExp('^import.*' + escapeRegExp(arg.mod)).test(line))) {
+  if (!lines.some((line) => new RegExp('^import.*' + escapeRegExp(arg.mod)).test(line))) {
     edit.insert(document.uri, new vscode.Position(nextInputLine, 0), 'import ' + arg.mod + '\n');
   }
 
@@ -99,11 +101,13 @@ export namespace ImportIdentifier {
       const response: any[] = await askHoogleCached(editor.document.getText(identifierRange));
 
       const choice = await vscode.window.showQuickPick(
-        response.filter(result => result.module.name).map(result => ({
-          result,
-          label: result.package.name,
-          description: result.module.name + ' -- ' + (cheerio.load as any)(result.item, { xml: {} }).text()
-        }))
+        response
+          .filter((result) => result.module.name)
+          .map((result) => ({
+            result,
+            label: result.package.name,
+            description: result.module.name + ' -- ' + (cheerio.load as any)(result.item, { xml: {} }).text(),
+          }))
       );
 
       if (!choice) {
