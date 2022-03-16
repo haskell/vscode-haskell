@@ -108,7 +108,7 @@ async function callAsync(
                 token.onCancellationRequested(() => {
                     logger.warn(`User canceled the execution of '${command}'`);
                 });
-                const newEnv = (envAdd !== undefined) ? Object.assign(process.env, envAdd) : process.env;
+                const newEnv = envAdd ? Object.assign(process.env, envAdd) : process.env;
                 // Need to set the encoding to 'utf8' in order to get back a string
                 // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
                 const childProcess = child_process
@@ -117,7 +117,7 @@ async function callAsync(
                         args,
                         { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32', env: newEnv },
                         (err, stdout, stderr) => {
-                            if (callback !== undefined) {
+                            if (callback) {
                                 callback(err, stdout, stderr, resolve, reject);
                             } else {
                                 if (err) {
@@ -208,7 +208,7 @@ export async function findHaskellLanguageServer(
 ): Promise<string> {
     logger.info('Finding haskell-language-server');
 
-    if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string !== '') {
+    if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string) {
       return findServerExecutable(context, logger, folder);
     }
 
@@ -218,7 +218,7 @@ export async function findHaskellLanguageServer(
         fs.mkdirSync(storagePath);
     }
 
-    if (manageHLS === null) { // plugin needs initialization
+    if (!manageHLS) { // plugin needs initialization
       const promptMessage =
           'How do you want the extension to manage/discover HLS?';
 
@@ -229,10 +229,10 @@ export async function findHaskellLanguageServer(
         manageHLS = 'internal-ghcup';
       } else if (decision === 'PATH') {
         manageHLS = 'PATH';
+      } else {
+          throw new Error(`Internal error: unexpected decision ${decision}`);
       }
-      if (manageHLS !== null) {
-        workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
-      }
+      workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
     }
 
     if (manageHLS === 'PATH' || manageHLS === null) {
@@ -244,7 +244,7 @@ export async function findHaskellLanguageServer(
         // get a preliminary hls wrapper for finding project GHC version,
         // later we may install a different HLS that supports the given GHC
         let wrapper = await getLatestWrapperFromGHCup(context, logger).then(e =>
-          (e === null)
+          (!e)
           ?  callGHCup(context, logger,
                 ['install', 'hls'],
                 'Installing latest HLS',
@@ -254,7 +254,7 @@ export async function findHaskellLanguageServer(
                    ['whereis', 'hls'],
                    undefined,
                    false,
-                   (err, stdout, _stderr, resolve, _reject) => { err ? resolve('') : resolve(stdout?.trim()); })
+                   (err, stdout, _stderr, resolve, reject) => { err ? reject('Couldn\'t find latest HLS') : resolve(stdout?.trim()); })
             )
           : e
         );
@@ -265,7 +265,7 @@ export async function findHaskellLanguageServer(
             context,
             logger,
             workingDir,
-            (wrapper === null) ? undefined : wrapper
+            wrapper
         );
 
         // now install said version in an isolated symlink directory
@@ -309,9 +309,7 @@ async function callGHCup(
         GHCUP_INSTALL_BASE_PREFIX: storagePath,
       }, callback);
   } else {
-    const msg = `Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`;
-    window.showErrorMessage(msg);
-    throw new Error(msg);
+    throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
   }
 }
 
@@ -325,9 +323,9 @@ async function getLatestHLS(
 
     // get project GHC version, but fallback to system ghc if necessary.
     const projectGhc =
-        wrapper === undefined
-            ? await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false)
-            : await getProjectGHCVersion(wrapper, workingDir, logger);
+        wrapper
+            ? await getProjectGHCVersion(wrapper, workingDir, logger) 
+            : await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false);
     const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
 
     // first we get supported GHC versions from available HLS bindists (whether installed or not)
@@ -406,8 +404,8 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
     const localGHCup = ['ghcup'].find(executableExists);
 
     if (manageHLS === 'system-ghcup') {
-        if (localGHCup === undefined) {
-          return Promise.reject(new MissingToolError('ghcup'));
+        if (!localGHCup) {
+          throw new MissingToolError('ghcup');
         } else {
           logger.info(`found system ghcup at ${localGHCup}`);
           const args = ['upgrade'];
@@ -435,8 +433,7 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
               .with('freebsd', (_) => 'freebsd12')
               .otherwise((_) => null);
           if (plat === null) {
-              window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
-              return undefined;
+              throw new Error(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
           }
           const arch = match(process.arch)
               .with('arm', (_) => 'armv7')
@@ -445,23 +442,20 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
               .with('x64', (_) => 'x86_64')
               .otherwise((_) => null);
           if (arch === null) {
-              window.showErrorMessage(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
-              return undefined;
+              throw new Error(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
           }
           const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
           const title = `Downloading ${dlUri}`;
           logger.info(`Downloading ${dlUri}`);
           const downloaded = await downloadFile(title, dlUri, ghcup);
           if (!downloaded) {
-              window.showErrorMessage(`Couldn't download ${dlUri} as ${ghcup}`);
+              throw new Error(`Couldn't download ${dlUri} as ${ghcup}`);
           }
       }
       return ghcup;
 
     } else {
-      const msg = `Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`;
-      window.showErrorMessage(msg);
-      throw new Error(msg);
+      throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
     }
 }
 
@@ -578,7 +572,7 @@ async function getHLSesFromGHCup(
 
 
   const installed = hlsVersions.split(/\r?\n/).map(e => e.split(' ')[1]);
-  if (installed.length > 0) {
+  if (installed?.length) {
       const myMap = new Map<string, string[]>();
       installed.forEach(hls => {
             const ghcs = files.filter(f => f.endsWith(`~${hls}${exeExt}`) && f.startsWith('haskell-language-server-'))
@@ -611,8 +605,8 @@ async function getHLSesfromMetadata(
   storagePath: string,
   logger: Logger
 ): Promise<Map<string, string[]> | null> {
-  const metadata = await getReleaseMetadata(context, storagePath, logger);
-  if (metadata === null) {
+  const metadata = await getReleaseMetadata(context, storagePath, logger).catch(e => null);
+  if (!metadata) {
     window.showErrorMessage('Could not get release metadata');
     return null;
   }
@@ -623,8 +617,7 @@ async function getHLSesfromMetadata(
     .with('freebsd', (_) => 'FreeBSD')
     .otherwise((_) => null);
   if (plat === null) {
-    window.showErrorMessage(`Unknown platform ${process.platform}`);
-    return null;
+    throw new Error(`Unknown platform ${process.platform}`);
   }
   const arch = match(process.arch)
     .with('arm', (_) => 'A_ARM')
@@ -633,8 +626,7 @@ async function getHLSesfromMetadata(
     .with('x64', (_) => 'A_64')
     .otherwise((_) => null);
   if (arch === null) {
-    window.showErrorMessage(`Unknown architecture ${process.arch}`);
-    return null;
+    throw new Error(`Unknown architecture ${process.arch}`);
   }
 
   const map: ReleaseMetadata = new Map(Object.entries(metadata));
