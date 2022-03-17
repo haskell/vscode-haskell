@@ -113,7 +113,7 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
       .get(opts, (res) => {
         if (res.statusCode === 301 || res.statusCode === 302) {
           if (!res.headers.location) {
-            console.error('301/302 without a location header');
+            reject(new Error('301/302 without a location header'));
             return;
           }
           https.get(res.headers.location, (resAfterRedirect) => {
@@ -123,6 +123,8 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
               resolve(data);
             });
           });
+        } else if (!res.statusCode || res.statusCode >= 400) {
+          reject(new Error(`Unexpected status code: ${res.statusCode}`));
         } else {
           res.on('data', (d) => (data += d));
           res.on('error', reject);

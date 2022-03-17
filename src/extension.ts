@@ -1,6 +1,7 @@
 'use strict';
 import * as path from 'path';
 import {
+  env,
   commands,
   ExtensionContext,
   OutputChannel,
@@ -22,7 +23,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { addPathToProcessPath, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
+import { MissingToolError, addPathToProcessPath, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
 import { expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
@@ -153,7 +154,16 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       return;
     }
   } catch (e) {
-    if (e instanceof Error) {
+    if (e instanceof MissingToolError) {
+      const link = e.installLink();
+      if (link) {
+        if (await window.showErrorMessage(e.message, `Install ${e.tool}`)) {
+          env.openExternal(link);
+        }
+      } else {
+        await window.showErrorMessage(e.message);
+      }
+    } else if (e instanceof Error) {
       logger.error(`Error getting the server executable: ${e.message}`);
       window.showErrorMessage(e.message);
     }
@@ -188,11 +198,11 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
   if (addInternalServerPath !== undefined) {
-      const newPath = addPathToProcessPath(addInternalServerPath);
-      serverEnvironment = {
-        PATH: newPath,
-        ... serverEnvironment
-      };
+    const newPath = addPathToProcessPath(addInternalServerPath);
+    serverEnvironment = {
+      PATH: newPath,
+      ...serverEnvironment,
+    };
   }
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
