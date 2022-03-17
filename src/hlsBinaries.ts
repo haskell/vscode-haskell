@@ -229,7 +229,7 @@ export async function findHaskellLanguageServer(
     const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
 
     const decision =
-      (await window.showInformationMessage(promptMessage, 'system ghcup (recommended)', 'internal ghcup', 'PATH')) ||
+      (await window.showInformationMessage(promptMessage, 'automatically via GHCup', 'manually via PATH')) ||
       null;
     if (decision === 'system ghcup (recommended)') {
       manageHLS = 'system-ghcup';
@@ -238,7 +238,8 @@ export async function findHaskellLanguageServer(
     } else if (decision === 'PATH') {
       manageHLS = 'PATH';
     } else {
-      throw new Error(`Internal error: unexpected decision ${decision}`);
+      window.showWarningMessage('Choosing default PATH method for HLS discovery. You can change this via \'haskell.manageHLS\' in the settings.');
+      manageHLS = 'PATH';
     }
     workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
   }
