@@ -168,8 +168,8 @@
             "PATH"
           ],
           "enumDescriptions": [
-            "Will use a user-wide installation of ghcup (usually in '~/.ghcup') to manage HLS automatically",
-            "Will use an internal installation of ghcup to manage HLS automatically, to avoid interfering with system ghcup",
+            "Will use ghcup and manage Haskell toolchain in the default location (usually '~/.ghcup')",
+            "Will use ghcup and manage Haskell toolchain in an isolated VSCode specific location (to not interfere with system installations)",
             "Discovers HLS executables in system PATH"
           ]
         },

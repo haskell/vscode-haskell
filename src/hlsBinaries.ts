@@ -17,7 +17,7 @@ import {
   WorkspaceFolder,
 } from 'vscode';
 import { Logger } from 'vscode-languageclient';
-import { downloadFile, executableExists, httpsGetSilently, resolvePathPlaceHolders } from './utils';
+import { executableExists, httpsGetSilently, resolvePathPlaceHolders } from './utils';
 
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
@@ -461,57 +461,15 @@ export async function getProjectGHCVersion(toolchainBindir: string, workingDir: 
 export async function getGHCup(context: ExtensionContext, logger: Logger): Promise<string | undefined> {
   logger.info('Checking for ghcup installation');
   const localGHCup = ['ghcup'].find(executableExists);
+  if (!localGHCup) {
+    throw new MissingToolError('ghcup');
+  }
 
-  if (manageHLS === 'system-ghcup') {
-    if (!localGHCup) {
-      throw new MissingToolError('ghcup');
-    } else {
-      logger.info(`found system ghcup at ${localGHCup}`);
-      const args = ['upgrade'];
-      await callGHCup(context, logger, args, 'Upgrading ghcup', true);
-      return localGHCup;
-    }
-  } else if (manageHLS === 'internal-ghcup') {
-    const storagePath: string = await getStoragePath(context);
-    let ghcup = path.join(storagePath, `ghcup${exeExt}`);
-    if (!fs.existsSync(storagePath)) {
-      fs.mkdirSync(storagePath);
-    }
-
-    // ghcup exists, just upgrade
-    if (fs.existsSync(ghcup)) {
-      logger.info('ghcup already installed, trying to upgrade');
-      const args = ['upgrade', '-i'];
-      await callGHCup(context, logger, args, 'Upgrading ghcup', true);
-    } else {
-      // needs to download ghcup
-      const plat = match(process.platform)
-        .with('darwin', (_) => 'apple-darwin')
-        .with('linux', (_) => 'linux')
-        .with('win32', (_) => 'mingw64')
-        .with('freebsd', (_) => 'freebsd12')
-        .otherwise((_) => null);
-      if (plat === null) {
-        throw new Error(`Couldn't find any pre-built ghcup binary for ${process.platform}`);
-      }
-      const arch = match(process.arch)
-        .with('arm', (_) => 'armv7')
-        .with('arm64', (_) => 'aarch64')
-        .with('x32', (_) => 'i386')
-        .with('x64', (_) => 'x86_64')
-        .otherwise((_) => null);
-      if (arch === null) {
-        throw new Error(`Couldn't find any pre-built ghcup binary for ${process.arch}`);
-      }
-      const dlUri = `https://downloads.haskell.org/~ghcup/${arch}-${plat}-ghcup${exeExt}`;
-      const title = `Downloading ${dlUri}`;
-      logger.info(`Downloading ${dlUri}`);
-      const downloaded = await downloadFile(title, dlUri, ghcup);
-      if (!downloaded) {
-        throw new Error(`Couldn't download ${dlUri} as ${ghcup}`);
-      }
-    }
-    return ghcup;
+  if (manageHLS === 'system-ghcup' || manageHLS == 'internal-ghcup') {
+    logger.info(`found ghcup at ${localGHCup}`);
+    const args = ['upgrade'];
+    await callGHCup(context, logger, args, 'Upgrading ghcup', true);
+    return localGHCup;
   } else {
     throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
   }
