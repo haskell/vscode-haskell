@@ -292,7 +292,7 @@ export async function findHaskellLanguageServer(
 
     // TODO: this should be obsolete for ghcup-0.1.17.6
     // and we can drop the use of `-b`.
-    symHLSPath = path.join(storagePath, `hls-${installableHls}_ghc-${projectGhc}_cabal-${latestCabal}-stack-${latestStack}`);
+    symHLSPath = path.join(storagePath, `hls-${installableHls}_ghc-${projectGhc}_cabal-${latestCabal}_stack-${latestStack}`);
 
     const wrapper = path.join(symHLSPath, `haskell-language-server-wrapper${exeExt}`);
     // Check if we have a working symlink, so we can avoid another popup
