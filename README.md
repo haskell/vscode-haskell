@@ -71,17 +71,26 @@ The environment _only will be visible for the lsp server_, not for other extensi
 
 ### Downloaded binaries
 
-This extension will download `haskell-language-server` binaries either via an internal ghcup (it will download it automaticlaly)
-or via a system ghcup (which must be present), unless you set the config option `haskell.manageHLS` to `PATH` (the extension
-will ask you on first start).
+This extension will download `haskell-language-server` binaries and the rest of the toolchain if you selected to use GHCup during
+first start. Check the `haskell.manageHLS` setting.
 
 It will then download the newest version of haskell-language-server which has support for the required ghc.
 That means it could use an older version than the latest one, without the last features and bug fixes.
 For example, if a project needs ghc-8.10.4 the extension will download and use haskell-language-server-1.4.0, the lastest version which supported ghc-8.10.4. Even if the lastest global haskell language-server version is 1.5.1.
 
-If you have disk space issues and use system ghcup, check `ghcup gc --help`.
-If you have disk space issues and use the internal ghcup, check the following directories, depending on your platform
-and possible delete them:
+If you have disk space issues, check `ghcup gc --help`.
+
+You can also instruct the extension to use a different installation directory for the toolchain,
+e.g. to not interfere with system GHCup installation. Depending on your platform, add the full
+resolved path like so:
+
+```json
+  "haskell.serverEnvironment": {
+    "GHCUP_INSTALL_BASE_PREFIX": "/home/foo/.config/Code/User/globalStorage/haskell.haskell/"
+  }
+```
+
+The internal storage paths for the extension depend on the platform:
 
 | Platform | Path                                                                            |
 | -------- | ------------------------------------------------------------------------------- |

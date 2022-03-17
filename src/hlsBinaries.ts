@@ -26,7 +26,7 @@ export interface IEnvVars {
   [key: string]: string;
 }
 
-type ManageHLS = 'system-ghcup' | 'internal-ghcup' | 'PATH';
+type ManageHLS = 'system-ghcup' | 'PATH';
 let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS | null;
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
@@ -103,6 +103,9 @@ async function callAsync(
     reject: (reason?: any) => void
   ) => void
 ): Promise<string> {
+   let newEnv: IEnvVars = workspace.getConfiguration('haskell').get('serverEnvironment') || {};
+   newEnv = Object.assign(process.env, newEnv);
+   newEnv = Object.assign(newEnv, (envAdd || {}));
   return window.withProgress(
     {
       location: ProgressLocation.Notification,
@@ -116,7 +119,6 @@ async function callAsync(
         token.onCancellationRequested(() => {
           logger.warn(`User canceled the execution of '${command}'`);
         });
-        const newEnv = envAdd ? Object.assign(process.env, envAdd) : process.env;
         // Need to set the encoding to 'utf8' in order to get back a string
         // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
         const childProcess = child_process
@@ -231,11 +233,9 @@ export async function findHaskellLanguageServer(
     const decision =
       (await window.showInformationMessage(promptMessage, 'automatically via GHCup', 'manually via PATH')) ||
       null;
-    if (decision === 'system ghcup (recommended)') {
+    if (decision === 'automatically via GHCup') {
       manageHLS = 'system-ghcup';
-    } else if (decision === 'internal ghcup') {
-      manageHLS = 'internal-ghcup';
-    } else if (decision === 'PATH') {
+    } else if (decision === 'manually via PATH') {
       manageHLS = 'PATH';
     } else {
       window.showWarningMessage('Choosing default PATH method for HLS discovery. You can change this via \'haskell.manageHLS\' in the settings.');
@@ -332,7 +332,6 @@ async function callGHCup(
   const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
 
   const storagePath: string = await getStoragePath(context);
-  const ghcup = manageHLS === 'system-ghcup' ? `ghcup${exeExt}` : path.join(storagePath, `ghcup${exeExt}`);
   if (manageHLS === 'system-ghcup') {
     return await callAsync(
       'ghcup',
@@ -342,19 +341,6 @@ async function callGHCup(
       title,
       cancellable,
       undefined,
-      callback
-    );
-  } else if (manageHLS === 'internal-ghcup') {
-    return await callAsync(
-      ghcup,
-      ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
-      storagePath,
-      logger,
-      title,
-      cancellable,
-      {
-        GHCUP_INSTALL_BASE_PREFIX: storagePath,
-      },
       callback
     );
   } else {
@@ -465,7 +451,7 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
     throw new MissingToolError('ghcup');
   }
 
-  if (manageHLS === 'system-ghcup' || manageHLS == 'internal-ghcup') {
+  if (manageHLS === 'system-ghcup') {
     logger.info(`found ghcup at ${localGHCup}`);
     const args = ['upgrade'];
     await callGHCup(context, logger, args, 'Upgrading ghcup', true);
