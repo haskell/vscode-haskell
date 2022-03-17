@@ -103,8 +103,6 @@ async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (file
   }
 }
 
-const ghcupBaseDir = `bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}`;
-
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
   const filesCreated: Map<string, Promise<vscode.Uri>> = new Map();
@@ -143,8 +141,8 @@ suite('Extension Test Suite', () => {
 
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     // Setting up watchers before actual tests start, to ensure we will got the created event
-    filesCreated.set('wrapper', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-wrapper*`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-[1-9]*`, pred));
+    filesCreated.set('wrapper', existsWorkspaceFile(`bin/hls-*/haskell-language-server-wrapper*`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`bin/hls-*/haskell-language-server-[1-9]*`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
