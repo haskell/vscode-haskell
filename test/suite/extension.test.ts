@@ -187,7 +187,7 @@ suite('Extension Test Suite', () => {
   test('Server should inherit environment variables defined in the settings', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
-      await withTimeout(90, filesCreated.get('cache')!),
+      retryOperation(() => new Promise((resolve, reject) => (filesCreated.get('cache')!)), 1000 * 5, 20),
       'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
     );
   });
