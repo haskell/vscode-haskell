@@ -20,6 +20,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 17
+      - name: Upgrade ghcup
+        run: ghcup upgrade -i -f
+        shell: bash
       # Setup the environment for the tests
       - name: Ensure there is a supported ghc versions
         uses: haskell/actions/setup@v1
