@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-11, ubuntu-latest, windows-latest]
         ghc: [9.0.1, 8.10.4]
