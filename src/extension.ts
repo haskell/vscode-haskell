@@ -201,12 +201,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     const newPath = await addPathToProcessPath(addInternalServerPath, logger);
     serverEnvironment = {
       ...serverEnvironment,
-      ...{PATH: newPath},
+      ...{ PATH: newPath },
     };
   }
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
-    env: {...process.env, ...serverEnvironment},
+    env: { ...process.env, ...serverEnvironment },
   };
 
   // We don't want empty strings in our args

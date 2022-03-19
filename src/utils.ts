@@ -286,8 +286,10 @@ function getWithRedirects(opts: https.RequestOptions, f: (res: http.IncomingMess
  */
 export async function executableExists(exe: string): Promise<boolean> {
   const isWindows = process.platform === 'win32';
-  let newEnv: IEnvVars = await resolveServerEnvironmentPATH(workspace.getConfiguration('haskell').get('serverEnvironment') || {});
-  newEnv = {...process.env as IEnvVars, ...newEnv};
+  let newEnv: IEnvVars = await resolveServerEnvironmentPATH(
+    workspace.getConfiguration('haskell').get('serverEnvironment') || {}
+  );
+  newEnv = { ...(process.env as IEnvVars), ...newEnv };
   const cmd: string = isWindows ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe], { env: newEnv });
   return out.status === 0 || (which.sync(exe, { nothrow: true, path: newEnv.PATH }) ?? '') !== '';
@@ -333,10 +335,11 @@ export async function addPathToProcessPath(extraPath: string, logger: Logger): P
 
 export async function resolveServerEnvironmentPATH(serverEnv: IEnvVars): Promise<IEnvVars> {
   const pathSep = process.platform === 'win32' ? ';' : ':';
-  const path: string[] | null = serverEnv.PATH ? serverEnv.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p)) : null;
+  const path: string[] | null = serverEnv.PATH
+    ? serverEnv.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p))
+    : null;
   return {
     ...serverEnv,
-    ...(path ? { PATH: path.join(pathSep)} : {})
-  }
+    ...(path ? { PATH: path.join(pathSep) } : {}),
+  };
 }
-

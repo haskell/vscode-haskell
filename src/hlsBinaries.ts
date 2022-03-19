@@ -17,8 +17,15 @@ import {
   WorkspaceFolder,
 } from 'vscode';
 import { Logger } from 'vscode-languageclient';
-import { executableExists, httpsGetSilently, resolvePathPlaceHolders, IEnvVars, addPathToProcessPath, resolveServerEnvironmentPATH } from './utils';
-export { IEnvVars }
+import {
+  executableExists,
+  httpsGetSilently,
+  resolvePathPlaceHolders,
+  IEnvVars,
+  addPathToProcessPath,
+  resolveServerEnvironmentPATH,
+} from './utils';
+export { IEnvVars };
 
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
@@ -99,9 +106,11 @@ async function callAsync(
     reject: (reason?: any) => void
   ) => void
 ): Promise<string> {
-   let newEnv: IEnvVars = await resolveServerEnvironmentPATH(workspace.getConfiguration('haskell').get('serverEnvironment') || {});
-   newEnv = {...process.env as IEnvVars, ...newEnv};
-   newEnv = {...newEnv, ...(envAdd || {})};
+  let newEnv: IEnvVars = await resolveServerEnvironmentPATH(
+    workspace.getConfiguration('haskell').get('serverEnvironment') || {}
+  );
+  newEnv = { ...(process.env as IEnvVars), ...newEnv };
+  newEnv = { ...newEnv, ...(envAdd || {}) };
   return window.withProgress(
     {
       location: ProgressLocation.Notification,
@@ -158,7 +167,11 @@ async function callAsync(
 
 /** Gets serverExecutablePath and fails if it's not set.
  */
-async function findServerExecutable(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): Promise<string> {
+async function findServerExecutable(
+  context: ExtensionContext,
+  logger: Logger,
+  folder?: WorkspaceFolder
+): Promise<string> {
   let exePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
   logger.info(`Trying to find the server executable in: ${exePath}`);
   exePath = resolvePathPlaceHolders(exePath, folder);
@@ -225,14 +238,15 @@ export async function findHaskellLanguageServer(
     const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
 
     const decision =
-      (await window.showInformationMessage(promptMessage, 'automatically via GHCup', 'manually via PATH')) ||
-      null;
+      (await window.showInformationMessage(promptMessage, 'automatically via GHCup', 'manually via PATH')) || null;
     if (decision === 'automatically via GHCup') {
       manageHLS = 'GHCup';
     } else if (decision === 'manually via PATH') {
       manageHLS = 'PATH';
     } else {
-      window.showWarningMessage('Choosing default PATH method for HLS discovery. You can change this via \'haskell.manageHLS\' in the settings.');
+      window.showWarningMessage(
+        "Choosing default PATH method for HLS discovery. You can change this via 'haskell.manageHLS' in the settings."
+      );
       manageHLS = 'PATH';
     }
     workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
@@ -254,26 +268,28 @@ export async function findHaskellLanguageServer(
       ? await getLatestToolFromGHCup(context, logger, 'stack')
       : null;
     const recGHC =
-      (!(await executableExists('ghc')) && (workspace.getConfiguration('haskell').get('installGHC') as boolean))
+      !(await executableExists('ghc')) && (workspace.getConfiguration('haskell').get('installGHC') as boolean)
         ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
         : null;
 
     const latestToolchainBindir = await callGHCup(
-            context,
-            logger,
-            [ 'run'
-            , '--hls', latestHLS
-            , ...(latestCabal ? ['--cabal', latestCabal] : [])
-            , ...(latestStack ? ['--stack', latestStack] : [])
-            , ...(recGHC      ? ['--ghc', 'recommended'] : [])
-            , '--install'
-            ],
-            'Installing latest toolchain for bootstrap',
-            true,
-            (err, stdout, _stderr, resolve, reject) => {
-              err ? reject("Couldn't install latest toolchain") : resolve(stdout?.trim());
-            }
-          );
+      context,
+      logger,
+      [
+        'run',
+        '--hls',
+        latestHLS,
+        ...(latestCabal ? ['--cabal', latestCabal] : []),
+        ...(latestStack ? ['--stack', latestStack] : []),
+        ...(recGHC ? ['--ghc', 'recommended'] : []),
+        '--install',
+      ],
+      'Installing latest toolchain for bootstrap',
+      true,
+      (err, stdout, _stderr, resolve, reject) => {
+        err ? reject("Couldn't install latest toolchain") : resolve(stdout?.trim());
+      }
+    );
 
     // now figure out the project GHC version and the latest supported HLS version
     // we need for it (e.g. this might in fact be a downgrade for old GHCs)
@@ -283,16 +299,19 @@ export async function findHaskellLanguageServer(
     const hlsBinDir = await callGHCup(
       context,
       logger,
-      [ 'run'
-      , '--hls', projectHls
-      , ...(latestCabal ? ['--cabal', latestCabal] : [])
-      , ...(latestStack ? ['--stack', latestStack] : [])
-      , ...((workspace.getConfiguration('haskell').get('installGHC') as boolean) ? ['--ghc', projectGhc]    : [])
-      , '--install'],
+      [
+        'run',
+        '--hls',
+        projectHls,
+        ...(latestCabal ? ['--cabal', latestCabal] : []),
+        ...(latestStack ? ['--stack', latestStack] : []),
+        ...((workspace.getConfiguration('haskell').get('installGHC') as boolean) ? ['--ghc', projectGhc] : []),
+        '--install',
+      ],
       `Installing project specific toolchain: HLS-${projectHls}, GHC-${projectGhc}, cabal-${latestCabal}, stack-${latestStack}`,
       true
     );
-    return (path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`))
+    return path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`);
   }
 }
 
@@ -370,7 +389,11 @@ async function getLatestProjectHLS(
  * @param logger Logger for feedback.
  * @returns The GHC version, or fail with an `Error`.
  */
-export async function getProjectGHCVersion(toolchainBindir: string, workingDir: string, logger: Logger): Promise<string> {
+export async function getProjectGHCVersion(
+  toolchainBindir: string,
+  workingDir: string,
+  logger: Logger
+): Promise<string> {
   const title = 'Working out the project GHC version. This might take a while...';
   logger.info(title);
 
@@ -409,7 +432,11 @@ export async function getProjectGHCVersion(toolchainBindir: string, workingDir: 
           }
           reject(new MissingToolError('unknown'));
         }
-        reject(Error(`haskell-language-server --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`));
+        reject(
+          Error(
+            `haskell-language-server --project-ghc-version exited with exit code ${err.code}:\n${stdout}\n${stderr}`
+          )
+        );
       } else {
         logger.info(`The GHC version for the project or file: ${stdout?.trim()}`);
         resolve(stdout?.trim());
@@ -422,7 +449,7 @@ export async function upgradeGHCup(context: ExtensionContext, logger: Logger): P
   if (manageHLS === 'GHCup') {
     const upgrade = workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
     if (upgrade) {
-        await callGHCup(context, logger, ['upgrade'], 'Upgrading ghcup', true);
+      await callGHCup(context, logger, ['upgrade'], 'Upgrading ghcup', true);
     }
   } else {
     throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
@@ -447,7 +474,7 @@ export async function findGHCup(context: ExtensionContext, logger: Logger, folde
       throw new MissingToolError('ghcup');
     } else {
       logger.info(`found ghcup at ${localGHCup}`);
-      return localGHCup
+      return localGHCup;
     }
   }
 }
@@ -516,7 +543,7 @@ async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger,
     const latestInstalledVersion = latestInstalled.split(/\s+/)[1];
 
     let bin = await callGHCup(context, logger, ['whereis', tool, `${latestInstalledVersion}`], undefined, false);
-    const ver = await callAsync(`${bin}`, ['--numeric-version'], logger, undefined, undefined, false)
+    const ver = await callAsync(`${bin}`, ['--numeric-version'], logger, undefined, undefined, false);
     if (ver) {
       return ver;
     } else {
@@ -527,7 +554,13 @@ async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger,
   return getLatestAvailableToolFromGHCup(context, logger, tool);
 }
 
-async function getLatestAvailableToolFromGHCup(context: ExtensionContext, logger: Logger, tool: string, tag?: string, criteria?: string): Promise<string> {
+async function getLatestAvailableToolFromGHCup(
+  context: ExtensionContext,
+  logger: Logger,
+  tool: string,
+  tag?: string,
+  criteria?: string
+): Promise<string> {
   // fall back to installable versions
   const availableVersions = await callGHCup(
     context,
@@ -535,30 +568,31 @@ async function getLatestAvailableToolFromGHCup(context: ExtensionContext, logger
     ['list', '-t', tool, '-c', criteria ? criteria : 'available', '-r'],
     undefined,
     false
-  ).then(s => s.split(/\r?\n/));
+  ).then((s) => s.split(/\r?\n/));
 
   let latestAvailable: string | null = null;
   availableVersions.forEach((ver) => {
-    if (ver.split(/\s+/)[2].split(',').includes(tag ? tag : 'latest')) {
+    if (
+      ver
+        .split(/\s+/)[2]
+        .split(',')
+        .includes(tag ? tag : 'latest')
+    ) {
       latestAvailable = ver.split(/\s+/)[1];
     }
   });
   if (!latestAvailable) {
-    throw new Error(`Unable to find ${tag ? tag : 'latest'} tool ${tool}`)
+    throw new Error(`Unable to find ${tag ? tag : 'latest'} tool ${tool}`);
   } else {
     return latestAvailable;
   }
 }
 
-
 // complements getLatestHLSfromMetadata, by checking possibly locally compiled
 // HLS in ghcup
 // If 'targetGhc' is omitted, picks the latest 'haskell-language-server-wrapper',
 // otherwise ensures the specified GHC is supported.
-async function getHLSesFromGHCup(
-  context: ExtensionContext,
-  logger: Logger
-): Promise<Map<string, string[]> | null> {
+async function getHLSesFromGHCup(context: ExtensionContext, logger: Logger): Promise<Map<string, string[]> | null> {
   const hlsVersions = await callGHCup(
     context,
     logger,
@@ -604,10 +638,7 @@ async function getHLSesFromGHCup(
  * @param logger Logger for feedback
  * @returns
  */
-async function getHLSesfromMetadata(
-  context: ExtensionContext,
-  logger: Logger
-): Promise<Map<string, string[]> | null> {
+async function getHLSesfromMetadata(context: ExtensionContext, logger: Logger): Promise<Map<string, string[]> | null> {
   const storagePath: string = await getStoragePath(context);
   const metadata = await getReleaseMetadata(context, storagePath, logger).catch((e) => null);
   if (!metadata) {
