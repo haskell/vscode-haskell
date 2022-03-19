@@ -151,6 +151,12 @@
           "default": "",
           "markdownDescription": "Pass additional arguments to the language server."
         },
+        "haskell.ghcupExecutablePath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Manually set a ghcup executable path."
+        },
         "haskell.serverEnvironment": {
           "scope": "resource",
           "type": "object",

@@ -168,7 +168,6 @@ async function findServerExecutable(context: ExtensionContext, logger: Logger, f
     return exePath;
   } else {
     const msg = `Could not find a HLS binary at ${exePath}! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.`;
-    window.showErrorMessage(msg);
     throw new Error(msg);
   }
 }
@@ -188,7 +187,6 @@ async function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?:
   }
   const msg =
     'Could not find a HLS binary in PATH! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.';
-  window.showErrorMessage(msg);
   throw new Error(msg);
 }
 
@@ -359,7 +357,6 @@ async function getLatestProjectHLS(
     .pop();
 
   if (!latest) {
-    window.showErrorMessage(noMatchingHLS);
     throw new Error(noMatchingHLS);
   } else {
     return [latest[0], projectGhc];
@@ -433,14 +430,26 @@ export async function upgradeGHCup(context: ExtensionContext, logger: Logger): P
   }
 }
 
-export async function findGHCup(context: ExtensionContext, logger: Logger): Promise<string> {
+export async function findGHCup(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): Promise<string> {
   logger.info('Checking for ghcup installation');
-  const localGHCup = ['ghcup'].find(executableExists);
-  if (!localGHCup) {
-    throw new MissingToolError('ghcup');
+  let exePath = workspace.getConfiguration('haskell').get('ghcupExecutablePath') as string;
+  if (exePath) {
+    logger.info(`Trying to find the ghcup executable in: ${exePath}`);
+    exePath = resolvePathPlaceHolders(exePath, folder);
+    logger.log(`Location after path variables substitution: ${exePath}`);
+    if (await executableExists(exePath)) {
+      return exePath;
+    } else {
+      throw new Error(`Could not find a ghcup binary at ${exePath}!`);
+    }
   } else {
-    logger.info(`found ghcup at ${localGHCup}`);
-    return localGHCup
+    const localGHCup = ['ghcup'].find(executableExists);
+    if (!localGHCup) {
+      throw new MissingToolError('ghcup');
+    } else {
+      logger.info(`found ghcup at ${localGHCup}`);
+      return localGHCup
+    }
   }
 }
 
