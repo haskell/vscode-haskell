@@ -137,7 +137,7 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "markdownDescription": "An optional path where downloaded binaries will be stored. Check the default value [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)"
+          "markdownDescription": "An optional path where downloaded metadata will be stored. Check the default value [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)"
         },
         "haskell.serverExecutablePath": {
           "scope": "resource",

@@ -90,8 +90,8 @@ export class MissingToolError extends Error {
 async function callAsync(
   binary: string,
   args: string[],
-  dir: string,
   logger: Logger,
+  dir?: string,
   title?: string,
   cancellable?: boolean,
   envAdd?: IEnvVars,
@@ -290,7 +290,7 @@ export async function findHaskellLanguageServer(
     latestStack = latestStack ? await getLatestToolFromGHCup(context, logger, 'stack') : null;
 
     // now install said version in an isolated symlink directory
-    await callGHCup(
+    return await callGHCup(
       context,
       logger,
       [ 'run'
@@ -321,13 +321,12 @@ async function callGHCup(
 ): Promise<string> {
   const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
 
-  const storagePath: string = await getStoragePath(context);
   if (manageHLS === 'GHCup') {
     return await callAsync(
       'ghcup',
       ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
-      storagePath,
       logger,
+      undefined,
       title,
       cancellable,
       undefined,
@@ -344,18 +343,16 @@ async function getLatestHLS(
   workingDir: string,
   toolchainBindir: string
 ): Promise<[string, string]> {
-  const storagePath: string = await getStoragePath(context);
-
   // get project GHC version, but fallback to system ghc if necessary.
   const projectGhc = toolchainBindir
     ? await getProjectGHCVersion(toolchainBindir, workingDir, logger)
-    : await callAsync(`ghc${exeExt}`, ['--numeric-version'], storagePath, logger, undefined, false);
+    : await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
   const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
 
   // first we get supported GHC versions from available HLS bindists (whether installed or not)
-  const metadataMap = (await getHLSesfromMetadata(context, storagePath, logger)) || new Map<string, string[]>();
+  const metadataMap = (await getHLSesfromMetadata(context, logger)) || new Map<string, string[]>();
   // then we get supported GHC versions from currently installed HLS versions
-  const ghcupMap = (await getHLSesFromGHCup(context, storagePath, logger)) || new Map<string, string[]>();
+  const ghcupMap = (await getHLSesFromGHCup(context, logger)) || new Map<string, string[]>();
   // since installed HLS versions may support a different set of GHC versions than the bindists
   // (e.g. because the user ran 'ghcup compile hls'), we need to merge both maps, preferring
   // values from already installed HLSes
@@ -396,8 +393,8 @@ export async function getProjectGHCVersion(toolchainBindir: string, workingDir: 
   return callAsync(
     'haskell-language-server-wrapper',
     args,
-    workingDir,
     logger,
+    workingDir,
     title,
     false,
     environmentNew,
@@ -522,8 +519,7 @@ async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger,
     const latestInstalledVersion = latestInstalled.split(/\s+/)[1];
 
     let bin = await callGHCup(context, logger, ['whereis', tool, `${latestInstalledVersion}`], undefined, false);
-    const storagePath: string = await getStoragePath(context);
-    const ver = await callAsync(`${bin}`, ['--numeric-version'], storagePath, logger, undefined, false)
+    const ver = await callAsync(`${bin}`, ['--numeric-version'], logger, undefined, undefined, false)
     if (ver) {
       return ver;
     } else {
@@ -564,7 +560,6 @@ async function getLatestAvailableToolFromGHCup(context: ExtensionContext, logger
 // otherwise ensures the specified GHC is supported.
 async function getHLSesFromGHCup(
   context: ExtensionContext,
-  storagePath: string,
   logger: Logger
 ): Promise<Map<string, string[]> | null> {
   const hlsVersions = await callGHCup(
@@ -614,9 +609,9 @@ async function getHLSesFromGHCup(
  */
 async function getHLSesfromMetadata(
   context: ExtensionContext,
-  storagePath: string,
   logger: Logger
 ): Promise<Map<string, string[]> | null> {
+  const storagePath: string = await getStoragePath(context);
   const metadata = await getReleaseMetadata(context, storagePath, logger).catch((e) => null);
   if (!metadata) {
     window.showErrorMessage('Could not get release metadata');
