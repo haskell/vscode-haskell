@@ -163,12 +163,12 @@
           "default": null,
           "description": "How to manage/find HLS installations.",
           "enum": [
-            "system-ghcup",
+            "GHCup",
             "PATH"
           ],
           "enumDescriptions": [
             "Will use ghcup and manage Haskell toolchain in the default location (usually '~/.ghcup')",
-            "Discovers HLS executables in system PATH"
+            "Discovers HLS and other executables in system PATH"
           ]
         },
         "haskell.useSystemGHCup": {

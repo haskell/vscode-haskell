@@ -26,7 +26,7 @@ export interface IEnvVars {
   [key: string]: string;
 }
 
-type ManageHLS = 'system-ghcup' | 'PATH';
+type ManageHLS = 'GHCup' | 'PATH';
 let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS | null;
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
@@ -234,7 +234,7 @@ export async function findHaskellLanguageServer(
       (await window.showInformationMessage(promptMessage, 'automatically via GHCup', 'manually via PATH')) ||
       null;
     if (decision === 'automatically via GHCup') {
-      manageHLS = 'system-ghcup';
+      manageHLS = 'GHCup';
     } else if (decision === 'manually via PATH') {
       manageHLS = 'PATH';
     } else {
@@ -332,7 +332,7 @@ async function callGHCup(
   const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
 
   const storagePath: string = await getStoragePath(context);
-  if (manageHLS === 'system-ghcup') {
+  if (manageHLS === 'GHCup') {
     return await callAsync(
       'ghcup',
       ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
@@ -451,7 +451,7 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
     throw new MissingToolError('ghcup');
   }
 
-  if (manageHLS === 'system-ghcup') {
+  if (manageHLS === 'GHCup') {
     logger.info(`found ghcup at ${localGHCup}`);
     const args = ['upgrade'];
     await callGHCup(context, logger, args, 'Upgrading ghcup', true);
