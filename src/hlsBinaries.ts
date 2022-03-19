@@ -17,14 +17,10 @@ import {
   WorkspaceFolder,
 } from 'vscode';
 import { Logger } from 'vscode-languageclient';
-import { executableExists, httpsGetSilently, resolvePathPlaceHolders } from './utils';
+import { executableExists, httpsGetSilently, resolvePathPlaceHolders, IEnvVars, addPathToProcessPath, resolveServerEnvironmentPATH } from './utils';
+export { IEnvVars }
 
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
-
-// Used for environment variables later on
-export interface IEnvVars {
-  [key: string]: string;
-}
 
 type ManageHLS = 'GHCup' | 'PATH';
 let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS | null;
@@ -103,9 +99,10 @@ async function callAsync(
     reject: (reason?: any) => void
   ) => void
 ): Promise<string> {
-   let newEnv: IEnvVars = workspace.getConfiguration('haskell').get('serverEnvironment') || {};
-   newEnv = Object.assign(process.env, newEnv);
-   newEnv = Object.assign(newEnv, (envAdd || {}));
+   let newEnv: IEnvVars = await resolveServerEnvironmentPATH(workspace.getConfiguration('haskell').get('serverEnvironment') || {});
+   newEnv = {...process.env as IEnvVars, ...newEnv};
+   newEnv = {...newEnv, ...(envAdd || {})};
+   logger.info(`newEnv: ${newEnv.PATH!.split(':')}`);
   return window.withProgress(
     {
       location: ProgressLocation.Notification,
@@ -162,12 +159,12 @@ async function callAsync(
 
 /** Gets serverExecutablePath and fails if it's not set.
  */
-function findServerExecutable(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): string {
+async function findServerExecutable(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): Promise<string> {
   let exePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
   logger.info(`Trying to find the server executable in: ${exePath}`);
   exePath = resolvePathPlaceHolders(exePath, folder);
   logger.log(`Location after path variables substitution: ${exePath}`);
-  if (executableExists(exePath)) {
+  if (await executableExists(exePath)) {
     return exePath;
   } else {
     const msg = `Could not find a HLS binary at ${exePath}! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.`;
@@ -178,13 +175,13 @@ function findServerExecutable(context: ExtensionContext, logger: Logger, folder?
 
 /** Searches the PATH. Fails if nothing is found.
  */
-function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): string {
+async function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?: WorkspaceFolder): Promise<string> {
   // try PATH
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
   logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
   logger.info(`$PATH environment variable: ${process.env.PATH}`);
   for (const exe of exes) {
-    if (executableExists(exe)) {
+    if (await executableExists(exe)) {
       logger.info(`Found server executable in $PATH: ${exe}`);
       return exe;
     }
@@ -248,7 +245,7 @@ export async function findHaskellLanguageServer(
     return findHLSinPATH(context, logger, folder);
   } else {
     // we manage HLS, make sure ghcup is installed/available
-    await getGHCup(context, logger);
+    await upgradeGHCup(context, logger);
 
     // get a preliminary toolchain for finding the correct project GHC version (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
@@ -319,8 +316,9 @@ async function callGHCup(
   const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
 
   if (manageHLS === 'GHCup') {
+    const ghcup = await findGHCup(context, logger);
     return await callAsync(
-      'ghcup',
+      ghcup,
       ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
       logger,
       undefined,
@@ -382,7 +380,7 @@ export async function getProjectGHCVersion(toolchainBindir: string, workingDir: 
 
   const args = ['--project-ghc-version'];
 
-  const newPath = addPathToProcessPath(toolchainBindir);
+  const newPath = await addPathToProcessPath(toolchainBindir, logger);
   const environmentNew: IEnvVars = {
     PATH: newPath,
   };
@@ -424,26 +422,25 @@ export async function getProjectGHCVersion(toolchainBindir: string, workingDir: 
   );
 }
 
-/**
- * Downloads the latest ghcup binary.
- * Returns undefined if it can't find any for the given architecture/platform.
- */
-export async function getGHCup(context: ExtensionContext, logger: Logger): Promise<string | undefined> {
-  logger.info('Checking for ghcup installation');
-  const localGHCup = ['ghcup'].find(executableExists);
-  if (!localGHCup) {
-    throw new MissingToolError('ghcup');
-  }
-
+export async function upgradeGHCup(context: ExtensionContext, logger: Logger): Promise<void> {
   if (manageHLS === 'GHCup') {
-    logger.info(`found ghcup at ${localGHCup}`);
     const upgrade = workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
     if (upgrade) {
         await callGHCup(context, logger, ['upgrade'], 'Upgrading ghcup', true);
     }
-    return localGHCup;
   } else {
     throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
+  }
+}
+
+export async function findGHCup(context: ExtensionContext, logger: Logger): Promise<string> {
+  logger.info('Checking for ghcup installation');
+  const localGHCup = ['ghcup'].find(executableExists);
+  if (!localGHCup) {
+    throw new MissingToolError('ghcup');
+  } else {
+    logger.info(`found ghcup at ${localGHCup}`);
+    return localGHCup
   }
 }
 
@@ -494,13 +491,6 @@ export async function getStoragePath(context: ExtensionContext): Promise<string>
   }
 
   return storagePath;
-}
-
-export function addPathToProcessPath(extraPath: string): string {
-  const pathSep = process.platform === 'win32' ? ';' : ':';
-  const PATH = process.env.PATH!.split(pathSep);
-  PATH.unshift(extraPath);
-  return PATH.join(pathSep);
 }
 
 // the tool might be installed or not
