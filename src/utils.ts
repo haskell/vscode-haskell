@@ -333,10 +333,10 @@ export async function addPathToProcessPath(extraPath: string, logger: Logger): P
 
 export async function resolveServerEnvironmentPATH(serverEnv: IEnvVars): Promise<IEnvVars> {
   const pathSep = process.platform === 'win32' ? ';' : ':';
-  const path: string[] = serverEnv.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p));
+  const path: string[] | null = serverEnv.PATH ? serverEnv.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p)) : null;
   return {
     ...serverEnv,
-    ...{ PATH: path.join(pathSep)}
+    ...(path ? { PATH: path.join(pathSep)} : {})
   }
 }
 

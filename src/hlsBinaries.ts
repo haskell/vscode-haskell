@@ -102,7 +102,6 @@ async function callAsync(
    let newEnv: IEnvVars = await resolveServerEnvironmentPATH(workspace.getConfiguration('haskell').get('serverEnvironment') || {});
    newEnv = {...process.env as IEnvVars, ...newEnv};
    newEnv = {...newEnv, ...(envAdd || {})};
-   logger.info(`newEnv: ${newEnv.PATH!.split(':')}`);
   return window.withProgress(
     {
       location: ProgressLocation.Notification,
@@ -255,7 +254,7 @@ export async function findHaskellLanguageServer(
       ? await getLatestToolFromGHCup(context, logger, 'stack')
       : null;
     const recGHC =
-      !executableExists('ghc') && (workspace.getConfiguration('haskell').get('installGHC') as boolean)
+      (!(await executableExists('ghc')) && (workspace.getConfiguration('haskell').get('installGHC') as boolean))
         ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
         : null;
 
