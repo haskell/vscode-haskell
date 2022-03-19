@@ -171,6 +171,24 @@
             "Discovers HLS and other executables in system PATH"
           ]
         },
+        "haskell.installStack": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to also install/manage stack when 'manageHLS' is set to 'GHCup'."
+        },
+        "haskell.installCabal": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to also install/manage cabal when 'manageHLS' is set to 'GHCup'."
+        },
+        "haskell.installGHC": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to also install/manage GHC when 'manageHLS' is set to 'GHCup'."
+        },
         "haskell.checkProject": {
           "scope": "resource",
           "type": "boolean",
