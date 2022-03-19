@@ -437,8 +437,10 @@ export async function getGHCup(context: ExtensionContext, logger: Logger): Promi
 
   if (manageHLS === 'GHCup') {
     logger.info(`found ghcup at ${localGHCup}`);
-    const args = ['upgrade'];
-    await callGHCup(context, logger, args, 'Upgrading ghcup', true);
+    const upgrade = workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
+    if (upgrade) {
+        await callGHCup(context, logger, ['upgrade'], 'Upgrading ghcup', true);
+    }
     return localGHCup;
   } else {
     throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);

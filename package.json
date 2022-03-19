@@ -189,6 +189,12 @@
           "default": true,
           "description": "Whether to also install/manage GHC when 'manageHLS' is set to 'GHCup'."
         },
+        "haskell.upgradeGHCup": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to upgrade GHCup automatically when 'manageHLS' is set to 'GHCup'."
+        },
         "haskell.checkProject": {
           "scope": "resource",
           "type": "boolean",
