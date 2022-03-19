@@ -136,7 +136,8 @@ suite('Extension Test Suite', () => {
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
     await getHaskellConfig().update('serverEnvironment', {
       XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath),
-      TMPDIR: tmpdir
+      TMPDIR: tmpdir,
+      TMP: tmpdir,
     });
     fs.mkdirSync(tmpdir, { recursive: true });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
