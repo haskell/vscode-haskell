@@ -286,7 +286,7 @@ export async function findHaskellLanguageServer(
     const [projectHls, projectGhc] = await getLatestProjectHLS(context, logger, workingDir, latestToolchainBindir);
 
     // now install said version in an isolated symlink directory
-    return await callGHCup(
+    const hlsBinDir = await callGHCup(
       context,
       logger,
       [ 'run'
@@ -298,6 +298,7 @@ export async function findHaskellLanguageServer(
       `Installing project specific toolchain: HLS-${projectHls}, GHC-${projectGhc}, cabal-${latestCabal}, stack-${latestStack}`,
       true
     );
+    return (path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`))
   }
 }
 
