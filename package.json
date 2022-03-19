@@ -171,12 +171,6 @@
             "Discovers HLS and other executables in system PATH"
           ]
         },
-        "haskell.useSystemGHCup": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Whether to use the system ghcup or an internal one for installing HLS."
-        },
         "haskell.checkProject": {
           "scope": "resource",
           "type": "boolean",
