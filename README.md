@@ -32,6 +32,8 @@ You can watch demos for some of these features [here](https://haskell-language-s
 - For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
 - If you are installing from an offline VSIX file, you need to install [language-haskell](https://github.com/JustusAdam/language-haskell) too after installation (either from the marketplace or offline).
+- Alternatively, you can let the extension manage your entire toolchain automatically (you'll be asked on first startup) via
+  [ghcup](https://www.haskell.org/ghcup/), which should be pre-installed
 
 ## Configuration options
 
