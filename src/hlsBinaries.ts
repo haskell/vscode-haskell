@@ -39,7 +39,7 @@ export class MissingToolError extends Error {
   public readonly tool: string;
   constructor(tool: string) {
     let prettyTool: string;
-    switch (tool) {
+    switch (tool.toLowerCase()) {
       case 'stack':
         prettyTool = 'Stack';
         break;
@@ -51,6 +51,12 @@ export class MissingToolError extends Error {
         break;
       case 'ghcup':
         prettyTool = 'GHCup';
+        break;
+      case 'haskell-language-server':
+        prettyTool = 'HLS';
+        break;
+      case 'hls':
+        prettyTool = 'HLS';
         break;
       default:
         prettyTool = tool;
@@ -66,6 +72,7 @@ export class MissingToolError extends Error {
         return Uri.parse('https://docs.haskellstack.org/en/stable/install_and_upgrade/');
       case 'GHCup':
       case 'Cabal':
+      case 'HLS':
       case 'GHC':
         return Uri.parse('https://www.haskell.org/ghcup/');
       default:
@@ -109,8 +116,7 @@ async function callAsync(
   let newEnv: IEnvVars = await resolveServerEnvironmentPATH(
     workspace.getConfiguration('haskell').get('serverEnvironment') || {}
   );
-  newEnv = { ...(process.env as IEnvVars), ...newEnv };
-  newEnv = { ...newEnv, ...(envAdd || {}) };
+  newEnv = { ...(process.env as IEnvVars), ...newEnv, ...(envAdd || {}) };
   return window.withProgress(
     {
       location: ProgressLocation.Notification,
@@ -120,7 +126,7 @@ async function callAsync(
     async (_, token) => {
       return new Promise<string>((resolve, reject) => {
         const command: string = binary + ' ' + args.join(' ');
-        logger.info(`Executing '${command}' in cwd '${dir}'`);
+        logger.info(`Executing '${command}' in cwd '${dir ? dir : process.cwd()}'`);
         token.onCancellationRequested(() => {
           logger.warn(`User canceled the execution of '${command}'`);
         });
@@ -197,9 +203,7 @@ async function findHLSinPATH(context: ExtensionContext, logger: Logger, folder?:
       return exe;
     }
   }
-  const msg =
-    'Could not find a HLS binary in PATH! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.';
-  throw new Error(msg);
+  throw new MissingToolError('hls');
 }
 
 /**
@@ -238,10 +242,10 @@ export async function findHaskellLanguageServer(
     const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
 
     const decision =
-      (await window.showInformationMessage(promptMessage, 'automatically via GHCup', 'manually via PATH')) || null;
-    if (decision === 'automatically via GHCup') {
+      (await window.showInformationMessage(promptMessage, 'Automatically via GHCup', 'Manually via PATH')) || null;
+    if (decision === 'Automatically via GHCup') {
       manageHLS = 'GHCup';
-    } else if (decision === 'manually via PATH') {
+    } else if (decision === 'Manually via PATH') {
       manageHLS = 'PATH';
     } else {
       window.showWarningMessage(
@@ -383,7 +387,7 @@ async function getLatestProjectHLS(
 }
 
 /**
- * Obtain the project ghc version from the HLS - Wrapper.
+ * Obtain the project ghc version from the HLS - Wrapper (which must be in PATH now).
  * Also, serves as a sanity check.
  * @param wrapper Path to the Haskell-Language-Server wrapper
  * @param workingDir Directory to run the process, usually the root of the workspace.
