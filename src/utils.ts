@@ -8,7 +8,7 @@ import * as os from 'os';
 import { extname } from 'path';
 import * as url from 'url';
 import { promisify } from 'util';
-import { workspace, OutputChannel, ProgressLocation, window, WorkspaceFolder } from 'vscode';
+import { OutputChannel, ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import * as which from 'which';
 import * as yazul from 'yauzl';

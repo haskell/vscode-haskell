@@ -1,8 +1,8 @@
 'use strict';
 import * as path from 'path';
 import {
-  env,
   commands,
+  env,
   ExtensionContext,
   OutputChannel,
   TextDocument,
@@ -23,8 +23,8 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { MissingToolError, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
-import { expandHomeDir, ExtensionLogger, addPathToProcessPath } from './utils';
+import { findHaskellLanguageServer, IEnvVars, MissingToolError } from './hlsBinaries';
+import { addPathToProcessPath, expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,

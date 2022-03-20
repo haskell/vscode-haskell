@@ -18,11 +18,11 @@ import {
 } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import {
+  addPathToProcessPath,
   executableExists,
   httpsGetSilently,
-  resolvePathPlaceHolders,
   IEnvVars,
-  addPathToProcessPath,
+  resolvePathPlaceHolders,
   resolveServerEnvironmentPATH,
 } from './utils';
 export { IEnvVars };
@@ -258,7 +258,8 @@ export async function findHaskellLanguageServer(
     // we manage HLS, make sure ghcup is installed/available
     await upgradeGHCup(context, logger);
 
-    // get a preliminary toolchain for finding the correct project GHC version (we need HLS and cabal/stack and ghc as fallback),
+    // get a preliminary toolchain for finding the correct project GHC version
+    // (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
     const latestHLS = await getLatestToolFromGHCup(context, logger, 'hls');
     const latestCabal = (workspace.getConfiguration('haskell').get('installCabal') as boolean)
@@ -542,7 +543,7 @@ async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger,
   if (latestInstalled) {
     const latestInstalledVersion = latestInstalled.split(/\s+/)[1];
 
-    let bin = await callGHCup(context, logger, ['whereis', tool, `${latestInstalledVersion}`], undefined, false);
+    const bin = await callGHCup(context, logger, ['whereis', tool, `${latestInstalledVersion}`], undefined, false);
     const ver = await callAsync(`${bin}`, ['--numeric-version'], logger, undefined, undefined, false);
     if (ver) {
       return ver;
