@@ -314,7 +314,7 @@ export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) 
   return path;
 }
 
-export function resolvePATHPlaceHolders(path: string, folder?: WorkspaceFolder) {
+export function resolvePATHPlaceHolders(path: string) {
   return path
     .replace('${HOME}', os.homedir)
     .replace('${home}', os.homedir)
