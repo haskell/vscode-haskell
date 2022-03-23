@@ -1,8 +1,8 @@
 'use strict';
 import * as path from 'path';
 import {
-  env,
   commands,
+  env,
   ExtensionContext,
   OutputChannel,
   TextDocument,
@@ -23,8 +23,8 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { MissingToolError, addPathToProcessPath, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
-import { expandHomeDir, ExtensionLogger } from './utils';
+import { findHaskellLanguageServer, IEnvVars, MissingToolError } from './hlsBinaries';
+import { addPathToProcessPath, expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -196,17 +196,17 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
   logger.info(cwdMsg);
 
-  let serverEnvironment: IEnvVars = workspace.getConfiguration('haskell', uri).serverEnvironment;
+  let serverEnvironment: IEnvVars = await workspace.getConfiguration('haskell', uri).serverEnvironment;
   if (addInternalServerPath !== undefined) {
-    const newPath = addPathToProcessPath(addInternalServerPath);
+    const newPath = await addPathToProcessPath(addInternalServerPath, logger);
     serverEnvironment = {
-      PATH: newPath,
       ...serverEnvironment,
+      ...{ PATH: newPath },
     };
   }
   const exeOptions: ExecutableOptions = {
     cwd: folder ? undefined : path.dirname(uri.fsPath),
-    env: Object.assign(process.env, serverEnvironment),
+    env: { ...process.env, ...serverEnvironment },
   };
 
   // We don't want empty strings in our args

@@ -103,8 +103,6 @@ async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (file
   }
 }
 
-const ghcupBaseDir = `bin/${process.platform === 'win32' ? 'ghcup' : '.ghcup'}`;
-
 suite('Extension Test Suite', () => {
   const disposables: vscode.Disposable[] = [];
   const filesCreated: Map<string, Promise<vscode.Uri>> = new Map();
@@ -126,25 +124,29 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
+    const tmpdir = path.join(getWorkspaceRoot().uri.fsPath, 'tmp');
     await deleteWorkspaceFiles(
       [ joinUri(getWorkspaceRoot().uri, '.vscode')
       , joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache')
       ]
     );
-    await getHaskellConfig().update('manageHLS', 'internal-ghcup');
+    await getHaskellConfig().update('manageHLS', 'GHCup');
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
     await getHaskellConfig().update('serverEnvironment', {
       XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath),
+      TMPDIR: tmpdir,
+      TMP: tmpdir,
     });
+    fs.mkdirSync(tmpdir, { recursive: true });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
 
     const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
     // Setting up watchers before actual tests start, to ensure we will got the created event
-    filesCreated.set('wrapper', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-wrapper*`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`${ghcupBaseDir}/bin/haskell-language-server-[1-9]*`, pred));
+    filesCreated.set('wrapper', existsWorkspaceFile(`tmp/ghcup-*/haskell-language-server-wrapper*`, pred));
+    filesCreated.set('server', existsWorkspaceFile(`tmp/ghcup-*/haskell-language-server-[1-9]*`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
@@ -189,7 +191,7 @@ suite('Extension Test Suite', () => {
   test('Server should inherit environment variables defined in the settings', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
-      await withTimeout(90, filesCreated.get('cache')!),
+      retryOperation(() => new Promise((resolve, reject) => filesCreated.get('cache')!), 1000 * 5, 20),
       'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
     );
   });

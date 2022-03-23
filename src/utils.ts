@@ -8,11 +8,16 @@ import * as os from 'os';
 import { extname } from 'path';
 import * as url from 'url';
 import { promisify } from 'util';
-import { OutputChannel, ProgressLocation, window, WorkspaceFolder } from 'vscode';
+import { OutputChannel, ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import * as which from 'which';
 import * as yazul from 'yauzl';
 import { createGunzip } from 'zlib';
+
+// Used for environment variables later on
+export interface IEnvVars {
+  [key: string]: string;
+}
 
 enum LogLevel {
   Off,
@@ -279,11 +284,15 @@ function getWithRedirects(opts: https.RequestOptions, f: (res: http.IncomingMess
 /*
  * Checks if the executable is on the PATH
  */
-export function executableExists(exe: string): boolean {
+export async function executableExists(exe: string): Promise<boolean> {
   const isWindows = process.platform === 'win32';
+  let newEnv: IEnvVars = await resolveServerEnvironmentPATH(
+    workspace.getConfiguration('haskell').get('serverEnvironment') || {}
+  );
+  newEnv = { ...(process.env as IEnvVars), ...newEnv };
   const cmd: string = isWindows ? 'where' : 'which';
-  const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0 || (which.sync(exe, { nothrow: true }) ?? '') !== '';
+  const out = child_process.spawnSync(cmd, [exe], { env: newEnv });
+  return out.status === 0 || (which.sync(exe, { nothrow: true, path: newEnv.PATH }) ?? '') !== '';
 }
 
 export function directoryExists(path: string): boolean {
@@ -303,4 +312,34 @@ export function resolvePathPlaceHolders(path: string, folder?: WorkspaceFolder) 
     path = path.replace('${workspaceFolder}', folder.uri.path).replace('${workspaceRoot}', folder.uri.path);
   }
   return path;
+}
+
+export function resolvePATHPlaceHolders(path: string) {
+  return path
+    .replace('${HOME}', os.homedir)
+    .replace('${home}', os.homedir)
+    .replace('$PATH', process.env.PATH!)
+    .replace('${PATH}', process.env.PATH!);
+}
+
+// also honours serverEnvironment.PATH
+export async function addPathToProcessPath(extraPath: string, logger: Logger): Promise<string> {
+  const pathSep = process.platform === 'win32' ? ';' : ':';
+  const serverEnvironment: IEnvVars = (await workspace.getConfiguration('haskell').get('serverEnvironment')) || {};
+  const path: string[] = serverEnvironment.PATH
+    ? serverEnvironment.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p))
+    : process.env.PATH!.split(pathSep);
+  path.unshift(extraPath);
+  return path.join(pathSep);
+}
+
+export async function resolveServerEnvironmentPATH(serverEnv: IEnvVars): Promise<IEnvVars> {
+  const pathSep = process.platform === 'win32' ? ';' : ':';
+  const path: string[] | null = serverEnv.PATH
+    ? serverEnv.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p))
+    : null;
+  return {
+    ...serverEnv,
+    ...(path ? { PATH: path.join(pathSep) } : {}),
+  };
 }

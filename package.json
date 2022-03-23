@@ -137,7 +137,7 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "markdownDescription": "An optional path where downloaded binaries will be stored. Check the default value [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)"
+          "markdownDescription": "An optional path where downloaded metadata will be stored. Check the default value [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)"
         },
         "haskell.serverExecutablePath": {
           "scope": "resource",
@@ -151,6 +151,12 @@
           "default": "",
           "markdownDescription": "Pass additional arguments to the language server."
         },
+        "haskell.ghcupExecutablePath": {
+          "scope": "resource",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Manually set a ghcup executable path."
+        },
         "haskell.serverEnvironment": {
           "scope": "resource",
           "type": "object",
@@ -163,21 +169,37 @@
           "default": null,
           "description": "How to manage/find HLS installations.",
           "enum": [
-            "system-ghcup",
-            "internal-ghcup",
+            "GHCup",
             "PATH"
           ],
           "enumDescriptions": [
-            "Will use a user-wide installation of ghcup (usually in '~/.ghcup') to manage HLS automatically",
-            "Will use an internal installation of ghcup to manage HLS automatically, to avoid interfering with system ghcup",
-            "Discovers HLS executables in system PATH"
+            "Will use ghcup and manage Haskell toolchain in the default location (usually '~/.ghcup')",
+            "Discovers HLS and other executables in system PATH"
           ]
         },
-        "haskell.useSystemGHCup": {
+        "haskell.installStack": {
           "scope": "resource",
           "type": "boolean",
-          "default": null,
-          "description": "Whether to use the system ghcup or an internal one for installing HLS."
+          "default": true,
+          "description": "Whether to also install/manage stack when 'manageHLS' is set to 'GHCup'."
+        },
+        "haskell.installCabal": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to also install/manage cabal when 'manageHLS' is set to 'GHCup'."
+        },
+        "haskell.installGHC": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to also install/manage GHC when 'manageHLS' is set to 'GHCup'."
+        },
+        "haskell.upgradeGHCup": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to upgrade GHCup automatically when 'manageHLS' is set to 'GHCup'."
         },
         "haskell.checkProject": {
           "scope": "resource",
