@@ -249,6 +249,18 @@
           "default": true,
           "description": "Enables eval plugin"
         },
+        "haskell.plugin.eval.config.diff": {
+          "markdownDescription": "When reloading haddock test results in changes, mark it with WAS/NOW.",
+          "scope": "resource",
+          "default": true,
+          "type": "boolean"
+        },
+        "haskell.plugin.eval.config.exception": {
+          "markdownDescription": "When the command results in an exception, mark it with `*** Exception:`.",
+          "scope": "resource",
+          "default": false,
+          "type": "boolean"
+        },
         "haskell.plugin.moduleName.globalOn": {
           "scope": "resource",
           "type": "boolean",
