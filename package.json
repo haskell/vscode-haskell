@@ -125,7 +125,7 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "An optional URL to override where ghcup checks for HLS-GHC compatibilty list (usually at: https://raw.githubusercontent.com/haskell/ghcup-metadata/master/hls-metadata-0.0.1.json)"
+          "description": "An optional URL to override where ghcup checks for HLS-GHC compatibility list (usually at: https://raw.githubusercontent.com/haskell/ghcup-metadata/master/hls-metadata-0.0.1.json)"
         },
         "haskell.metadataURL": {
           "scope": "resource",
@@ -205,7 +205,7 @@
           "scope": "resource",
           "type": "boolean",
           "default": true,
-          "description": "Whether to typecheck the entire project on load. It could drive to bad perfomance in large projects."
+          "description": "Whether to typecheck the entire project on load. It could drive to bad performance in large projects."
         },
         "haskell.maxCompletions": {
           "scope": "resource",
