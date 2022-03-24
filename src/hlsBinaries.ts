@@ -345,7 +345,10 @@ async function callGHCup(
       undefined,
       title,
       cancellable,
-      undefined,
+      {
+        // omit colourful output because the logs are uglier
+        NO_COLOR: '1',
+      },
       callback
     );
   } else {
