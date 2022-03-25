@@ -553,15 +553,7 @@ async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger,
   );
   const latestInstalled = installedVersions.split(/\r?\n/).pop();
   if (latestInstalled) {
-    const latestInstalledVersion = latestInstalled.split(/\s+/)[1];
-
-    const bin = await callGHCup(context, logger, ['whereis', tool, `${latestInstalledVersion}`], undefined, false);
-    const ver = await callAsync(`${bin}`, ['--numeric-version'], logger, undefined, undefined, false);
-    if (ver) {
-      return ver;
-    } else {
-      throw new Error(`Could not figure out version of ${bin}`);
-    }
+    return latestInstalled.split(/\s+/)[1];
   }
 
   return getLatestAvailableToolFromGHCup(context, logger, tool);
