@@ -30,7 +30,7 @@ export { IEnvVars };
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
 type ManageHLS = 'GHCup' | 'PATH';
-let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS | null;
+let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS;
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
@@ -239,12 +239,14 @@ export async function findHaskellLanguageServer(
     fs.mkdirSync(storagePath);
   }
 
-  if (!manageHLS) {
-    // plugin needs initialization
+
+  // first plugin initialization
+  if (manageHLS !== 'GHCup' && !context.globalState.get("pluginInitialized") as boolean | null) {
     const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
 
-    const decision =
-      (await window.showInformationMessage(promptMessage, 'Automatically via GHCup', 'Manually via PATH')) || null;
+    const popup = window.showInformationMessage(promptMessage, 'Automatically via GHCup', 'Manually via PATH');
+
+    const decision = (await popup) || null;
     if (decision === 'Automatically via GHCup') {
       manageHLS = 'GHCup';
     } else if (decision === 'Manually via PATH') {
@@ -256,9 +258,10 @@ export async function findHaskellLanguageServer(
       manageHLS = 'PATH';
     }
     workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
+    context.globalState.update("pluginInitialized", true);
   }
 
-  if (manageHLS === 'PATH' || manageHLS === null) {
+  if (manageHLS === 'PATH') {
     return findHLSinPATH(context, logger, folder);
   } else {
     // we manage HLS, make sure ghcup is installed/available

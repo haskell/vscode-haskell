@@ -166,7 +166,7 @@
         "haskell.manageHLS": {
           "scope": "resource",
           "type": "string",
-          "default": null,
+          "default": "PATH",
           "description": "How to manage/find HLS installations.",
           "enum": [
             "GHCup",
