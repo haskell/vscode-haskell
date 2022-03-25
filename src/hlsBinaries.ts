@@ -147,7 +147,9 @@ async function callAsync(
                   if (stdout) {
                     logger.error(`stdout: ${stdout}`);
                   }
-                  reject(Error(`${command} exited with exit code ${err.code}:\n${stdout}\n${stderr}`));
+                  reject(Error(`\`${command}\` exited with exit code ${err.code}.
+                              Consult the [Extensions Output](https://github.com/haskell/vscode-haskell#investigating-and-reporting-problems)
+                              for details.`));
                 } else {
                   resolve(stdout?.trim());
                 }
