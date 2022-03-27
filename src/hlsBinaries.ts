@@ -27,6 +27,10 @@ import {
 } from './utils';
 export { IEnvVars };
 
+type Tool = "hls" | "ghc" | "cabal" | "stack"
+
+type ToolConfig = Map<Tool, string>
+
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
 type ManageHLS = 'GHCup' | 'PATH';
@@ -266,21 +270,42 @@ export async function findHaskellLanguageServer(
   } else {
     // we manage HLS, make sure ghcup is installed/available
     await upgradeGHCup(context, logger);
+    
+    const toolchainConfig: ToolConfig = new Map(Object.entries(workspace.getConfiguration('haskell').get('toolchain') as any)) as ToolConfig;
+    let latestHLS:   string | undefined | null = undefined;
+    let latestCabal: string | undefined | null = undefined;
+    let latestStack: string | undefined | null = undefined;
+    let recGHC:      string | undefined | null = "recommended";
+    let projectHls:  string | undefined | null = undefined;
+    let projectGhc:  string | undefined | null = undefined;
+
+    if (toolchainConfig) {
+        latestHLS = toolchainConfig.get('hls');
+        latestCabal = toolchainConfig.get('cabal');
+        latestStack = toolchainConfig.get('stack');
+        recGHC = toolchainConfig.get('ghc');
+
+        projectHls = latestHLS;
+        projectGhc = recGHC;
+    }
 
     // get a preliminary toolchain for finding the correct project GHC version
     // (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
-    const latestHLS = await getLatestToolFromGHCup(context, logger, 'hls');
-    const latestCabal = (workspace.getConfiguration('haskell').get('installCabal') as boolean)
-      ? await getLatestToolFromGHCup(context, logger, 'cabal')
-      : null;
-    const latestStack = (workspace.getConfiguration('haskell').get('installStack') as boolean)
-      ? await getLatestToolFromGHCup(context, logger, 'stack')
-      : null;
-    const recGHC =
-      !(await executableExists('ghc')) && (workspace.getConfiguration('haskell').get('installGHC') as boolean)
-        ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
-        : null;
+    if (latestHLS === undefined) {
+        latestHLS = await getLatestToolFromGHCup(context, logger, 'hls');
+    }
+    if (latestCabal === undefined) {
+        latestCabal = await getLatestToolFromGHCup(context, logger, 'cabal');
+    }
+    if (latestStack === undefined) {
+        latestStack = await getLatestToolFromGHCup(context, logger, 'stack');
+    }
+    if (recGHC === undefined) {
+        recGHC = !(await executableExists('ghc'))
+            ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
+            : null;
+    }
 
     const latestToolchainBindir = await callGHCup(
       context,
@@ -291,7 +316,7 @@ export async function findHaskellLanguageServer(
         latestHLS,
         ...(latestCabal ? ['--cabal', latestCabal] : []),
         ...(latestStack ? ['--stack', latestStack] : []),
-        ...(recGHC ? ['--ghc', 'recommended'] : []),
+        ...(recGHC ? ['--ghc', recGHC] : []),
         '--install',
       ],
       'Installing latest toolchain for bootstrap',
@@ -303,7 +328,15 @@ export async function findHaskellLanguageServer(
 
     // now figure out the project GHC version and the latest supported HLS version
     // we need for it (e.g. this might in fact be a downgrade for old GHCs)
-    const [projectHls, projectGhc] = await getLatestProjectHLS(context, logger, workingDir, latestToolchainBindir);
+    if (projectHls === undefined || projectGhc === undefined) {
+        const res = await getLatestProjectHLS(context, logger, workingDir, latestToolchainBindir);
+        if (projectHls === undefined) {
+            projectHls = res[0];
+        }
+        if (projectGhc === undefined) {
+            projectGhc = res[1];
+        }
+    }
 
     // now install said version in an isolated symlink directory
     const hlsBinDir = await callGHCup(
@@ -315,7 +348,7 @@ export async function findHaskellLanguageServer(
         projectHls,
         ...(latestCabal ? ['--cabal', latestCabal] : []),
         ...(latestStack ? ['--stack', latestStack] : []),
-        ...((workspace.getConfiguration('haskell').get('installGHC') as boolean) ? ['--ghc', projectGhc] : []),
+        ...(projectGhc  ? ['--ghc', projectGhc] : []),
         '--install',
       ],
       `Installing project specific toolchain: HLS-${projectHls}, GHC-${projectGhc}, cabal-${latestCabal}, stack-${latestStack}`,
