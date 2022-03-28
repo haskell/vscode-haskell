@@ -250,7 +250,12 @@ export async function findHaskellLanguageServer(
   if (manageHLS !== 'GHCup' && (!context.globalState.get('pluginInitialized') as boolean | null)) {
     const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
 
-    const popup = window.showInformationMessage(promptMessage, 'Automatically via GHCup', 'Manually via PATH');
+    const popup = window.showInformationMessage(
+      promptMessage,
+      { modal: true },
+      'Automatically via GHCup',
+      'Manually via PATH'
+    );
 
     const decision = (await popup) || null;
     if (decision === 'Automatically via GHCup') {
@@ -403,6 +408,7 @@ export async function findHaskellLanguageServer(
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
           `Need to download ${toInstall.join(', ')}, continue?`,
+          { modal: true },
           'Yes',
           'No',
           "Yes, don't ask again"
