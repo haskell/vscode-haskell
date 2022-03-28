@@ -163,6 +163,12 @@
           "default": {},
           "markdownDescription": "Define environment variables for the language server."
         },
+        "haskell.promptBeforeDownloads": {
+          "scope": "machine",
+          "type": "boolean",
+          "default": "true",
+          "markdownDescription": "Prompt before performing any downloads."
+        },
         "haskell.manageHLS": {
           "scope": "resource",
           "type": "string",

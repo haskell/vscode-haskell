@@ -27,9 +27,9 @@ import {
 } from './utils';
 export { IEnvVars };
 
-type Tool = "hls" | "ghc" | "cabal" | "stack"
+type Tool = 'hls' | 'ghc' | 'cabal' | 'stack';
 
-type ToolConfig = Map<Tool, string>
+type ToolConfig = Map<Tool, string>;
 
 export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
@@ -151,9 +151,11 @@ async function callAsync(
                   if (stdout) {
                     logger.error(`stdout: ${stdout}`);
                   }
-                  reject(Error(`\`${command}\` exited with exit code ${err.code}.
+                  reject(
+                    Error(`\`${command}\` exited with exit code ${err.code}.
                               Consult the [Extensions Output](https://github.com/haskell/vscode-haskell#investigating-and-reporting-problems)
-                              for details.`));
+                              for details.`)
+                  );
                 } else {
                   resolve(stdout?.trim());
                 }
@@ -230,11 +232,12 @@ export async function findHaskellLanguageServer(
   logger: Logger,
   workingDir: string,
   folder?: WorkspaceFolder
-): Promise<string> {
+): Promise<[string, string | undefined]> {
   logger.info('Finding haskell-language-server');
 
   if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string) {
-    return findServerExecutable(context, logger, folder);
+    const exe = await findServerExecutable(context, logger, folder);
+    return [exe, undefined];
   }
 
   const storagePath: string = await getStoragePath(context);
@@ -243,9 +246,8 @@ export async function findHaskellLanguageServer(
     fs.mkdirSync(storagePath);
   }
 
-
   // first plugin initialization
-  if (manageHLS !== 'GHCup' && !context.globalState.get("pluginInitialized") as boolean | null) {
+  if (manageHLS !== 'GHCup' && (!context.globalState.get('pluginInitialized') as boolean | null)) {
     const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
 
     const popup = window.showInformationMessage(promptMessage, 'Automatically via GHCup', 'Manually via PATH');
@@ -262,89 +264,109 @@ export async function findHaskellLanguageServer(
       manageHLS = 'PATH';
     }
     workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
-    context.globalState.update("pluginInitialized", true);
+    context.globalState.update('pluginInitialized', true);
   }
 
   if (manageHLS === 'PATH') {
-    return findHLSinPATH(context, logger, folder);
+    const exe = await findHLSinPATH(context, logger, folder);
+    return [exe, undefined];
   } else {
     // we manage HLS, make sure ghcup is installed/available
     await upgradeGHCup(context, logger);
-    
-    const toolchainConfig: ToolConfig = new Map(Object.entries(workspace.getConfiguration('haskell').get('toolchain') as any)) as ToolConfig;
-    let latestHLS:   string | undefined | null = undefined;
+
+    // boring init
+    let latestHLS: string | undefined | null = undefined;
     let latestCabal: string | undefined | null = undefined;
     let latestStack: string | undefined | null = undefined;
-    let recGHC:      string | undefined | null = "recommended";
-    let projectHls:  string | undefined | null = undefined;
-    let projectGhc:  string | undefined | null = undefined;
+    let recGHC: string | undefined | null = 'recommended';
+    let projectHls: string | undefined | null = undefined;
+    let projectGhc: string | undefined | null = undefined;
 
+    // support explicit toolchain config
+    const toolchainConfig: ToolConfig = new Map(
+      Object.entries(workspace.getConfiguration('haskell').get('toolchain') as any)
+    ) as ToolConfig;
     if (toolchainConfig) {
-        latestHLS = toolchainConfig.get('hls');
-        latestCabal = toolchainConfig.get('cabal');
-        latestStack = toolchainConfig.get('stack');
-        recGHC = toolchainConfig.get('ghc');
+      latestHLS = toolchainConfig.get('hls');
+      latestCabal = toolchainConfig.get('cabal');
+      latestStack = toolchainConfig.get('stack');
+      recGHC = toolchainConfig.get('ghc');
 
-        projectHls = latestHLS;
-        projectGhc = recGHC;
+      projectHls = latestHLS;
+      projectGhc = recGHC;
     }
 
     // get a preliminary toolchain for finding the correct project GHC version
     // (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
     if (latestHLS === undefined) {
-        latestHLS = await getLatestToolFromGHCup(context, logger, 'hls');
+      latestHLS = await getLatestToolFromGHCup(context, logger, 'hls');
     }
     if (latestCabal === undefined) {
-        latestCabal = await getLatestToolFromGHCup(context, logger, 'cabal');
+      latestCabal = await getLatestToolFromGHCup(context, logger, 'cabal');
     }
     if (latestStack === undefined) {
-        latestStack = await getLatestToolFromGHCup(context, logger, 'stack');
+      latestStack = await getLatestToolFromGHCup(context, logger, 'stack');
     }
     if (recGHC === undefined) {
-        recGHC = !(await executableExists('ghc'))
-            ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
-            : null;
+      recGHC = !(await executableExists('ghc'))
+        ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
+        : null;
     }
 
-   const dontAskOnDownload = context.globalState.get("dontAskOnDownload") as boolean | null;
-    if (!dontAskOnDownload) {
-        const hlsInstalled = await toolInstalled(context, logger, 'hls', latestHLS);
-        const cabalInstalled = await toolInstalled(context, logger, 'cabal', latestCabal);
-        const stackInstalled = await toolInstalled(context, logger, 'stack', latestStack);
-        const ghcInstalled = await executableExists('ghc') ? [true, 'ghc', ''] as [boolean, string, string] : await toolInstalled(context, logger, 'ghc', recGHC!);
-        const toInstall = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
-        logger.info(`toInstall length: ${toInstall.length}`)
-        logger.info(`toInstall: ${toInstall}`)
-        if (toInstall.length > 0) {
-            const decision = await window.showInformationMessage(`Need to download ${toInstall.join(', ')}, continue?`, 'Yes', 'No', 'Yes, don\'t ask again');
-            if (decision === 'Yes') {
-            } else if (decision === 'Yes, don\'t ask again') {
-                context.globalState.update("dontAskOnDownload", true);
-            } else {
-                [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].forEach(([b, t]) => {
-                    if (!b) {
-                        if (t === 'hls') {
-                            throw new MissingToolError('hls');
-                        } else if (t === 'cabal') {
-                            latestCabal = null;
-                        } else if (t === 'stack') {
-                            latestStack = null;
-                        } else if (t === 'ghc') {
-                            recGHC = null;
-                        }
-                    }
-                });
+    // download popups
+    const promptBeforeDownloads = workspace.getConfiguration('haskell').get('promptBeforeDownloads') as boolean;
+    if (promptBeforeDownloads) {
+      const hlsInstalled = latestHLS
+        ? await toolInstalled(context, logger, 'hls', latestHLS)
+        : ([true, 'hls', ''] as [boolean, string, string]);
+      const cabalInstalled = latestCabal
+        ? await toolInstalled(context, logger, 'cabal', latestCabal)
+        : ([true, 'cabal', ''] as [boolean, string, string]);
+      const stackInstalled = latestStack
+        ? await toolInstalled(context, logger, 'stack', latestStack)
+        : ([true, 'stack', ''] as [boolean, string, string]);
+      const ghcInstalled = (await executableExists('ghc'))
+        ? ([true, 'ghc', ''] as [boolean, string, string])
+        : await toolInstalled(context, logger, 'ghc', recGHC!);
+      const toInstall = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled]
+        .filter(([b, t, v]) => !b)
+        .map(([_, t, v]) => `${t}-${v}`);
+      if (toInstall.length > 0) {
+        const decision = await window.showInformationMessage(
+          `Need to download ${toInstall.join(', ')}, continue?`,
+          'Yes',
+          'No',
+          "Yes, don't ask again"
+        );
+        if (decision === 'Yes') {
+        } else if (decision === "Yes, don't ask again") {
+          workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
+        } else {
+          [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].forEach(([b, t]) => {
+            if (!b) {
+              if (t === 'hls') {
+                throw new MissingToolError('hls');
+              } else if (t === 'cabal') {
+                latestCabal = null;
+              } else if (t === 'stack') {
+                latestStack = null;
+              } else if (t === 'ghc') {
+                recGHC = null;
+              }
             }
+          });
         }
+      }
     }
+
+    // our preliminary toolchain
     const latestToolchainBindir = await callGHCup(
       context,
       logger,
       [
         'run',
-        '--hls',
-        latestHLS,
+        ...(latestHLS ? ['--hls', latestHLS] : []),
         ...(latestCabal ? ['--cabal', latestCabal] : []),
         ...(latestStack ? ['--stack', latestStack] : []),
         ...(recGHC ? ['--ghc', recGHC] : []),
@@ -357,60 +379,73 @@ export async function findHaskellLanguageServer(
       }
     );
 
-    // now figure out the project GHC version and the latest supported HLS version
+    // now figure out the actual project GHC version and the latest supported HLS version
     // we need for it (e.g. this might in fact be a downgrade for old GHCs)
     if (projectHls === undefined || projectGhc === undefined) {
-        const res = await getLatestProjectHLS(context, logger, workingDir, latestToolchainBindir);
-        if (projectHls === undefined) {
-            projectHls = res[0];
-        }
-        if (projectGhc === undefined) {
-            projectGhc = res[1];
-        }
+      const res = await getLatestProjectHLS(context, logger, workingDir, latestToolchainBindir);
+      if (projectHls === undefined) {
+        projectHls = res[0];
+      }
+      if (projectGhc === undefined) {
+        projectGhc = res[1];
+      }
     }
 
-    if (!dontAskOnDownload) {
-        const hlsInstalled = await toolInstalled(context, logger, 'hls', projectHls);
-        const ghcInstalled = await toolInstalled(context, logger, 'ghc', projectGhc);
-        const toInstall = [hlsInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
-        logger.info(`toInstall length: ${toInstall.length}`)
-        logger.info(`toInstall: ${toInstall}`)
-        if (toInstall.length > 0) {
-            const decision = await window.showInformationMessage(`Need to download ${toInstall.join(', ')}, continue?`, 'Yes', 'No', 'Yes, don\'t ask again');
-            if (decision === 'Yes') {
-            } else if (decision === 'Yes, don\'t ask again') {
-                context.globalState.update("dontAskOnDownload", true);
-            } else {
-                [hlsInstalled, ghcInstalled].forEach(([b, t]) => {
-                    if (!b) {
-                        if (t === 'hls') {
-                            throw new MissingToolError('hls');
-                        } else if (t === 'ghc') {
-                            projectGhc = null;
-                        }
-                    }
-                });
+    // more download popups
+    if (promptBeforeDownloads) {
+      const hlsInstalled = projectHls
+        ? await toolInstalled(context, logger, 'hls', projectHls)
+        : ([true, 'hls', ''] as [boolean, string, string]);
+      const ghcInstalled = projectGhc
+        ? await toolInstalled(context, logger, 'ghc', projectGhc)
+        : ([true, 'ghc', ''] as [boolean, string, string]);
+      const toInstall = [hlsInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
+      if (toInstall.length > 0) {
+        const decision = await window.showInformationMessage(
+          `Need to download ${toInstall.join(', ')}, continue?`,
+          'Yes',
+          'No',
+          "Yes, don't ask again"
+        );
+        if (decision === 'Yes') {
+        } else if (decision === "Yes, don't ask again") {
+          workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
+        } else {
+          [hlsInstalled, ghcInstalled].forEach(([b, t]) => {
+            if (!b) {
+              if (t === 'hls') {
+                throw new MissingToolError('hls');
+              } else if (t === 'ghc') {
+                projectGhc = null;
+              }
             }
+          });
         }
+      }
     }
 
-    // now install said version in an isolated symlink directory
+    // now install the proper versions
     const hlsBinDir = await callGHCup(
       context,
       logger,
       [
         'run',
-        '--hls',
-        projectHls,
+        ...(projectHls ? ['--hls', projectHls] : []),
         ...(latestCabal ? ['--cabal', latestCabal] : []),
         ...(latestStack ? ['--stack', latestStack] : []),
-        ...(projectGhc  ? ['--ghc', projectGhc] : []),
+        ...(projectGhc ? ['--ghc', projectGhc] : []),
         '--install',
       ],
       `Installing project specific toolchain: HLS-${projectHls}, GHC-${projectGhc}, cabal-${latestCabal}, stack-${latestStack}`,
       true
     );
-    return path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`);
+
+    if (projectHls) {
+      return [path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`), hlsBinDir];
+    } else {
+      const exe = await findHLSinPATH(context, logger, folder);
+      return [exe, hlsBinDir];
+    }
   }
 }
 
@@ -455,10 +490,16 @@ async function getLatestProjectHLS(
   logger: Logger,
   workingDir: string,
   toolchainBindir: string
-): Promise<[string, string]> {
+): Promise<[string, string | null]> {
   // get project GHC version, but fallback to system ghc if necessary.
   const projectGhc = toolchainBindir
-    ? await getProjectGHCVersion(toolchainBindir, workingDir, logger)
+    ? await getProjectGHCVersion(toolchainBindir, workingDir, logger).catch(async (e) => {
+        logger.error(`${e}`);
+        window.showWarningMessage(
+          `I had trouble figuring out the exact GHC version for the project. Falling back to using 'ghc${exeExt}'.`
+        );
+        return await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
+      })
     : await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
   const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
 
@@ -722,9 +763,16 @@ async function getHLSesFromGHCup(context: ExtensionContext, logger: Logger): Pro
   }
 }
 
-async function toolInstalled(context: ExtensionContext, logger: Logger, tool: string, version: string): Promise<[boolean, string, string]> {
-    const b = await callGHCup(context, logger, ['whereis', tool, version], undefined, false).then(x => true).catch(x => false);
-    return [b, tool, version];
+async function toolInstalled(
+  context: ExtensionContext,
+  logger: Logger,
+  tool: string,
+  version: string
+): Promise<[boolean, string, string]> {
+  const b = await callGHCup(context, logger, ['whereis', tool, version], undefined, false)
+    .then((x) => true)
+    .catch((x) => false);
+  return [b, tool, version];
 }
 
 /**
