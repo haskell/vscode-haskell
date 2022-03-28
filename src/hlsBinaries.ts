@@ -307,6 +307,37 @@ export async function findHaskellLanguageServer(
             : null;
     }
 
+   const dontAskOnDownload = context.globalState.get("dontAskOnDownload") as boolean | null;
+    if (!dontAskOnDownload) {
+        const hlsInstalled = await toolInstalled(context, logger, 'hls', latestHLS);
+        const cabalInstalled = await toolInstalled(context, logger, 'cabal', latestCabal);
+        const stackInstalled = await toolInstalled(context, logger, 'stack', latestStack);
+        const ghcInstalled = await executableExists('ghc') ? [true, 'ghc', ''] as [boolean, string, string] : await toolInstalled(context, logger, 'ghc', recGHC!);
+        const toInstall = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
+        logger.info(`toInstall length: ${toInstall.length}`)
+        logger.info(`toInstall: ${toInstall}`)
+        if (toInstall.length > 0) {
+            const decision = await window.showInformationMessage(`Need to download ${toInstall.join(', ')}, continue?`, 'Yes', 'No', 'Yes, don\'t ask again');
+            if (decision === 'Yes') {
+            } else if (decision === 'Yes, don\'t ask again') {
+                context.globalState.update("dontAskOnDownload", true);
+            } else {
+                [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].forEach(([b, t]) => {
+                    if (!b) {
+                        if (t === 'hls') {
+                            throw new MissingToolError('hls');
+                        } else if (t === 'cabal') {
+                            latestCabal = null;
+                        } else if (t === 'stack') {
+                            latestStack = null;
+                        } else if (t === 'ghc') {
+                            recGHC = null;
+                        }
+                    }
+                });
+            }
+        }
+    }
     const latestToolchainBindir = await callGHCup(
       context,
       logger,
@@ -335,6 +366,31 @@ export async function findHaskellLanguageServer(
         }
         if (projectGhc === undefined) {
             projectGhc = res[1];
+        }
+    }
+
+    if (!dontAskOnDownload) {
+        const hlsInstalled = await toolInstalled(context, logger, 'hls', projectHls);
+        const ghcInstalled = await toolInstalled(context, logger, 'ghc', projectGhc);
+        const toInstall = [hlsInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
+        logger.info(`toInstall length: ${toInstall.length}`)
+        logger.info(`toInstall: ${toInstall}`)
+        if (toInstall.length > 0) {
+            const decision = await window.showInformationMessage(`Need to download ${toInstall.join(', ')}, continue?`, 'Yes', 'No', 'Yes, don\'t ask again');
+            if (decision === 'Yes') {
+            } else if (decision === 'Yes, don\'t ask again') {
+                context.globalState.update("dontAskOnDownload", true);
+            } else {
+                [hlsInstalled, ghcInstalled].forEach(([b, t]) => {
+                    if (!b) {
+                        if (t === 'hls') {
+                            throw new MissingToolError('hls');
+                        } else if (t === 'ghc') {
+                            projectGhc = null;
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -664,6 +720,11 @@ async function getHLSesFromGHCup(context: ExtensionContext, logger: Logger): Pro
   } else {
     return null;
   }
+}
+
+async function toolInstalled(context: ExtensionContext, logger: Logger, tool: string, version: string): Promise<[boolean, string, string]> {
+    const b = await callGHCup(context, logger, ['whereis', tool, version], undefined, false).then(x => true).catch(x => false);
+    return [b, tool, version];
 }
 
 /**
