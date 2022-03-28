@@ -324,15 +324,15 @@ export async function findHaskellLanguageServer(
     if (promptBeforeDownloads) {
       const hlsInstalled = latestHLS
         ? await toolInstalled(context, logger, 'hls', latestHLS)
-        : ([true, 'hls', ''] as [boolean, string, string]);
+        : ([true, 'hls', ''] as [boolean, Tool, string]);
       const cabalInstalled = latestCabal
         ? await toolInstalled(context, logger, 'cabal', latestCabal)
-        : ([true, 'cabal', ''] as [boolean, string, string]);
+        : ([true, 'cabal', ''] as [boolean, Tool, string]);
       const stackInstalled = latestStack
         ? await toolInstalled(context, logger, 'stack', latestStack)
-        : ([true, 'stack', ''] as [boolean, string, string]);
+        : ([true, 'stack', ''] as [boolean, Tool, string]);
       const ghcInstalled = (await executableExists('ghc'))
-        ? ([true, 'ghc', ''] as [boolean, string, string])
+        ? ([true, 'ghc', ''] as [boolean, Tool, string])
         : await toolInstalled(context, logger, 'ghc', recGHC!);
       const toInstall = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled]
         .filter(([b, t, v]) => !b)
@@ -400,10 +400,10 @@ export async function findHaskellLanguageServer(
     if (promptBeforeDownloads) {
       const hlsInstalled = projectHls
         ? await toolInstalled(context, logger, 'hls', projectHls)
-        : ([true, 'hls', ''] as [boolean, string, string]);
+        : ([true, 'hls', ''] as [boolean, Tool, string]);
       const ghcInstalled = projectGhc
         ? await toolInstalled(context, logger, 'ghc', projectGhc)
-        : ([true, 'ghc', ''] as [boolean, string, string]);
+        : ([true, 'ghc', ''] as [boolean, Tool, string]);
       const toInstall = [hlsInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
@@ -678,7 +678,7 @@ export async function getStoragePath(context: ExtensionContext): Promise<string>
 }
 
 // the tool might be installed or not
-async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger, tool: string): Promise<string> {
+async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger, tool: Tool): Promise<string> {
   // these might be custom/stray/compiled, so we try first
   const installedVersions = await callGHCup(
     context,
@@ -698,7 +698,7 @@ async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger,
 async function getLatestAvailableToolFromGHCup(
   context: ExtensionContext,
   logger: Logger,
-  tool: string,
+  tool: Tool,
   tag?: string,
   criteria?: string
 ): Promise<string> {
@@ -772,9 +772,9 @@ async function getHLSesFromGHCup(context: ExtensionContext, logger: Logger): Pro
 async function toolInstalled(
   context: ExtensionContext,
   logger: Logger,
-  tool: string,
+  tool: Tool,
   version: string
-): Promise<[boolean, string, string]> {
+): Promise<[boolean, Tool, string]> {
   const b = await callGHCup(context, logger, ['whereis', tool, version], undefined, false)
     .then((x) => true)
     .catch((x) => false);
