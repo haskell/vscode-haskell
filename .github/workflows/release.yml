@@ -18,6 +18,7 @@ jobs:
         with:
           pat: stub
           dryRun: true
+          preRelease: ${{ github.event.action == 'prereleased' }}
           yarn: true
 
       - name: Upload extension vsix to workflow artifacts
