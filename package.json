@@ -431,7 +431,7 @@
   "devDependencies": {
     "@types/cheerio": "^0.22.30",
     "@types/glob": "^7.1.4",
-    "@types/js-yaml": "^3.12.3",
+    "@types/js-yaml": "^4.0.5",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^4.1.2",
     "@types/mocha": "^9.0.0",
@@ -463,7 +463,7 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
     "extend": ">=3.0.2",
-    "js-yaml": "^3.13.1",
+    "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
     "lru-cache": "^4.1.5",
     "request": "^2.88.2",

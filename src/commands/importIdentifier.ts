@@ -58,14 +58,14 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   try {
     const hpackDoc = await vscode.workspace.openTextDocument(vscode.workspace.rootPath + '/package.yaml');
 
-    const hpack: any = yaml.safeLoad(hpackDoc.getText());
+    const hpack: any = yaml.load(hpackDoc.getText());
     hpack.dependencies = hpack.dependencies || [];
     if (!hpack.dependencies.some((dep: string) => new RegExp(escapeRegExp(arg.package)).test(dep))) {
       hpack.dependencies.push(arg.package);
       edit.replace(
         hpackDoc.uri,
         new vscode.Range(new vscode.Position(0, 0), hpackDoc.lineAt(hpackDoc.lineCount - 1).range.end),
-        yaml.safeDump(hpack)
+        yaml.dump(hpack)
       );
     }
   } catch (e) {
