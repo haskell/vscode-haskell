@@ -14,7 +14,7 @@ jobs:
       - run: yarn install --immutable --immutable-cache --check-cache
       - name: Publish to Visual Studio Marketplace
         id: publishToVSMarketplace
-        uses: HaaLeo/publish-vscode-extension@v0
+        uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
@@ -22,7 +22,7 @@ jobs:
       - name: Publish to Open VSX Registry
         id: publishToOpenVSX
         continue-on-error: true
-        uses: HaaLeo/publish-vscode-extension@v0
+        uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           yarn: true
