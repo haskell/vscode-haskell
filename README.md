@@ -112,11 +112,11 @@ either globally or per project. E.g.:
 
 ```json
 {
-    "haskell.toolchain": {
-        "hls": "1.6.1.1",
-        "cabal": "recommended",
-        "stack": null
-    }    
+  "haskell.toolchain": {
+    "hls": "1.6.1.1",
+    "cabal": "recommended",
+    "stack": null
+  }
 }
 ```
 
@@ -131,11 +131,11 @@ Another config could be:
 
 ```json
 {
-    "haskell.toolchain": {
-        "ghc": "9.2.2",
-        "hls": "latest"
-        "cabal": "recommended"
-    }    
+  "haskell.toolchain": {
+    "ghc": "9.2.2",
+    "hls": "latest",
+    "cabal": "recommended"
+  }
 }
 ```
 
@@ -151,10 +151,9 @@ The defaults (when omitted) are as follows:
 1. install the project required `ghc` (corresponding to `with-compiler` setting in `cabal.project` for example)
 2. install the latest `hls` version that supports the project required ghc version
 3. install latest `cabal`
-3. install latest `stack`
+4. install latest `stack`
 
 When a the value is `null`, the extension will refrain from installing it.
-
 
 ### Supported GHC versions
 
@@ -204,17 +203,15 @@ Please include the output when filing any issues on the [haskell-language-server
 
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
   Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
-  
+
 #### `Cradle requires ghc/cabal/stack but it isn't installed`
 
 - In Linux/MacOS systems, opening vscode in the windows system could not use the `$PATH` set in the shell
   so it will not see required tools as ghc, cabal or stack. This usually happens if you have installed them
-  via ghcup. 
-- It could be fixed changing the `$PATH` variable in the init config file used by the windows system 
+  via ghcup.
+- It could be fixed changing the `$PATH` variable in the init config file used by the windows system
   (f.e. `~/.profile`, but i can vary depending on your system setup).
 - See [this stackoverflow question](https://stackoverflow.com/questions/43983718/set-global-path-environment-variable-in-vs-code) for more tricks.
-
-
 
 ## Contributing
 

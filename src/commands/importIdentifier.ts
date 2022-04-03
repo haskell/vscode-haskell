@@ -9,9 +9,7 @@ import { CommandNames } from './constants';
 const getJson = bent('json');
 
 const askHoogle = async (variable: string): Promise<any> => {
-  return await getJson(
-    `https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`
-  );
+  return await getJson(`https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`);
 };
 
 const withCache =

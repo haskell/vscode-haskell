@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: ''
 labels: 'status: needs triage'
 assignees: ''
-
 ---
 
 <!--
@@ -16,18 +15,23 @@ When filing an issue, please fill out as much of the information below as you ca
 ### Your environment
 
 Which OS do you use:
+
 <!-- Windows, MacOS, Ubuntu, ArchLinux, etc... -->
 
 ### Steps to reproduce
+
 <!-- Tell us how to reproduce this issue, including screenshots if you think they can be useful -->
 
 ### Expected behaviour
+
 <!-- Tell us what should happen. -->
 
 ### Actual behaviour
+
 <!-- Tell us what happens instead. -->
 
 ### Include debug information
+
 Execute in the root of your project the command `haskell-language-server-wrapper --debug .` and paste the logs here (you can find the executable location [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)):
 
 <details>
@@ -38,6 +42,7 @@ Debug output:
 ```
 <paste your logs here>
 ```
+
 </details>
 
 Paste the contents of extension specific log, you can check instructions about how to find it [here](https://github.com/haskell/vscode-haskell#troubleshooting)
@@ -50,4 +55,5 @@ Extension log:
 ```
 <paste your logs here>
 ```
+
 </details>
