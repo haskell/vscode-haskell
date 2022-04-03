@@ -1,8 +1,8 @@
+import * as bent from 'bent';
 import * as cheerio from 'cheerio';
 import * as yaml from 'js-yaml';
 import escapeRegExp from 'lodash-es/escapeRegExp';
 import * as LRUCache from 'lru-cache';
-import * as bent from 'bent';
 import * as vscode from 'vscode';
 import { CommandNames } from './constants';
 

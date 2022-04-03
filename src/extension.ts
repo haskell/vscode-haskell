@@ -276,7 +276,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
  * Deactivate each of the LSP servers.
  */
 export async function deactivate() {
-  const promises: Array<Thenable<void>> = [];
+  const promises: Thenable<void>[] = [];
   for (const client of clients.values()) {
     if (client) {
       promises.push(client.stop());
