@@ -18,22 +18,22 @@ async function withTimeout(seconds: number, f: Promise<any>) {
   return Promise.race([f, delay(seconds)]);
 }
 
-const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const retryOperation = (operation: () => Promise<any>, delay: number, retries: number) => new Promise((resolve, reject): Promise<any> => {
-  return operation()
-    .then(resolve)
-    .catch((reason) => {
-      if (retries > 0) {
-        return wait(delay)
-          .then(retryOperation.bind(null, operation, delay, retries - 1))
-          .then(resolve)
-          .catch(reject);
-      }
-      return reject(reason);
-    });
-});
-
+const retryOperation = (operation: () => Promise<any>, delay: number, retries: number) =>
+  new Promise((resolve, reject): Promise<any> => {
+    return operation()
+      .then(resolve)
+      .catch((reason) => {
+        if (retries > 0) {
+          return wait(delay)
+            .then(retryOperation.bind(null, operation, delay, retries - 1))
+            .then(resolve)
+            .catch(reject);
+        }
+        return reject(reason);
+      });
+  });
 
 function getHaskellConfig() {
   return vscode.workspace.getConfiguration('haskell');
@@ -89,7 +89,8 @@ async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (file
         await deleteFiles(subDirectory, keepDirs, pred);
 
         // remove directory if it is empty now
-        const isEmptyNow = await vscode.workspace.fs.readDirectory(subDirectory)
+        const isEmptyNow = await vscode.workspace.fs
+          .readDirectory(subDirectory)
           .then((contents) => Promise.resolve(contents.length === 0));
         if (isEmptyNow) {
           console.log(`Deleting ${subDirectory}`);
@@ -125,11 +126,10 @@ suite('Extension Test Suite', () => {
 
   suiteSetup(async () => {
     const tmpdir = path.join(getWorkspaceRoot().uri.fsPath, 'tmp');
-    await deleteWorkspaceFiles(
-      [ joinUri(getWorkspaceRoot().uri, '.vscode')
-      , joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache')
-      ]
-    );
+    await deleteWorkspaceFiles([
+      joinUri(getWorkspaceRoot().uri, '.vscode'),
+      joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache'),
+    ]);
     await getHaskellConfig().update('promptBeforeDownloads', false, vscode.ConfigurationTarget.Global);
     await getHaskellConfig().update('manageHLS', 'GHCup');
     await getHaskellConfig().update('logFile', 'hls.log');
@@ -185,8 +185,17 @@ suite('Extension Test Suite', () => {
     await delay(20);
     const logContents = getExtensionLogContent();
     assert.ok(logContents, 'Extension log file does not exist');
-    assert.ok(retryOperation(() => new Promise((resolve, reject) => (logContents.match(/INFO hls:\s+Registering ide configuration/) !== null) ? resolve : reject), 1000 * 5, 20),
-							 'Extension log file has no hls output');
+    assert.ok(
+      retryOperation(
+        () =>
+          new Promise((resolve, reject) =>
+            logContents.match(/INFO hls:\s+Registering ide configuration/) !== null ? resolve : reject
+          ),
+        1000 * 5,
+        20
+      ),
+      'Extension log file has no hls output'
+    );
   });
 
   test('Server should inherit environment variables defined in the settings', async () => {

@@ -280,12 +280,12 @@ export async function findHaskellLanguageServer(
     await upgradeGHCup(context, logger);
 
     // boring init
-    let latestHLS: string | undefined | null = undefined;
-    let latestCabal: string | undefined | null = undefined;
-    let latestStack: string | undefined | null = undefined;
+    let latestHLS: string | undefined | null;
+    let latestCabal: string | undefined | null;
+    let latestStack: string | undefined | null;
     let recGHC: string | undefined | null = 'recommended';
-    let projectHls: string | undefined | null = undefined;
-    let projectGhc: string | undefined | null = undefined;
+    let projectHls: string | undefined | null;
+    let projectGhc: string | undefined | null;
 
     // support explicit toolchain config
     const toolchainConfig: ToolConfig = new Map(

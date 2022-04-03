@@ -29,12 +29,12 @@ jobs:
         uses: haskell/actions/setup@v1
         with:
           ghc-version: ${{ matrix.ghc }}
-      - name: "Install `tree` for MacOs"
+      - name: 'Install `tree` for MacOs'
         run: |
           brew update
           brew install tree
         if: runner.os == 'macOS'
-      - name: "Install `tree` for Windows"
+      - name: 'Install `tree` for Windows'
         run: |
           choco install tree
         if: runner.os == 'Windows'
