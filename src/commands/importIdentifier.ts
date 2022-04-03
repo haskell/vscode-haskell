@@ -1,20 +1,21 @@
 import * as cheerio from 'cheerio';
 import * as yaml from 'js-yaml';
 import escapeRegExp from 'lodash-es/escapeRegExp';
-import * as LRU from 'lru-cache';
-import * as request from 'request-promise-native';
+import * as LRUCache from 'lru-cache';
+import * as bent from 'bent';
 import * as vscode from 'vscode';
 import { CommandNames } from './constants';
 
+const getJson = bent('json');
+
 const askHoogle = async (variable: string): Promise<any> => {
-  return await request({
-    url: `https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`,
-    json: true,
-  }).promise();
+  return await getJson(
+    `https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`
+  );
 };
 
 const withCache =
-  <T, U>(theCache: LRU.Cache<T, U>, f: (a: T) => U) =>
+  <T, U>(theCache: LRUCache<T, U>, f: (a: T) => U) =>
   (a: T) => {
     const maybeB = theCache.get(a);
     if (maybeB) {
@@ -26,10 +27,11 @@ const withCache =
     }
   };
 
-const cache: LRU.Cache<string, Promise<any>> = LRU({
+const cache: LRUCache<string, Promise<any>> = new LRUCache({
   // 1 MB
   max: 1000 * 1000,
-  length: (r: any) => JSON.stringify(r).length,
+  maxSize: 1000 * 1000,
+  sizeCalculation: (r: any) => JSON.stringify(r).length,
 });
 
 const askHoogleCached = withCache(cache, askHoogle);
@@ -58,14 +60,14 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   try {
     const hpackDoc = await vscode.workspace.openTextDocument(vscode.workspace.rootPath + '/package.yaml');
 
-    const hpack: any = yaml.safeLoad(hpackDoc.getText());
+    const hpack: any = yaml.load(hpackDoc.getText());
     hpack.dependencies = hpack.dependencies || [];
     if (!hpack.dependencies.some((dep: string) => new RegExp(escapeRegExp(arg.package)).test(dep))) {
       hpack.dependencies.push(arg.package);
       edit.replace(
         hpackDoc.uri,
         new vscode.Range(new vscode.Position(0, 0), hpackDoc.lineAt(hpackDoc.lineCount - 1).range.end),
-        yaml.safeDump(hpack)
+        yaml.dump(hpack)
       );
     }
   } catch (e) {
