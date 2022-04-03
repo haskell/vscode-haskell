@@ -21,10 +21,10 @@ jobs:
           yarn: true
 
       - name: Upload extension vsix to workflow artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: haskell-${{ github.event.release.tag_name }}.vsix
-          path: ${{ steps.publishToVSMarketplace.outputs.vsixPath }}
+          path: ${{ steps.packageExtension.outputs.vsixPath }}
     outputs:
       vsixPath: ${{ steps.packageExtension.outputs.vsixPath }}
 
