@@ -43,7 +43,7 @@ jobs:
           extensionFile: ${{ needs.build-vsix.outputs.vsixPath }}
           yarn: true
           preRelease: ${{ github.event.action == 'prereleased' }}
-          dry-run: true
+          dryRun: true
 
   ## Publish to VSX iff this is a release
   deploy-vsx:
@@ -60,4 +60,4 @@ jobs:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           extensionFile: ${{ needs.build-vsix.outputs.vsixPath }}
           yarn: true
-          dry-run: true
+          dryRun: true
