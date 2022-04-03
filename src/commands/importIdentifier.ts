@@ -2,15 +2,16 @@ import * as cheerio from 'cheerio';
 import * as yaml from 'js-yaml';
 import escapeRegExp from 'lodash-es/escapeRegExp';
 import * as LRUCache from 'lru-cache';
-import * as request from 'request-promise-native';
+import * as bent from 'bent';
 import * as vscode from 'vscode';
 import { CommandNames } from './constants';
 
+const getJson = bent('json');
+
 const askHoogle = async (variable: string): Promise<any> => {
-  return await request({
-    url: `https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`,
-    json: true,
-  }).promise();
+  return await getJson(
+    `https://hoogle.haskell.org/?hoogle=${variable}&scope=set%3Astackage&mode=json`
+  );
 };
 
 const withCache =
