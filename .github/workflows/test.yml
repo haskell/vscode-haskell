@@ -51,13 +51,13 @@ jobs:
         shell: bash
 
       # Install test dependencies
-      - run: npm ci
-      - run: npm run webpack
+      - run: yarn install --immutable --immutable-cache --check-cache
+      - run: yarn run webpack
 
       # Run the tests
-      - run: xvfb-run -s '-screen 0 640x480x16' -a npm test
+      - run: xvfb-run -s '-screen 0 640x480x16' -a yarn run test
         if: runner.os == 'Linux'
-      - run: npm test
+      - run: yarn run test
         if: runner.os != 'Linux'
 
       # Upload test artefacts

@@ -3,11 +3,11 @@ import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath, runTests } from '@vscode/test-electron';
+import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath, runTests } from '@vscode/test-electron';
 
 function installExtension(vscodeExePath: string, extId: string) {
-  const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExePath);
-  cp.spawnSync(cliPath, ['--install-extension', extId], {
+  const [cliPath, ...args] = resolveCliArgsFromVSCodeExecutablePath(vscodeExePath);
+  cp.spawnSync(cliPath, [...args, '--install-extension', extId], {
     encoding: 'utf-8',
     stdio: 'inherit',
   });
