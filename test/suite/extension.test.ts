@@ -130,6 +130,7 @@ suite('Extension Test Suite', () => {
       , joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache')
       ]
     );
+    await getHaskellConfig().update('promptBeforeDownloads', false, vscode.ConfigurationTarget.Global);
     await getHaskellConfig().update('manageHLS', 'GHCup');
     await getHaskellConfig().update('logFile', 'hls.log');
     await getHaskellConfig().update('trace.server', 'messages');

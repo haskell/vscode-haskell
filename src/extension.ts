@@ -145,11 +145,15 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     logger.log(`  ${key}: ${value}`);
   });
 
-  let serverExecutable;
+  let serverExecutable: string;
   let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
   try {
-    serverExecutable = await findHaskellLanguageServer(context, logger, currentWorkingDir, folder);
-    addInternalServerPath = path.dirname(serverExecutable);
+    [serverExecutable, addInternalServerPath] = await findHaskellLanguageServer(
+      context,
+      logger,
+      currentWorkingDir,
+      folder
+    );
     if (!serverExecutable) {
       return;
     }
