@@ -1,7 +1,23 @@
 # Changelog for vscode-haskell
 
-## 2.0.0
+## 2.0.0-alpha
 
+- Add prettier script
+([#566](https://github.com/haskell/vscode-haskell/pull/566)) by @fendor
+- Remove accidental run command
+([#565](https://github.com/haskell/vscode-haskell/pull/565)) by @fendor
+- Upgrade dependencies
+([#564](https://github.com/haskell/vscode-haskell/pull/564)) by @fendor
+- Add new configuration options for rename plugin
+([#563](https://github.com/haskell/vscode-haskell/pull/563)) by @OliverMadine
+- Introduce 'haskell.toolchain' setting
+([#562](https://github.com/haskell/vscode-haskell/pull/562)) by @hasufell
+- Improve
+([#558](https://github.com/haskell/vscode-haskell/pull/558)) by @hasufell
+- Remove stdout/sterr from user error message
+([#556](https://github.com/haskell/vscode-haskell/pull/556)) by @fendor
+- Fix npm security issue
+([#555](https://github.com/haskell/vscode-haskell/pull/555)) by @fendor
 - No colour output for GHCup
 ([#554](https://github.com/haskell/vscode-haskell/pull/554)) by @fendor
 - Add eval plugin configuration
