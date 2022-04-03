@@ -2,15 +2,15 @@
 
 ## Dependencies and Building
 
-Run `npm install` in the project root to install the development dependencies.
+Run `yarn install` in the project root to install the development dependencies.
 
 You can also package up the extension with
 
-- `npm install -g vsce` to get the Extension Manager,
-- `npm install` to build the extension
+- `yarn global add vsce` to get the Extension Manager,
+- `yarn install` to build the extension
 - `vsce package` which creates an extension package at `haskell-<version>.vsix`.
 
-_Note:_ that if you get errors running `vsce package`, it might help running `tsc -p ./` directly, since that gives the actual error output of the TypeScript compilation.
+_Note:_ that if you get errors running `vsce package`, it might help running `yarn run pretest` directly, since that gives the actual error output of the TypeScript compilation.
 
 ## Developing inside VS Code
 
@@ -29,7 +29,7 @@ _Note_: you can also reload (`Ctrl+R` or `Cmd+R` on macOS) the VS Code window wi
 
 #### Formatting
 
-[prettier](https://prettier.io) is automatically run o neach commit via husky. If you are developing within VS Code, the settings are set to auto format on save.
+[prettier](https://prettier.io) is automatically run on each commit via husky. If you are developing within VS Code, the settings are set to auto format on save.
 The configurations for prettier are located in `.prettierrc`.
 
 ## Navigating the Files
