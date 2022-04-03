@@ -468,7 +468,7 @@
     "lru-cache": "^4.1.5",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
-    "ts-pattern": "^3.3.5",
+    "ts-pattern": "^4.0.1",
     "vscode-languageclient": "^7.0.0",
     "which": "^2.0.1",
     "yauzl": "^2.10.0"
