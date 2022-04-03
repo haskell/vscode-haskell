@@ -4,7 +4,7 @@ on:
 
 name: Deploy Extension
 jobs:
-  setup-env:
+  build-vsix:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -12,11 +12,6 @@ jobs:
         with:
           node-version: 17
       - run: yarn install --immutable --immutable-cache --check-cache
-
-  build-vsix:
-    runs-on: ubuntu-latest
-    needs: [setup-env]
-    steps:
       - name: Package Extension
         id: packageExtension
         uses: HaaLeo/publish-vscode-extension@v1
