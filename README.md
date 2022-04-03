@@ -105,6 +105,57 @@ or set `haskell.serverExecutablePath` (overrides all other settings) to a valid 
 
 If you need to set mirrors for ghcup download info, check the settings `haskell.metadataURL` and `haskell.releasesURL`.
 
+### Setting a specific toolchain
+
+When `manageHLS` is set to `GHCup`, you can define a specific toolchain (`hls`, `ghc`, `cabal` and `stack`),
+either globally or per project. E.g.:
+
+```json
+{
+    "haskell.toolchain": {
+        "hls": "1.6.1.1",
+        "cabal": "recommended",
+        "stack": null
+    }    
+}
+```
+
+This means:
+
+1. install the `ghc` version corresponding to the project (default, because it's omitted)
+2. install `hls` 1.6.1.1
+3. install the recommended `cabal` version from ghcup
+4. don't install any `stack` version
+
+Another config could be:
+
+```json
+{
+    "haskell.toolchain": {
+        "ghc": "9.2.2",
+        "hls": "latest"
+        "cabal": "recommended"
+    }    
+}
+```
+
+Meaning:
+
+1. install `ghc` 9.2.2 regardless of what the project requires
+2. always install latest `hls`, even if it doesn't support the given GHC version
+3. install recommended `cabal`
+4. install latest `stack` (default, because it's omitted)
+
+The defaults (when omitted) are as follows:
+
+1. install the project required `ghc` (corresponding to `with-compiler` setting in `cabal.project` for example)
+2. install the latest `hls` version that supports the project required ghc version
+3. install latest `cabal`
+3. install latest `stack`
+
+When a the value is `null`, the extension will refrain from installing it.
+
+
 ### Supported GHC versions
 
 These are the versions of GHC that there are binaries of `haskell-language-server-1.6.1` for. Building from source may support more versions!

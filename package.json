@@ -163,6 +163,12 @@
           "default": {},
           "markdownDescription": "Define environment variables for the language server."
         },
+        "haskell.promptBeforeDownloads": {
+          "scope": "machine",
+          "type": "boolean",
+          "default": "true",
+          "markdownDescription": "Prompt before performing any downloads."
+        },
         "haskell.manageHLS": {
           "scope": "resource",
           "type": "string",
@@ -177,23 +183,11 @@
             "Discovers HLS and other executables in system PATH"
           ]
         },
-        "haskell.installStack": {
+        "haskell.toolchain": {
           "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to also install/manage stack when 'manageHLS' is set to 'GHCup'."
-        },
-        "haskell.installCabal": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to also install/manage cabal when 'manageHLS' is set to 'GHCup'."
-        },
-        "haskell.installGHC": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to also install/manage GHC when 'manageHLS' is set to 'GHCup'."
+          "type": "object",
+          "default": {},
+          "description": "When manageHLS is set to GHCup, this can overwrite the automatic toolchain configuration with a more specific one. When a tool is omitted, the extension will manage the version (for 'ghc' we try to figure out the version the project requires). The format is '{\"tool\": \"version\", ...}'. 'version' accepts all identifiers that 'ghcup' accepts."
         },
         "haskell.upgradeGHCup": {
           "scope": "resource",
