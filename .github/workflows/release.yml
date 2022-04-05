@@ -1,0 +1,62 @@
+on:
+  release:
+    types: [prereleased, released]
+
+name: Deploy Extension
+jobs:
+  build-vsix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 17
+      - run: yarn install --immutable --immutable-cache --check-cache
+      - name: Package Extension
+        id: packageExtension
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: stub
+          dryRun: true
+          preRelease: ${{ github.event.action == 'prereleased' }}
+          yarn: true
+
+      - name: Upload extension vsix to workflow artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: haskell-${{ github.event.release.tag_name }}.vsix
+          path: ${{ steps.packageExtension.outputs.vsixPath }}
+    outputs:
+      vsixPath: ${{ steps.packageExtension.outputs.vsixPath }}
+
+  ## If this is a release job, publish to VSCode,
+  ## otherwise publish a pre-release to VSCode
+  deploy-vs:
+    runs-on: ubuntu-latest
+    needs: [build-vsix]
+    steps:
+      - name: Publish to Visual Studio Marketplace
+        id: publishToVSMarketplace
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ needs.build-vsix.outputs.vsixPath }}
+          yarn: true
+          preRelease: ${{ github.event.action == 'prereleased' }}
+
+  ## Publish to VSX iff this is a release
+  deploy-vsx:
+    runs-on: ubuntu-latest
+    needs: [build-vsix]
+    # Run this job only on release, VSX doesn't support pre-releases yet
+    if: ${{ github.event.action == 'released' }}
+    steps:
+      - name: Publish to Open VSX Registry
+        id: publishToOpenVSX
+        continue-on-error: true
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+          extensionFile: ${{ needs.build-vsix.outputs.vsixPath }}
+          yarn: true

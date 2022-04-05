@@ -1,5 +1,46 @@
 # Changelog for vscode-haskell
 
+## 2.0.0-alpha
+
+- Add prettier script
+([#566](https://github.com/haskell/vscode-haskell/pull/566)) by @fendor
+- Remove accidental run command
+([#565](https://github.com/haskell/vscode-haskell/pull/565)) by @fendor
+- Upgrade dependencies
+([#564](https://github.com/haskell/vscode-haskell/pull/564)) by @fendor
+- Add new configuration options for rename plugin
+([#563](https://github.com/haskell/vscode-haskell/pull/563)) by @OliverMadine
+- Introduce 'haskell.toolchain' setting
+([#562](https://github.com/haskell/vscode-haskell/pull/562)) by @hasufell
+- Improve
+([#558](https://github.com/haskell/vscode-haskell/pull/558)) by @hasufell
+- Remove stdout/sterr from user error message
+([#556](https://github.com/haskell/vscode-haskell/pull/556)) by @fendor
+- Fix npm security issue
+([#555](https://github.com/haskell/vscode-haskell/pull/555)) by @fendor
+- No colour output for GHCup
+([#554](https://github.com/haskell/vscode-haskell/pull/554)) by @fendor
+- Add eval plugin configuration
+([#549](https://github.com/haskell/vscode-haskell/pull/549)) by @xsebek
+- Manage all the Haskell things
+([#547](https://github.com/haskell/vscode-haskell/pull/547)) by @hasufell
+- Consider user installed HLSes (e.g. via ghcup compile)
+([#543](https://github.com/haskell/vscode-haskell/pull/543)) by @hasufell
+- Bump lodash-es from 4.17.15 to 4.17.21
+([#539](https://github.com/haskell/vscode-haskell/pull/539)) by @dependabot[bot]
+- Update README.MD GHC support
+([#537](https://github.com/haskell/vscode-haskell/pull/537)) by @cptwunderlich
+- fix: change deprecated Haskell Platform install link to GHCup
+([#536](https://github.com/haskell/vscode-haskell/pull/536)) by @HEIGE-PCloud
+- Update HLS installation method
+([#533](https://github.com/haskell/vscode-haskell/pull/533)) by @hasufell
+- Bump ajv from 6.12.0 to 6.12.6
+([#532](https://github.com/haskell/vscode-haskell/pull/532)) by @dependabot[bot]
+- Fixes related with paths
+([#518](https://github.com/haskell/vscode-haskell/pull/518)) by @jneira
+- Reorganize troubleshooting section
+([#516](https://github.com/haskell/vscode-haskell/pull/516)) by @jneira
+
 ## 1.8.0
 
 This release includes some interesting new features:

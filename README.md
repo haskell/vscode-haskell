@@ -5,6 +5,15 @@
 This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
 As almost all features are provided by the server you might find interesting read its [documentation](https://haskell-language-server.readthedocs.io).
 
+## Setup
+
+This Extension comes with "batteries"-included and can manage your Haskell Language Server installations for you,
+powered by [GHCup](https://www.haskell.org/ghcup/).
+Installation of [GHCup](https://www.haskell.org/ghcup/) can not happen automatically, so if you want your HLS installations to be
+managed by the Extension, you will have to follow the [installation instructions for GHCup](https://www.haskell.org/ghcup/).
+
+**Note:** Make sure you have a working `ghcup` installation, before launching the Extension.
+
 ## Features
 
 You can watch demos for some of these features [here](https://haskell-language-server.readthedocs.io/en/latest/features.html#demos).
@@ -78,7 +87,7 @@ first start. Check the `haskell.manageHLS` setting.
 
 It will then download the newest version of haskell-language-server which has support for the required ghc.
 That means it could use an older version than the latest one, without the last features and bug fixes.
-For example, if a project needs ghc-8.10.4 the extension will download and use haskell-language-server-1.4.0, the lastest version which supported ghc-8.10.4. Even if the lastest global haskell language-server version is 1.5.1.
+For example, if a project needs ghc-8.10.4 the extension will download and use haskell-language-server-1.4.0, the latest version which supported ghc-8.10.4. Even if the latest global haskell language-server version is 1.5.1.
 
 If you have disk space issues, check `ghcup gc --help`.
 
