@@ -29,8 +29,8 @@ jobs:
           name: haskell-${{ github.event.release.tag_name }}.vsix
           path: ${{ steps.packageExtension.outputs.vsixPath }}
 
-      ## If this is a release job, publish to VSCode,
-      ## otherwise publish a pre-release to VSCode
+      ## If this is a release job, publish to VSCode Marketplace,
+      ## otherwise publish a pre-release to VSCode Marketplace
       - name: Publish to Visual Studio Marketplace
         id: publishToVSMarketplace
         uses: HaaLeo/publish-vscode-extension@v1
@@ -41,10 +41,10 @@ jobs:
           yarn: true
           preRelease: ${{ github.event.action == 'prereleased' }}
 
-      # Run this job only on release, VSX doesn't support pre-releases yet
+      ## If this is a release job, publish to VSX Marketplace,
+      ## otherwise publish a pre-release to VSX Marketplace
       - name: Publish to Open VSX Registry
         id: publishToOpenVSX
-        if: ${{ github.event.action == 'released' }}
         continue-on-error: true
         uses: HaaLeo/publish-vscode-extension@v1
         with:
