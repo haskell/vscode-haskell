@@ -142,7 +142,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
   logger.log('Environment variables:');
   Object.entries(process.env).forEach(([key, value]: [string, string | undefined]) => {
-    logger.log(`  ${key}: ${value}`);
+    // only list environment variables that we actually care about.
+    // this makes it safe for users to just paste the logs to whoever,
+    // and avoids leaking secrets.
+    if (["PATH"].includes(key)) {
+      logger.log(`  ${key}: ${value}`);
+    }
   });
 
   let serverExecutable: string;
