@@ -1,5 +1,12 @@
 # Changelog for vscode-haskell
 
+## 2.1.1 (Pre-release)
+
+- Add Tool class and print stacktraces
+  ([#579](https://github.com/haskell/vscode-haskell/pull/579)) by @fendor
+- List Env Vars we care about only
+  ([#578](https://github.com/haskell/vscode-haskell/pull/578)) by @fendor
+
 ## 2.1.0 (Pre-release)
 
 - Prepare pre-release 2.1.0
