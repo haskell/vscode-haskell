@@ -23,7 +23,8 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { findHaskellLanguageServer, IEnvVars, MissingToolError } from './hlsBinaries';
+import { HlsError, MissingToolError } from './errors';
+import { findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
 import { addPathToProcessPath, expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
@@ -172,8 +173,17 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       } else {
         await window.showErrorMessage(e.message);
       }
+    } else if (e instanceof HlsError) {
+      logger.error(`General HlsError: ${e.message}`);
+      if (e.stack) {
+        logger.error(`${e.stack}`);
+      }
+      window.showErrorMessage(e.message);
     } else if (e instanceof Error) {
-      logger.error(`Error getting the server executable: ${e.message}`);
+      logger.error(`Internal Error: ${e.message}`);
+      if (e.stack) {
+        logger.error(`${e.stack}`);
+      }
       window.showErrorMessage(e.message);
     }
     return;
