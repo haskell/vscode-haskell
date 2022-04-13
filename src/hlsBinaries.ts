@@ -7,16 +7,9 @@ import * as path from 'path';
 import { match } from 'ts-pattern';
 import * as url from 'url';
 import { promisify } from 'util';
-import {
-  ConfigurationTarget,
-  ExtensionContext,
-  ProgressLocation,
-  Uri,
-  window,
-  workspace,
-  WorkspaceFolder,
-} from 'vscode';
+import { ConfigurationTarget, ExtensionContext, ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
+import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import {
   addPathToProcessPath,
   executableExists,
@@ -38,52 +31,6 @@ let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as Manage
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
-
-export class MissingToolError extends Error {
-  public readonly tool: string;
-  constructor(tool: string) {
-    let prettyTool: string;
-    switch (tool.toLowerCase()) {
-      case 'stack':
-        prettyTool = 'Stack';
-        break;
-      case 'cabal':
-        prettyTool = 'Cabal';
-        break;
-      case 'ghc':
-        prettyTool = 'GHC';
-        break;
-      case 'ghcup':
-        prettyTool = 'GHCup';
-        break;
-      case 'haskell-language-server':
-        prettyTool = 'HLS';
-        break;
-      case 'hls':
-        prettyTool = 'HLS';
-        break;
-      default:
-        prettyTool = tool;
-        break;
-    }
-    super(`Project requires ${prettyTool} but it isn't installed`);
-    this.tool = prettyTool;
-  }
-
-  public installLink(): Uri | null {
-    switch (this.tool) {
-      case 'Stack':
-        return Uri.parse('https://docs.haskellstack.org/en/stable/install_and_upgrade/');
-      case 'GHCup':
-      case 'Cabal':
-      case 'HLS':
-      case 'GHC':
-        return Uri.parse('https://www.haskell.org/ghcup/');
-      default:
-        return null;
-    }
-  }
-}
 
 /**
  * Call a process asynchronously.
@@ -489,7 +436,7 @@ async function callGHCup(
       callback
     );
   } else {
-    throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
+    throw new HlsError(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
   }
 }
 
@@ -498,7 +445,7 @@ async function getLatestProjectHLS(
   logger: Logger,
   workingDir: string,
   toolchainBindir: string
-): Promise<[string, string | null]> {
+): Promise<[string, string]> {
   // get project GHC version, but fallback to system ghc if necessary.
   const projectGhc = toolchainBindir
     ? await getProjectGHCVersion(toolchainBindir, workingDir, logger).catch(async (e) => {
@@ -509,7 +456,6 @@ async function getLatestProjectHLS(
         return await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
       })
     : await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
-  const noMatchingHLS = `No HLS version was found for supporting GHC ${projectGhc}.`;
 
   // first we get supported GHC versions from available HLS bindists (whether installed or not)
   const metadataMap = (await getHLSesfromMetadata(context, logger)) || new Map<string, string[]>();
@@ -526,7 +472,7 @@ async function getLatestProjectHLS(
     .pop();
 
   if (!latest) {
-    throw new Error(noMatchingHLS);
+    throw new NoMatchingHls(projectGhc);
   } else {
     return [latest[0], projectGhc];
   }
