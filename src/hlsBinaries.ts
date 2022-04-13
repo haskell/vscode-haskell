@@ -324,19 +324,19 @@ export async function findHaskellLanguageServer(
     if (promptBeforeDownloads) {
       const hlsInstalled = latestHLS
         ? await toolInstalled(context, logger, 'hls', latestHLS)
-        : ([true, 'hls', ''] as [boolean, Tool, string]);
+        : new InstalledTool('hls');
       const cabalInstalled = latestCabal
         ? await toolInstalled(context, logger, 'cabal', latestCabal)
-        : ([true, 'cabal', ''] as [boolean, Tool, string]);
+        : new InstalledTool('cabal');
       const stackInstalled = latestStack
         ? await toolInstalled(context, logger, 'stack', latestStack)
-        : ([true, 'stack', ''] as [boolean, Tool, string]);
+        : new InstalledTool('stack');
       const ghcInstalled = (await executableExists('ghc'))
-        ? ([true, 'ghc', ''] as [boolean, Tool, string])
+        ? new InstalledTool('ghc')
         : await toolInstalled(context, logger, 'ghc', recGHC!);
       const toInstall = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled]
-        .filter(([b, t, v]) => !b)
-        .map(([_, t, v]) => `${t}-${v}`);
+        .filter((tool) => !tool.installed)
+        .map((tool) => tool.nameWithVersion);
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
           `Need to download ${toInstall.join(', ')}, continue?`,
@@ -348,15 +348,15 @@ export async function findHaskellLanguageServer(
         } else if (decision === "Yes, don't ask again") {
           workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
         } else {
-          [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].forEach(([b, t]) => {
-            if (!b) {
-              if (t === 'hls') {
+          [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].forEach((tool) => {
+            if (!tool.installed) {
+              if (tool.name === 'hls') {
                 throw new MissingToolError('hls');
-              } else if (t === 'cabal') {
+              } else if (tool.name === 'cabal') {
                 latestCabal = null;
-              } else if (t === 'stack') {
+              } else if (tool.name === 'stack') {
                 latestStack = null;
-              } else if (t === 'ghc') {
+              } else if (tool.name === 'ghc') {
                 recGHC = null;
               }
             }
@@ -400,11 +400,13 @@ export async function findHaskellLanguageServer(
     if (promptBeforeDownloads) {
       const hlsInstalled = projectHls
         ? await toolInstalled(context, logger, 'hls', projectHls)
-        : ([true, 'hls', ''] as [boolean, Tool, string]);
+        : new InstalledTool('hls');
       const ghcInstalled = projectGhc
         ? await toolInstalled(context, logger, 'ghc', projectGhc)
-        : ([true, 'ghc', ''] as [boolean, Tool, string]);
-      const toInstall = [hlsInstalled, ghcInstalled].filter(([b, t, v]) => !b).map(([_, t, v]) => `${t}-${v}`);
+        : new InstalledTool('ghc');
+      const toInstall = [hlsInstalled, ghcInstalled]
+        .filter((tool) => !tool.installed)
+        .map((tool) => tool.nameWithVersion);
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
           `Need to download ${toInstall.join(', ')}, continue?`,
@@ -417,11 +419,11 @@ export async function findHaskellLanguageServer(
         } else if (decision === "Yes, don't ask again") {
           workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
         } else {
-          [hlsInstalled, ghcInstalled].forEach(([b, t]) => {
-            if (!b) {
-              if (t === 'hls') {
+          [hlsInstalled, ghcInstalled].forEach((tool) => {
+            if (!tool.installed) {
+              if (tool.name === 'hls') {
                 throw new MissingToolError('hls');
-              } else if (t === 'ghc') {
+              } else if (tool.name === 'ghc') {
                 projectGhc = null;
               }
             }
@@ -774,11 +776,11 @@ async function toolInstalled(
   logger: Logger,
   tool: Tool,
   version: string
-): Promise<[boolean, Tool, string]> {
+): Promise<InstalledTool> {
   const b = await callGHCup(context, logger, ['whereis', tool, version], undefined, false)
     .then((x) => true)
     .catch((x) => false);
-  return [b, tool, version];
+  return new InstalledTool(tool, version, b);
 }
 
 /**
@@ -894,5 +896,28 @@ async function getReleaseMetadata(
     } catch (fileError) {
       throw new Error("Couldn't get the latest haskell-language-server releases from GitHub: " + githubError.message);
     }
+  }
+}
+
+/**
+ * Tracks the name, version and installation state of tools we need.
+ */
+class InstalledTool {
+  /**
+   * "<name>-<version>" of the installed Tool.
+   */
+  readonly nameWithVersion: string = '';
+
+  /**
+   * Initialize an installed tool entry.
+   *
+   * If optional parameters are omitted, we assume the tool is installed.
+   *
+   * @param name Name of the tool.
+   * @param version Version of the tool, expected to be either SemVer or PVP versioned.
+   * @param installed Is this tool currently installed?
+   */
+  public constructor(readonly name: string, readonly version: string = '', readonly installed: boolean = true) {
+    this.nameWithVersion = `${name}-${version}`;
   }
 }
