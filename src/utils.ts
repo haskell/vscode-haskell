@@ -86,6 +86,43 @@ export class ExtensionLogger implements Logger {
   }
 }
 
+/**
+ * Compare the PVP versions of two strings.
+ * Details: https://github.com/haskell/pvp/
+ *
+ * @param l First version
+ * @param r second version
+ * @returns `1` if l is newer than r, `0` if they are equal and `-1` otherwise.
+ */
+export function comparePVP(l: string, r: string): number {
+  const al = l.split('.');
+  const ar = r.split('.');
+
+  let eq = 0;
+
+  for (let i = 0; i < Math.max(al.length, ar.length); i++) {
+    const el = parseInt(al[i], 10) || undefined;
+    const er = parseInt(ar[i], 10) || undefined;
+
+    if (el === undefined && er === undefined) {
+      break;
+    } else if (el !== undefined && er === undefined) {
+      eq = 1;
+      break;
+    } else if (el === undefined && er !== undefined) {
+      eq = -1;
+      break;
+    } else if (el !== undefined && er !== undefined && el > er) {
+      eq = 1;
+      break;
+    } else if (el !== undefined && er !== undefined && el < er) {
+      eq = -1;
+      break;
+    }
+  }
+  return eq;
+}
+
 /** When making http requests to github.com, use this header otherwise
  * the server will close the request
  */

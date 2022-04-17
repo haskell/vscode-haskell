@@ -12,6 +12,7 @@ import { Logger } from 'vscode-languageclient';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import {
   addPathToProcessPath,
+  comparePVP,
   executableExists,
   httpsGetSilently,
   IEnvVars,
@@ -24,13 +25,22 @@ type Tool = 'hls' | 'ghc' | 'cabal' | 'stack';
 
 type ToolConfig = Map<Tool, string>;
 
-export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
-
 type ManageHLS = 'GHCup' | 'PATH';
 let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS;
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
+
+/**
+ * Callback invoked on process termination.
+ */
+type ProcessCallback = (
+  error: ExecException | null,
+  stdout: string,
+  stderr: string,
+  resolve: (value: string | PromiseLike<string>) => void,
+  reject: (reason?: any) => void
+) => void;
 
 /**
  * Call a process asynchronously.
@@ -45,7 +55,7 @@ const exeExt = process.platform === 'win32' ? '.exe' : '';
  * @param title Title of the action, shown to users if available.
  * @param cancellable Can the user cancel this process invocation?
  * @param envAdd Extra environment variables for this process only.
- * @param callback Upon process termination, execute this callback. If given, must resolve promise.
+ * @param callback Upon process termination, execute this callback. If given, must resolve promise. On error, stderr and stdout are logged regardless of whether the callback has been specified.
  * @returns Stdout of the process invocation, trimmed off newlines, or whatever the `callback` resolved to.
  */
 async function callAsync(
@@ -56,13 +66,7 @@ async function callAsync(
   title?: string,
   cancellable?: boolean,
   envAdd?: IEnvVars,
-  callback?: (
-    error: ExecException | null,
-    stdout: string,
-    stderr: string,
-    resolve: (value: string | PromiseLike<string>) => void,
-    reject: (reason?: any) => void
-  ) => void
+  callback?: ProcessCallback
 ): Promise<string> {
   let newEnv: IEnvVars = await resolveServerEnvironmentPATH(
     workspace.getConfiguration('haskell').get('serverEnvironment') || {}
@@ -89,15 +93,17 @@ async function callAsync(
             args,
             { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32', env: newEnv },
             (err, stdout, stderr) => {
+              if (err) {
+                logger.error(`Error executing '${command}' with error code ${err.code}`);
+                logger.error(`stderr: ${stderr}`);
+                if (stdout) {
+                  logger.error(`stdout: ${stdout}`);
+                }
+              }
               if (callback) {
                 callback(err, stdout, stderr, resolve, reject);
               } else {
                 if (err) {
-                  logger.error(`Error executing '${command}' with error code ${err.code}`);
-                  logger.error(`stderr: ${stderr}`);
-                  if (stdout) {
-                    logger.error(`stdout: ${stdout}`);
-                  }
                   reject(
                     Error(`\`${command}\` exited with exit code ${err.code}.
                               Consult the [Extensions Output](https://github.com/haskell/vscode-haskell#investigating-and-reporting-problems)
@@ -112,7 +118,7 @@ async function callAsync(
           .on('exit', (code, signal) => {
             const msg =
               `Execution of '${command}' terminated with code ${code}` + (signal ? `and signal ${signal}` : '');
-            logger.info(msg);
+            logger.log(msg);
           })
           .on('error', (err) => {
             if (err) {
@@ -292,7 +298,9 @@ export async function findHaskellLanguageServer(
           "Yes, don't ask again"
         );
         if (decision === 'Yes') {
+          logger.info(`User accepted download for ${toInstall.join(', ')}.`);
         } else if (decision === "Yes, don't ask again") {
+          logger.info(`User accepted download for ${toInstall.join(', ')} and won't be asked again.`);
           workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
         } else {
           [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].forEach((tool) => {
@@ -363,7 +371,9 @@ export async function findHaskellLanguageServer(
           "Yes, don't ask again"
         );
         if (decision === 'Yes') {
+          logger.info(`User accepted download for ${toInstall.join(', ')}.`);
         } else if (decision === "Yes, don't ask again") {
+          logger.info(`User accepted download for ${toInstall.join(', ')} and won't be asked again.`);
           workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
         } else {
           [hlsInstalled, ghcInstalled].forEach((tool) => {
@@ -410,13 +420,7 @@ async function callGHCup(
   args: string[],
   title?: string,
   cancellable?: boolean,
-  callback?: (
-    error: ExecException | null,
-    stdout: string,
-    stderr: string,
-    resolve: (value: string | PromiseLike<string>) => void,
-    reject: (reason?: any) => void
-  ) => void
+  callback?: ProcessCallback
 ): Promise<string> {
   const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
 
@@ -510,13 +514,7 @@ export async function getProjectGHCVersion(
     false,
     environmentNew,
     (err, stdout, stderr, resolve, reject) => {
-      const command: string = 'haskell-language-server-wrapper' + ' ' + args.join(' ');
       if (err) {
-        logger.error(`Error executing '${command}' with error code ${err.code}`);
-        logger.error(`stderr: ${stderr}`);
-        if (stdout) {
-          logger.error(`stdout: ${stdout}`);
-        }
         // Error message emitted by HLS-wrapper
         const regex =
           /Cradle requires (.+) but couldn't find it|The program \'(.+)\' version .* is required but the version of.*could.*not be determined|Cannot find the program \'(.+)\'\. User-specified/;
@@ -574,43 +572,6 @@ export async function findGHCup(context: ExtensionContext, logger: Logger, folde
       return localGHCup;
     }
   }
-}
-
-/**
- * Compare the PVP versions of two strings.
- * Details: https://github.com/haskell/pvp/
- *
- * @param l First version
- * @param r second version
- * @returns `1` if l is newer than r, `0` if they are equal and `-1` otherwise.
- */
-export function comparePVP(l: string, r: string): number {
-  const al = l.split('.');
-  const ar = r.split('.');
-
-  let eq = 0;
-
-  for (let i = 0; i < Math.max(al.length, ar.length); i++) {
-    const el = parseInt(al[i], 10) || undefined;
-    const er = parseInt(ar[i], 10) || undefined;
-
-    if (el === undefined && er === undefined) {
-      break;
-    } else if (el !== undefined && er === undefined) {
-      eq = 1;
-      break;
-    } else if (el === undefined && er !== undefined) {
-      eq = -1;
-      break;
-    } else if (el !== undefined && er !== undefined && el > er) {
-      eq = 1;
-      break;
-    } else if (el !== undefined && er !== undefined && el < er) {
-      eq = -1;
-      break;
-    }
-  }
-  return eq;
 }
 
 export async function getStoragePath(context: ExtensionContext): Promise<string> {
@@ -677,7 +638,7 @@ async function getLatestAvailableToolFromGHCup(
   }
 }
 
-// complements getLatestHLSfromMetadata, by checking possibly locally compiled
+// complements getHLSesfromMetadata, by checking possibly locally compiled
 // HLS in ghcup
 // If 'targetGhc' is omitted, picks the latest 'haskell-language-server-wrapper',
 // otherwise ensures the specified GHC is supported.
@@ -730,14 +691,50 @@ async function toolInstalled(
 }
 
 /**
- * Given a GHC version, download at least one HLS version that can be used.
- * This also honours the OS architecture we are on.
+ * Metadata of release information.
+ *
+ * Example of the expected format:
+ *
+ * ```
+ * {
+ *  "1.6.1.0": {
+ *     "A_64": {
+ *       "Darwin": [
+ *         "8.10.6",
+ *       ],
+ *       "Linux_Alpine": [
+ *         "8.10.7",
+ *         "8.8.4",
+ *       ],
+ *     },
+ *     "A_ARM": {
+ *       "Linux_UnknownLinux": [
+ *         "8.10.7"
+ *       ]
+ *     },
+ *     "A_ARM64": {
+ *       "Darwin": [
+ *         "8.10.7"
+ *       ],
+ *       "Linux_UnknownLinux": [
+ *         "8.10.7"
+ *       ]
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * consult [ghcup metadata repo](https://github.com/haskell/ghcup-metadata/) for details.
+ */
+ export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
+
+/**
+ * Compute Map of supported HLS versions for this platform.
+ * Fetches HLS metadata information.
  *
  * @param context Context of the extension, required for metadata.
- * @param storagePath Path to store binaries, caching information, etc...
- * @param targetGhc GHC version we want a HLS for.
  * @param logger Logger for feedback
- * @returns
+ * @returns Map of supported HLS versions or null if metadata could not be fetched.
  */
 async function getHLSesfromMetadata(context: ExtensionContext, logger: Logger): Promise<Map<string, string[]> | null> {
   const storagePath: string = await getStoragePath(context);
@@ -746,32 +743,59 @@ async function getHLSesfromMetadata(context: ExtensionContext, logger: Logger): 
     window.showErrorMessage('Could not get release metadata');
     return null;
   }
-  const plat = match(process.platform)
-    .with('darwin', (_) => 'Darwin')
-    .with('linux', (_) => 'Linux_UnknownLinux')
-    .with('win32', (_) => 'Windows')
-    .with('freebsd', (_) => 'FreeBSD')
+  const plat: Platform | null = match(process.platform)
+    .with('darwin', (_) => 'Darwin' as Platform)
+    .with('linux', (_) => 'Linux_UnknownLinux' as Platform)
+    .with('win32', (_) => 'Windows' as Platform)
+    .with('freebsd', (_) => 'FreeBSD' as Platform)
     .otherwise((_) => null);
   if (plat === null) {
     throw new Error(`Unknown platform ${process.platform}`);
   }
-  const arch = match(process.arch)
-    .with('arm', (_) => 'A_ARM')
-    .with('arm64', (_) => 'A_ARM64')
-    .with('x32', (_) => 'A_32')
-    .with('x64', (_) => 'A_64')
+  const arch: Arch | null = match(process.arch)
+    .with('arm', (_) => 'A_ARM' as Arch)
+    .with('arm64', (_) => 'A_ARM64' as Arch)
+    .with('x32', (_) => 'A_32' as Arch)
+    .with('x64', (_) => 'A_64' as Arch)
     .otherwise((_) => null);
   if (arch === null) {
     throw new Error(`Unknown architecture ${process.arch}`);
   }
 
-  const map: ReleaseMetadata = new Map(Object.entries(metadata));
+  return findSupportedHlsPerGhc(plat, arch, metadata, logger);
+}
+
+export type Platform = 'Darwin' | 'Linux_UnknownLinux' | 'Windows' | 'FreeBSD';
+
+export type Arch = 'A_ARM' | 'A_ARM64' | 'A_32' | 'A_64';
+
+/**
+ * Find all supported GHC versions per HLS version supported on the given
+ * platform and architecture.
+ * @param platform Platform of the host.
+ * @param arch Arch of the host.
+ * @param metadata HLS Metadata information.
+ * @param logger Logger.
+ * @returns Map from HLS version to GHC versions that are supported.
+ */
+export function findSupportedHlsPerGhc(
+  platform: Platform,
+  arch: Arch,
+  metadata: ReleaseMetadata,
+  logger: Logger
+): Map<string, string[]> {
+  logger.info(`Platform constants: ${platform}, ${arch}`);
   const newMap = new Map<string, string[]>();
-  map.forEach((value, key) => {
-    const value_ = new Map(Object.entries(value));
-    const archValues = new Map(Object.entries(value_.get(arch)));
-    const versions: string[] = archValues.get(plat) as string[];
-    newMap.set(key, versions);
+  metadata.forEach((supportedArch, hlsVersion) => {
+    const supportedOs = supportedArch.get(arch);
+    if (supportedOs) {
+      const ghcSupportedOnOs = supportedOs.get(platform);
+      if (ghcSupportedOnOs) {
+        logger.log(`HLS ${hlsVersion} compatible with GHC Versions: ${ghcSupportedOnOs}`);
+        // copy supported ghc versions to avoid unintended modifications
+        newMap.set(hlsVersion, [...ghcSupportedOnOs]);
+      }
+    }
   });
 
   return newMap;
@@ -850,7 +874,7 @@ async function getReleaseMetadata(
  */
 class InstalledTool {
   /**
-   * "<name>-<version>" of the installed Tool.
+   * "\<name\>-\<version\>" of the installed Tool.
    */
   readonly nameWithVersion: string = '';
 
