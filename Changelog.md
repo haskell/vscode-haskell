@@ -1,5 +1,10 @@
 # Changelog for vscode-haskell
 
+## 2.1.2 (Pre-release)
+
+- Ignore missing entries in Release Metadata
+  ([#582](https://github.com/haskell/vscode-haskell/pull/582)) by @fendor
+
 ## 2.1.1 (Pre-release)
 
 - Add Tool class and print stacktraces
