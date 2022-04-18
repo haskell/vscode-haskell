@@ -146,7 +146,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     // only list environment variables that we actually care about.
     // this makes it safe for users to just paste the logs to whoever,
     // and avoids leaking secrets.
-    if (["PATH"].includes(key)) {
+    if (['PATH'].includes(key)) {
       logger.log(`  ${key}: ${value}`);
     }
   });
@@ -175,16 +175,16 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       }
     } else if (e instanceof HlsError) {
       logger.error(`General HlsError: ${e.message}`);
-      if (e.stack) {
-        logger.error(`${e.stack}`);
-      }
       window.showErrorMessage(e.message);
     } else if (e instanceof Error) {
       logger.error(`Internal Error: ${e.message}`);
+      window.showErrorMessage(e.message);
+    }
+    if (e instanceof Error) {
+      // general stack trace printing
       if (e.stack) {
         logger.error(`${e.stack}`);
       }
-      window.showErrorMessage(e.message);
     }
     return;
   }
