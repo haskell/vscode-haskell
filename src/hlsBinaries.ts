@@ -726,7 +726,7 @@ async function toolInstalled(
  *
  * consult [ghcup metadata repo](https://github.com/haskell/ghcup-metadata/) for details.
  */
- export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
+export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
 
 /**
  * Compute Map of supported HLS versions for this platform.
@@ -829,13 +829,29 @@ async function getReleaseMetadata(
 
   const offlineCache = path.join(storagePath, 'ghcupReleases.cache.json');
 
+  /**
+   * Convert a json value to ReleaseMetadata.
+   * Assumes the json is well-formed and a valid Release-Metadata.
+   * @param obj Release Metadata without any typing information but well-formed.
+   * @returns Typed ReleaseMetadata.
+   */
+  const objectToMetadata = (obj: any): ReleaseMetadata => {
+    const hlsMetaEntries = Object.entries(obj).map(([hlsVersion, archMap]) => {
+      const archMetaEntries = Object.entries(archMap as any).map(([arch, supportedGhcVersionsPerOs]) => {
+        return [arch, new Map(Object.entries(supportedGhcVersionsPerOs as any))] as [string, Map<string, string[]>];
+      });
+      return [hlsVersion, new Map(archMetaEntries)] as [string, Map<string, Map<string, string[]>>];
+    });
+    return new Map(hlsMetaEntries);
+  };
+
   async function readCachedReleaseData(): Promise<ReleaseMetadata | null> {
     try {
       logger.info(`Reading cached release data at ${offlineCache}`);
       const cachedInfo = await promisify(fs.readFile)(offlineCache, { encoding: 'utf-8' });
       // export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
-      const value: ReleaseMetadata = JSON.parse(cachedInfo);
-      return value;
+      const value: any = JSON.parse(cachedInfo);
+      return objectToMetadata(value);
     } catch (err: any) {
       // If file doesn't exist, return null, otherwise consider it a failure
       if (err.code === 'ENOENT') {
@@ -852,7 +868,7 @@ async function getReleaseMetadata(
 
     // Cache the latest successfully fetched release information
     await promisify(fs.writeFile)(offlineCache, JSON.stringify(releaseInfoParsed), { encoding: 'utf-8' });
-    return releaseInfoParsed;
+    return objectToMetadata(releaseInfoParsed);
   } catch (githubError: any) {
     // Attempt to read from the latest cached file
     try {
