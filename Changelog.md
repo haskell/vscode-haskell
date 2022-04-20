@@ -2,7 +2,7 @@
 
 ## 2.1.3 (Pre-release)
 
-- Ignore missing entries in Release Metadata
+- Properly convert release metadata from json 
   ([#585](https://github.com/haskell/vscode-haskell/pull/585)) by @fendor
 
 ## 2.1.2 (Pre-release)
