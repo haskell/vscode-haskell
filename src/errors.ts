@@ -51,7 +51,9 @@ export class MissingToolError extends HlsError {
 
 export class NoMatchingHls extends Error {
   constructor(readonly ghcProjVersion: string) {
-    const noMatchingHLS = `No HLS version was found for supporting GHC ${ghcProjVersion}.`;
-    super(noMatchingHLS);
+    super(`HLS does not support GHC ${ghcProjVersion} yet.`);
+  }
+  public docLink(): Uri {
+	return Uri.parse('https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html');
   }
 }

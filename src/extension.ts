@@ -23,7 +23,7 @@ import {
 import { CommandNames } from './commands/constants';
 import { ImportIdentifier } from './commands/importIdentifier';
 import { DocsBrowser } from './docsBrowser';
-import { HlsError, MissingToolError } from './errors';
+import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import { findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
 import { addPathToProcessPath, expandHomeDir, ExtensionLogger } from './utils';
 
@@ -176,6 +176,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     } else if (e instanceof HlsError) {
       logger.error(`General HlsError: ${e.message}`);
       window.showErrorMessage(e.message);
+    } else if (e instanceof NoMatchingHls) {
+      const link = e.docLink();
+      logger.error(`${e.message}`);
+      if (await window.showErrorMessage(e.message, `Open documentation`)) {
+        env.openExternal(link);
+      }
     } else if (e instanceof Error) {
       logger.error(`Internal Error: ${e.message}`);
       window.showErrorMessage(e.message);
