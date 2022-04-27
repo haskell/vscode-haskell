@@ -1,31 +1,23 @@
 # Changelog for vscode-haskell
 
-## 2.1.3 (Pre-release)
+## 2.0.1
 
-- Properly convert release metadata from json 
+- Bad error message when ghcup is not installed
+  ([#591](https://github.com/haskell/vscode-haskell/pull/591)) by @hasufell
+- Better error message if we can't find a HLS version for a given GHC
+  ([#588](https://github.com/haskell/vscode-haskell/pull/588)) by @hasufell
+- Properly convert release metadata from json
   ([#585](https://github.com/haskell/vscode-haskell/pull/585)) by @fendor
-
-## 2.1.2 (Pre-release)
-
 - Ignore missing entries in Release Metadata
   ([#582](https://github.com/haskell/vscode-haskell/pull/582)) by @fendor
-
-## 2.1.1 (Pre-release)
-
 - Add Tool class and print stacktraces
   ([#579](https://github.com/haskell/vscode-haskell/pull/579)) by @fendor
 - List Env Vars we care about only
   ([#578](https://github.com/haskell/vscode-haskell/pull/578)) by @fendor
-
-## 2.1.0 (Pre-release)
-
 - Prepare pre-release 2.1.0
   ([#574](https://github.com/haskell/vscode-haskell/pull/574)) by @fendor
 - Enable pre-release feature for VSX Marketplace
   ([#573](https://github.com/haskell/vscode-haskell/pull/573)) by @fendor
-
-## 2.0.0 (Pre-release)
-
 - Add prettier script
   ([#566](https://github.com/haskell/vscode-haskell/pull/566)) by @fendor
 - Remove accidental run command
