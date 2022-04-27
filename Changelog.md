@@ -3,7 +3,7 @@
 ## 2.2.0
 
 - Bump version to 2.2.0 (Syncs up pre-release and release version)
-  ([#594](https://github.com/haskell/vscode-haskell/pull/594)) by @hasufell
+  ([#594](https://github.com/haskell/vscode-haskell/pull/594)) by @fendor
 
 ## 2.0.1
 
