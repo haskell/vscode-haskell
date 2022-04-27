@@ -321,9 +321,9 @@ function getWithRedirects(opts: https.RequestOptions, f: (res: http.IncomingMess
 /*
  * Checks if the executable is on the PATH
  */
-export async function executableExists(exe: string): Promise<boolean> {
+export function executableExists(exe: string): boolean {
   const isWindows = process.platform === 'win32';
-  let newEnv: IEnvVars = await resolveServerEnvironmentPATH(
+  let newEnv: IEnvVars = resolveServerEnvironmentPATH(
     workspace.getConfiguration('haskell').get('serverEnvironment') || {}
   );
   newEnv = { ...(process.env as IEnvVars), ...newEnv };
@@ -370,7 +370,7 @@ export async function addPathToProcessPath(extraPath: string, logger: Logger): P
   return path.join(pathSep);
 }
 
-export async function resolveServerEnvironmentPATH(serverEnv: IEnvVars): Promise<IEnvVars> {
+export function resolveServerEnvironmentPATH(serverEnv: IEnvVars): IEnvVars {
   const pathSep = process.platform === 'win32' ? ';' : ':';
   const path: string[] | null = serverEnv.PATH
     ? serverEnv.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p))
