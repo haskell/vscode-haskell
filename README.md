@@ -164,20 +164,29 @@ The defaults (when omitted) are as follows:
 
 When a the value is `null`, the extension will refrain from installing it.
 
+At last, if you don't want `ghcup` to manage any of the external tools except `hls`, you can use:
+
+```json
+{
+  "haskell.toolchain": {
+    "ghc": null,
+    "cabal": null,
+    "stack": null
+  }
+}
+```
+
 ### Supported GHC versions
 
-These are the versions of GHC that there are binaries of `haskell-language-server-1.6.1` for. Building from source may support more versions!
+These are the versions of GHC that there are binaries of `haskell-language-server-1.7.0` for. Building from source may support more versions!
 
 | GHC                                                                               | Linux | macOS | Windows |
 | --------------------------------------------------------------------------------- | ----- | ----- | ------- |
+| 9.2.2 ([limited](https://github.com/haskell/haskell-language-server/issues/2179)) | ✓     | ✓     | ✓       |
 | 9.2.1 ([limited](https://github.com/haskell/haskell-language-server/issues/2179)) | ✓     | ✓     | ✓       |
 | 9.0.2 ([limited](https://github.com/haskell/haskell-language-server/issues/297))  | ✓     | ✓     | ✓       |
-| 9.0.1 ([limited](https://github.com/haskell/haskell-language-server/issues/297))  | ✓     | ✓     | ✓       |
 | 8.10.7                                                                            | ✓     | ✓     | ✓       |
-| 8.10.6                                                                            | ✓     | ✓     | ✓       |
-| 8.10.5                                                                            | ✓     | ✓     | ✓       |
 | 8.8.4                                                                             | ✓     | ✓     | ✓       |
-| 8.8.3                                                                             | ✓     | ✓     |         |
 | 8.6.5                                                                             | ✓     | ✓     | ✓       |
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
@@ -200,6 +209,8 @@ The language server is now started for each workspace folder you have in your mu
 6. On the new Output panel that opens on the right side in the drop down menu choose `Haskell (<your project>)`
 
 Please include the output when filing any issues on the [haskell-language-server](https://github.com/haskell/haskell-language-server/issues/new) issue tracker.
+
+## FAQ
 
 ### Troubleshooting
 
