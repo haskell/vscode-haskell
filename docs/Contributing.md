@@ -45,13 +45,3 @@ A brief overview of the files,
 ## Helpful Reading Material
 
 We recommend checking out [Your First VS Code Extension](https://code.visualstudio.com/docs/extensions/example-hello-world) and [Creating a Language Server](https://code.visualstudio.com/docs/extensions/example-language-server) for some introduction to VS Code extensions.
-
-## Release Checklist
-
-- [ ] SemVer Compatible Version Bump in `package.json`
-  - For pre-releases, we follow the version convention at: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions. We use `major.EVEN_NUMBER.patch` for release versions and `major.ODD_NUMBER.patch` for pre-release versions. For example: `2.0.*` for release and `2.1.*` for pre-release.
-- [ ] Update ChangeLog.md. The output of `./GenChangelogs.hs` usually suffices.
-- [ ] Update the README.md to have no outdated information.
-- [ ] Make sure CI is succeeding.
-- [ ] If you perform a pre-release, create a [pre-release in Github](https://github.com/haskell/vscode-haskell/releases). The github action will perform the appropriate actions automatically and publish the pre-release of the extension to VSCode- and VSX-Marketplace.
-- [ ] If you perform a release, create a [release in Github](https://github.com/haskell/vscode-haskell/releases). The github action will perform the appropriate actions automatically and publish the extension to VSCode- and VSX-Marketplace.
