@@ -50,7 +50,7 @@ For a general picture about the server configuration, including the project setu
 
 ### Path to server executable
 
-If your server is manually installed and not on your path, you can also manually set the path to the executable.
+If your server is manually installed and not on your path, you can also [manually](https://code.visualstudio.com/docs/getstarted/settings#_settings-editor) set the path to the executable (not to the `...-wrapper`!) in [settings.json](https://code.visualstudio.com/docs/getstarted/settings#_settingsjson).
 
 ```json
 "haskell.serverExecutablePath": "~/.local/bin/haskell-language-server"
@@ -60,6 +60,7 @@ There are a few placeholders which will be expanded:
 
 - `~`, `${HOME}` and `${home}` will be expanded into your users' home folder.
 - `${workspaceFolder}` and `${workspaceRoot}` will expand into your current project root.
+
 
 #### Security warning
 
