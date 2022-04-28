@@ -224,14 +224,53 @@ Please include the output when filing any issues on the [haskell-language-server
 - Sometimes the language server might get stuck in a rut and stop responding to your latest changes.
   Should this occur you can try restarting the language server with <kbd>Ctrl</kbd> <kbd>shift</kbd> <kbd>P</kbd>/<kbd>⌘</kbd> <kbd>shift</kbd> <kbd>P</kbd> > Restart Haskell LSP Server.
 
-#### `Cradle requires ghc/cabal/stack but it isn't installed`
+#### `Failed to get project GHC version` on darwin M1 with stack
 
-- In Linux/MacOS systems, opening vscode in the windows system could not use the `$PATH` set in the shell
-  so it will not see required tools as ghc, cabal or stack. This usually happens if you have installed them
-  via ghcup.
-- It could be fixed changing the `$PATH` variable in the init config file used by the windows system
-  (f.e. `~/.profile`, but i can vary depending on your system setup).
-- See [this stackoverflow question](https://stackoverflow.com/questions/43983718/set-global-path-environment-variable-in-vs-code) for more tricks.
+If you have installed stack via the official cannels, the binary will not be M1 native, but x86 and trigger the rosetta compatibility layer. GHCup provides real stack/HLS M1 binaries, so make sure you install stack via GHCup. Also see https://github.com/haskell/haskell-language-server/issues/2864
+
+#### `GHC ABIs don't match`
+
+If you're running stack with GHC 9.0.2, you will get this because of an outdated
+GHC bindist that stack installs.
+
+Force it to install the fixed bindist (that includes profiling libs) by adding this to your stack.yaml (depending on your platform):
+
+```yml
+setup-info:
+  ghc:
+    linux64-tinfo6:
+      9.0.2:
+        url: "https://downloads.haskell.org/ghc/9.0.2/ghc-9.0.2a-x86_64-fedora27-linux.tar.xz"
+```
+
+Alternatively let GHCup install the correct bindist and then set `system-ghc: true` in your `stack.yaml`.
+
+Now make sure to remove cached/installed libraries to avoid getting segfaults at runtime.
+
+If you hit this problem although you're not using stack or GHC 9.0.2, please report an issue. As a workaround, you can try to compile HLS from source (the extension should pick it up) via ghcup, see [https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup](https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup).
+
+#### Something else doesn't work
+
+If something just doesn't work, but you recall an old configuration that did, you
+may try forcing a particular setting, e.g. by disabling all automatic installations
+except HLS:
+
+```json
+    "haskell.toolchain": {
+        "hls": "1.6.1.0",
+        "ghc": null,
+        "cabal": null,
+        "stack": null
+    }
+```
+
+Also make sure GHCup is installed and in `PATH`. If you're not starting VSCode from the terminal, you might need to add `${HOME}/.ghcup/bin` to PATH like so:
+
+```json
+  "haskell.serverEnvironment": {
+    "PATH": "${HOME}/.ghcup/bin:$PATH"
+  }
+```
 
 ## Contributing
 
