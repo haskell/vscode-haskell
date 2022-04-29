@@ -249,7 +249,7 @@ Now make sure to remove cached/installed libraries to avoid getting segfaults at
 
 If you hit this problem although you're not using stack or GHC 9.0.2, please report an issue. As a workaround, you can try to compile HLS from source (the extension should pick it up) via ghcup, see [https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup](https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup).
 
-#### Something else doesn't work
+#### Using an old configuration
 
 If something just doesn't work, but you recall an old configuration that did, you
 may try forcing a particular setting, e.g. by disabling all automatic installations
