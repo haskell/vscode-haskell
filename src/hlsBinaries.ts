@@ -546,7 +546,11 @@ export async function upgradeGHCup(context: ExtensionContext, logger: Logger): P
   if (manageHLS === 'GHCup') {
     const upgrade = workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
     if (upgrade) {
-      await callGHCup(context, logger, ['upgrade'], 'Upgrading ghcup', true);
+      try {
+        await callGHCup(context, logger, ['upgrade'], 'Upgrading ghcup', true);
+      } catch (e) {
+        window.showWarningMessage(`Failed to upgrade GHCup. Continuing anyway. You can disable upgrades via 'haskell.upgradeGHCup: false'`);
+      }
     }
   } else {
     throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
