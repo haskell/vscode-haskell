@@ -286,7 +286,9 @@ export async function findHaskellLanguageServer(
         : new InstalledTool('stack');
       const ghcInstalled = (await executableExists('ghc'))
         ? new InstalledTool('ghc')
-        : await toolInstalled(context, logger, 'ghc', recGHC!);
+		// if recGHC is null, that means user disabled automatic handling,
+		// so we pretend it's installed in order to ignore it
+        : (recGHC !== null ? await toolInstalled(context, logger, 'ghc', recGHC) : new InstalledTool('ghc'));
       const toInstall = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled]
         .filter((tool) => !tool.installed)
         .map((tool) => tool.nameWithVersion);
@@ -903,7 +905,7 @@ class InstalledTool {
    * @param version Version of the tool, expected to be either SemVer or PVP versioned.
    * @param installed Is this tool currently installed?
    */
-  public constructor(readonly name: string, readonly version: string = '', readonly installed: boolean = true) {
+  public constructor(readonly name: string, readonly version?: string, readonly installed: boolean = true) {
     this.nameWithVersion = `${name}-${version}`;
   }
 }
