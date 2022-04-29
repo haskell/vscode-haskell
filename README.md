@@ -264,6 +264,8 @@ except HLS:
     }
 ```
 
+#### Stack/Cabal/GHC can not be found
+
 Also make sure GHCup is installed and in `PATH`. If you're not starting VSCode from the terminal, you might need to add `${HOME}/.ghcup/bin` to PATH like so:
 
 ```json
