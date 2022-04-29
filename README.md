@@ -48,6 +48,8 @@ You can watch demos for some of these features [here](https://haskell-language-s
 
 For a general picture about the server configuration, including the project setup, [you can consult the server documentation about the topic](https://haskell-language-server.readthedocs.io/en/latest/configuration.html).
 
+For information on how to set configuration in VSCode, see [here](https://code.visualstudio.com/docs/getstarted/settings).
+
 ### Path to server executable
 
 If your server is manually installed and not on your path, you can also manually set the path to the executable.
