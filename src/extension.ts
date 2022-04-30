@@ -223,7 +223,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let serverEnvironment: IEnvVars = await workspace.getConfiguration('haskell', uri).serverEnvironment;
   if (addInternalServerPath !== undefined) {
-    const newPath = await addPathToProcessPath(addInternalServerPath, logger);
+    const newPath = await addPathToProcessPath(addInternalServerPath);
     serverEnvironment = {
       ...serverEnvironment,
       ...{ PATH: newPath },
