@@ -6,7 +6,6 @@ import * as http from 'http';
 import * as https from 'https';
 import * as os from 'os';
 import { extname } from 'path';
-import * as url from 'url';
 import { promisify } from 'util';
 import { OutputChannel, ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
@@ -215,10 +214,10 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
       },
       async (progress) => {
         const p = new Promise<void>((resolve, reject) => {
-          const srcUrl = url.parse(src);
+          const srcUrl = new URL(src);
           const opts: https.RequestOptions = {
             host: srcUrl.host,
-            path: srcUrl.path,
+            path: srcUrl.pathname,
             protocol: srcUrl.protocol,
             port: srcUrl.port,
             headers: userAgentHeader,
@@ -230,9 +229,9 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
 
             // Decompress it if it's a gzip or zip
             const needsGunzip =
-              res.headers['content-type'] === 'application/gzip' || extname(srcUrl.path ?? '') === '.gz';
+              res.headers['content-type'] === 'application/gzip' || extname(srcUrl.pathname ?? '') === '.gz';
             const needsUnzip =
-              res.headers['content-type'] === 'application/zip' || extname(srcUrl.path ?? '') === '.zip';
+              res.headers['content-type'] === 'application/zip' || extname(srcUrl.pathname ?? '') === '.zip';
             if (needsGunzip) {
               const gunzip = createGunzip();
               gunzip.on('error', reject);
@@ -360,7 +359,7 @@ export function resolvePATHPlaceHolders(path: string) {
 }
 
 // also honours serverEnvironment.PATH
-export async function addPathToProcessPath(extraPath: string, logger: Logger): Promise<string> {
+export async function addPathToProcessPath(extraPath: string): Promise<string> {
   const pathSep = process.platform === 'win32' ? ';' : ':';
   const serverEnvironment: IEnvVars = (await workspace.getConfiguration('haskell').get('serverEnvironment')) || {};
   const path: string[] = serverEnvironment.PATH
