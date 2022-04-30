@@ -265,7 +265,7 @@ export async function findHaskellLanguageServer(
       latestStack = await getLatestToolFromGHCup(context, logger, 'stack');
     }
     if (recGHC === undefined) {
-      recGHC = !(executableExists('ghc'))
+      recGHC = !executableExists('ghc')
         ? await getLatestAvailableToolFromGHCup(context, logger, 'ghc', 'recommended')
         : null;
     }
@@ -273,32 +273,34 @@ export async function findHaskellLanguageServer(
     // download popups
     const promptBeforeDownloads = workspace.getConfiguration('haskell').get('promptBeforeDownloads') as boolean;
     if (promptBeforeDownloads) {
-      const hlsInstalled = latestHLS
-        ? await toolInstalled(context, logger, 'hls', latestHLS)
-        : undefined;
-      const cabalInstalled = latestCabal
-        ? await toolInstalled(context, logger, 'cabal', latestCabal)
-        : undefined;
-      const stackInstalled = latestStack
-        ? await toolInstalled(context, logger, 'stack', latestStack)
-        : undefined;
+      const hlsInstalled = latestHLS ? await toolInstalled(context, logger, 'hls', latestHLS) : undefined;
+      const cabalInstalled = latestCabal ? await toolInstalled(context, logger, 'cabal', latestCabal) : undefined;
+      const stackInstalled = latestStack ? await toolInstalled(context, logger, 'stack', latestStack) : undefined;
       const ghcInstalled = executableExists('ghc')
-        ? new InstalledTool('ghc', await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false))
-        // if recGHC is null, that means user disabled automatic handling,
-        : (recGHC !== null ? await toolInstalled(context, logger, 'ghc', recGHC) : undefined);
-      const toInstall: InstalledTool[] = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled]
-        .filter((tool) => tool && !tool.installed) as InstalledTool[];
+        ? new InstalledTool(
+            'ghc',
+            await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false)
+          )
+        : // if recGHC is null, that means user disabled automatic handling,
+        recGHC !== null
+        ? await toolInstalled(context, logger, 'ghc', recGHC)
+        : undefined;
+      const toInstall: InstalledTool[] = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(
+        (tool) => tool && !tool.installed
+      ) as InstalledTool[];
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
-          `Need to download ${toInstall.map(t => t.nameWithVersion).join(', ')}, continue?`,
+          `Need to download ${toInstall.map((t) => t.nameWithVersion).join(', ')}, continue?`,
           'Yes',
           'No',
           "Yes, don't ask again"
         );
         if (decision === 'Yes') {
-          logger.info(`User accepted download for ${toInstall.map(t => t.nameWithVersion).join(', ')}.`);
+          logger.info(`User accepted download for ${toInstall.map((t) => t.nameWithVersion).join(', ')}.`);
         } else if (decision === "Yes, don't ask again") {
-          logger.info(`User accepted download for ${toInstall.map(t => t.nameWithVersion).join(', ')} and won't be asked again.`);
+          logger.info(
+            `User accepted download for ${toInstall.map((t) => t.nameWithVersion).join(', ')} and won't be asked again.`
+          );
           workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
         } else {
           toInstall.forEach((tool) => {
@@ -351,26 +353,25 @@ export async function findHaskellLanguageServer(
 
     // more download popups
     if (promptBeforeDownloads) {
-      const hlsInstalled = projectHls
-        ? await toolInstalled(context, logger, 'hls', projectHls)
-        : undefined;
-      const ghcInstalled = projectGhc
-        ? await toolInstalled(context, logger, 'ghc', projectGhc)
-        : undefined;
-      const toInstall: InstalledTool[] = [hlsInstalled, ghcInstalled]
-        .filter((tool) => tool && !tool.installed) as InstalledTool[];
+      const hlsInstalled = projectHls ? await toolInstalled(context, logger, 'hls', projectHls) : undefined;
+      const ghcInstalled = projectGhc ? await toolInstalled(context, logger, 'ghc', projectGhc) : undefined;
+      const toInstall: InstalledTool[] = [hlsInstalled, ghcInstalled].filter(
+        (tool) => tool && !tool.installed
+      ) as InstalledTool[];
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
-          `Need to download ${toInstall.map(t => t.nameWithVersion).join(', ')}, continue?`,
+          `Need to download ${toInstall.map((t) => t.nameWithVersion).join(', ')}, continue?`,
           { modal: true },
           'Yes',
           'No',
           "Yes, don't ask again"
         );
         if (decision === 'Yes') {
-          logger.info(`User accepted download for ${toInstall.map(t => t.nameWithVersion).join(', ')}.`);
+          logger.info(`User accepted download for ${toInstall.map((t) => t.nameWithVersion).join(', ')}.`);
         } else if (decision === "Yes, don't ask again") {
-          logger.info(`User accepted download for ${toInstall.map(t => t.nameWithVersion).join(', ')} and won't be asked again.`);
+          logger.info(
+            `User accepted download for ${toInstall.map((t) => t.nameWithVersion).join(', ')} and won't be asked again.`
+          );
           workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
         } else {
           toInstall.forEach((tool) => {
@@ -398,7 +399,15 @@ export async function findHaskellLanguageServer(
         ...(projectGhc ? ['--ghc', projectGhc] : []),
         '--install',
       ],
-      `Installing project specific toolchain: ${[['hls', projectHls], ['GHC', projectGhc], ['cabal', latestCabal], ['stack', latestStack]].filter(t => t[1]).map(t => `${t[0]}-${t[1]}`).join(', ')}`,
+      `Installing project specific toolchain: ${[
+        ['hls', projectHls],
+        ['GHC', projectGhc],
+        ['cabal', latestCabal],
+        ['stack', latestStack],
+      ]
+        .filter((t) => t[1])
+        .map((t) => `${t[0]}-${t[1]}`)
+        .join(', ')}`,
       true
     );
 
