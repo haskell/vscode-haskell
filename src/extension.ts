@@ -282,7 +282,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   };
 
   // Create the LSP client.
-  const langClient = new LanguageClient(langName, langName, serverOptions, clientOptions);
+  const langClient = new LanguageClient('haskell', langName, serverOptions, clientOptions);
 
   // Register ClientCapabilities for stuff like window/progress
   langClient.registerProposedFeatures();
