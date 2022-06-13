@@ -199,7 +199,10 @@ export async function findHaskellLanguageServer(
 
   // first plugin initialization
   if (manageHLS !== 'GHCup' && (!context.globalState.get('pluginInitialized') as boolean | null)) {
-    const promptMessage = 'How do you want the extension to manage/discover HLS and the relevant toolchain?';
+    const promptMessage = `How do you want the extension to manage/discover HLS and the relevant toolchain?
+    
+    Choose "Automatically" if you're in doubt.
+    `;
 
     const popup = window.showInformationMessage(
       promptMessage,
