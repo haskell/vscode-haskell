@@ -761,7 +761,7 @@ async function getHLSesfromMetadata(context: ExtensionContext, logger: Logger): 
   const arch: Arch | null = match(process.arch)
     .with('arm', (_) => 'A_ARM' as Arch)
     .with('arm64', (_) => 'A_ARM64' as Arch)
-    .with('x32', (_) => 'A_32' as Arch)
+    .with('ia32', (_) => 'A_32' as Arch)
     .with('x64', (_) => 'A_64' as Arch)
     .otherwise((_) => null);
   if (arch === null) {
