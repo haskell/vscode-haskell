@@ -98,7 +98,8 @@
           "type": "string",
           "enum": [
             "off",
-            "messages"
+            "messages",
+            "verbose"
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
