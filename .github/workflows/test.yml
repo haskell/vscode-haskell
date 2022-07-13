@@ -26,7 +26,7 @@ jobs:
         shell: bash
       # Setup the environment for the tests
       - name: Ensure there is a supported ghc versions
-        uses: haskell/actions/setup@v1
+        uses: haskell/actions/setup@v2
         with:
           ghc-version: ${{ matrix.ghc }}
       - name: 'Install `tree` for MacOs'
