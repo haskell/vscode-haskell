@@ -559,7 +559,7 @@
   ],
   "dependencies": {
     "bent": "^7.3.12",
-    "cheerio": "^1.0.0-rc.10",
+    "cheerio": "^1.0.0-rc.12",
     "extend": ">=3.0.2",
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
