@@ -2291,10 +2291,10 @@ ts-loader@^9.3.1:
     micromatch "^4.0.0"
     semver "^7.3.4"
 
-ts-pattern@^4.0.1:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-4.0.2.tgz#b36afdb2de1ec0224539dcb7cea3a57c41453b9f"
-  integrity sha512-eHqR/7A6fcw05vCOfnL6RwgGJbVi9G/YHTdYdjYmElhDdJ1SMn7pWs+6+YuxygaFwQS/g+cIDlu+UD8IVpur1A==
+ts-pattern@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-4.0.5.tgz#8e87db265b890ddb0dfc10deda36568296ebd5c3"
+  integrity sha512-Bq44KCEt7JVaNLa148mBCJkcQf4l7jtLEBDuDdeuLynWDA+1a60P4D0rMkqSM9mOKLQbIWUddE9h3XKyKwBeqA==
 
 tslib@^1.13.0, tslib@^1.8.1:
   version "1.14.1"

@@ -564,7 +564,7 @@
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
     "lru-cache": "^7.7.3",
-    "ts-pattern": "^4.0.1",
+    "ts-pattern": "^4.0.5",
     "vscode-languageclient": "^7.0.0",
     "which": "^2.0.1",
     "yauzl": "^2.10.0"
