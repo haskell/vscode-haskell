@@ -540,7 +540,7 @@
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
     "@vscode/test-electron": "^2.1.5",
-    "eslint": "^8.19.0",
+    "eslint": "^8.20.0",
     "glob": "^8.0.3",
     "husky": "^8.0.1",
     "mocha": "^9.2.1",
