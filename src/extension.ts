@@ -179,7 +179,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     } else if (e instanceof NoMatchingHls) {
       const link = e.docLink();
       logger.error(`${e.message}`);
-      if (await window.showErrorMessage(e.message, `Open documentation`)) {
+      if (await window.showErrorMessage(e.message, 'Open documentation')) {
         env.openExternal(link);
       }
     } else if (e instanceof Error) {

@@ -133,10 +133,7 @@ async function callAsync(
 
 /** Gets serverExecutablePath and fails if it's not set.
  */
-async function findServerExecutable(
-  logger: Logger,
-  folder?: WorkspaceFolder
-): Promise<string> {
+async function findServerExecutable(logger: Logger, folder?: WorkspaceFolder): Promise<string> {
   let exePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
   logger.info(`Trying to find the server executable in: ${exePath}`);
   exePath = resolvePathPlaceHolders(exePath, folder);
@@ -200,7 +197,7 @@ export async function findHaskellLanguageServer(
   // first plugin initialization
   if (manageHLS !== 'GHCup' && (!context.globalState.get('pluginInitialized') as boolean | null)) {
     const promptMessage = `How do you want the extension to manage/discover HLS and the relevant toolchain?
-    
+
     Choose "Automatically" if you're in doubt.
     `;
 

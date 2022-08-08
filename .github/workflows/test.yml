@@ -25,10 +25,12 @@ jobs:
         run: ghcup upgrade -i -f
         shell: bash
       # Setup the environment for the tests
-      - name: Ensure there is a supported ghc versions
-        uses: haskell/actions/setup@v2
-        with:
-          ghc-version: ${{ matrix.ghc }}
+      - name: Install stack
+        run: ghcup install stack recommended
+      - name: Install cabal
+        run: ghcup install cabal recommended
+      - name: Install GHC
+        run: ghcup install ghc ${{matrix.ghc}}
       - name: 'Install `tree` for MacOs'
         run: |
           brew update

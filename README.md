@@ -7,28 +7,28 @@ As almost all features are provided by the server you might find interesting rea
 
 ## Table of Contents
 
-* [Setup](#setup)
-* [Features](#features)
-* [Requirements](#requirements)
-* [Configuration options](#configuration-options)
-  * [Path to server executable](#path-to-server-executable)
-	 * [Security warning](#security-warning)
-  * [Set additional environment variables for the server](#set-additional-environment-variables-for-the-server)
-  * [Downloaded binaries](#downloaded-binaries)
-  * [Setting a specific toolchain](#setting-a-specific-toolchain)
-  * [Supported GHC versions](#supported-ghc-versions)
-* [Using multi-root workspaces](#using-multi-root-workspaces)
-* [Investigating and reporting problems](#investigating-and-reporting-problems)
-* [FAQ](#faq)
-  * [Troubleshooting](#troubleshooting)
-	 * [Check issues and tips in the haskell-language-server project](#check-issues-and-tips-in-the-haskell-language-server-project)
-	 * [Restarting the language server](#restarting-the-language-server)
-	 * [Failed to get project GHC version on darwin M1 with stack](#failed-to-get-project-ghc-version-on-darwin-m1-with-stack)
-	 * [GHC ABIs don't match](#ghc-abis-dont-match)
-	 * [Using an old configuration](#using-an-old-configuration)
-	 * [Stack/Cabal/GHC can not be found](#stackcabalghc-can-not-be-found)
-* [Contributing](#contributing)
-* [Release Notes](#release-notes)
+- [Setup](#setup)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Configuration options](#configuration-options)
+  - [Path to server executable](#path-to-server-executable)
+  - [Security warning](#security-warning)
+  - [Set additional environment variables for the server](#set-additional-environment-variables-for-the-server)
+  - [Downloaded binaries](#downloaded-binaries)
+  - [Setting a specific toolchain](#setting-a-specific-toolchain)
+  - [Supported GHC versions](#supported-ghc-versions)
+- [Using multi-root workspaces](#using-multi-root-workspaces)
+- [Investigating and reporting problems](#investigating-and-reporting-problems)
+- [FAQ](#faq)
+  - [Troubleshooting](#troubleshooting)
+  - [Check issues and tips in the haskell-language-server project](#check-issues-and-tips-in-the-haskell-language-server-project)
+  - [Restarting the language server](#restarting-the-language-server)
+  - [Failed to get project GHC version on darwin M1 with stack](#failed-to-get-project-ghc-version-on-darwin-m1-with-stack)
+  - [GHC ABIs don't match](#ghc-abis-dont-match)
+  - [Using an old configuration](#using-an-old-configuration)
+  - [Stack/Cabal/GHC can not be found](#stackcabalghc-can-not-be-found)
+- [Contributing](#contributing)
+- [Release Notes](#release-notes)
 
 ## Setup
 
@@ -267,7 +267,7 @@ setup-info:
   ghc:
     linux64-tinfo6:
       9.0.2:
-        url: "https://downloads.haskell.org/ghc/9.0.2/ghc-9.0.2a-x86_64-fedora27-linux.tar.xz"
+        url: 'https://downloads.haskell.org/ghc/9.0.2/ghc-9.0.2a-x86_64-fedora27-linux.tar.xz'
 ```
 
 Alternatively let GHCup install the correct bindist and then set `system-ghc: true` in your `stack.yaml`.

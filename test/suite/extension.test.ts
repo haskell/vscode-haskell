@@ -125,7 +125,6 @@ suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
   suiteSetup(async () => {
-    const tmpdir = path.join(getWorkspaceRoot().uri.fsPath, 'tmp');
     await deleteWorkspaceFiles([
       joinUri(getWorkspaceRoot().uri, '.vscode'),
       joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache'),
@@ -137,17 +136,10 @@ suite('Extension Test Suite', () => {
     await getHaskellConfig().update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
     await getHaskellConfig().update('serverEnvironment', {
       XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath),
-      TMPDIR: tmpdir,
-      TMP: tmpdir,
     });
-    fs.mkdirSync(tmpdir, { recursive: true });
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
 
-    const pred = (uri: vscode.Uri) => !['download', 'gz', 'zip'].includes(path.extname(uri.fsPath));
-    // Setting up watchers before actual tests start, to ensure we will got the created event
-    filesCreated.set('wrapper', existsWorkspaceFile(`tmp/ghcup-*/haskell-language-server-wrapper*`, pred));
-    filesCreated.set('server', existsWorkspaceFile(`tmp/ghcup-*/haskell-language-server-[1-9]*`, pred));
     filesCreated.set('log', existsWorkspaceFile('hls.log'));
     filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
@@ -164,20 +156,6 @@ suite('Extension Test Suite', () => {
   test('Extension should create the extension log file', async () => {
     await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(await withTimeout(90, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
-  });
-
-  test('HLS executables should be downloaded', async () => {
-    await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    console.log('Testing wrapper');
-    assert.ok(
-      await withTimeout(90, filesCreated.get('wrapper')!),
-      'The wrapper executable was not downloaded in 90 seconds'
-    );
-    console.log('Testing server');
-    assert.ok(
-      await withTimeout(90, filesCreated.get('server')!),
-      'The server executable was not downloaded in 90 seconds'
-    );
   });
 
   test('Extension log should have server output', async () => {
