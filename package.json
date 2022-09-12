@@ -528,7 +528,7 @@
   "devDependencies": {
     "@types/bent": "^7.3.2",
     "@types/cheerio": "^0.22.30",
-    "@types/glob": "^7.1.4",
+    "@types/glob": "^8.0.0",
     "@types/js-yaml": "^4.0.5",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^7.10.10",
