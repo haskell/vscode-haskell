@@ -65,7 +65,7 @@ jobs:
       # Upload test artefacts
       - name: Upload log file to workflow artifacts on error
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: extension-${{ matrix.os }}.log
           path: test-workspace/hls.log
@@ -84,7 +84,7 @@ jobs:
         run: npx vsce package
       - name: Upload extension vsix to workflow artifacts
         if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: haskell-${{ github.sha }}.vsix
           path: haskell-*.vsix
