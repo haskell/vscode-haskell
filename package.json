@@ -550,7 +550,7 @@
     "@types/js-yaml": "^4.0.5",
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^7.10.10",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^18.8.0",
     "@types/vscode": "^1.69.0",
     "@types/which": "^2.0.1",
