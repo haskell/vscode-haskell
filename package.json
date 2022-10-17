@@ -567,7 +567,7 @@
     "eslint": "^8.25.0",
     "glob": "^8.0.3",
     "husky": "^8.0.1",
-    "mocha": "^10.0.0",
+    "mocha": "^10.1.0",
     "prettier": "^2.7.1",
     "pretty-quick": "^3.1.2",
     "set-value": ">=4.0.1",
