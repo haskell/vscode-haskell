@@ -141,10 +141,10 @@
           "markdownDescription": "An optional path where downloaded metadata will be stored. Check the default value [here](https://github.com/haskell/vscode-haskell#downloaded-binaries)"
         },
         "haskell.serverExecutablePath": {
-          "scope": "resource",
+          "scope": "machine-overridable",
           "type": "string",
           "default": "",
-          "markdownDescription": "Manually set a language server executable. Can be something on the $PATH or the full path to the executable itself. Works with `~,` `${HOME}` and `${workspaceFolder}`. **Deprecated scope**: This option will be set to `machine` scope in a future release, so it can be changed only globally, not per workspace."
+          "markdownDescription": "Manually set a language server executable. Can be something on the $PATH or the full path to the executable itself. Works with `~,` `${HOME}` and `${workspaceFolder}`."
         },
         "haskell.serverExtraArgs": {
           "scope": "resource",
