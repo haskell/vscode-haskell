@@ -563,7 +563,7 @@
     "@types/yauzl": "^2.9.1",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.40.1",
-    "@vscode/test-electron": "^2.1.5",
+    "@vscode/test-electron": "^2.2.0",
     "eslint": "^8.25.0",
     "glob": "^8.0.3",
     "husky": "^8.0.1",
