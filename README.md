@@ -7,28 +7,30 @@ As almost all features are provided by the server you might find interesting rea
 
 ## Table of Contents
 
-- [Setup](#setup)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Configuration options](#configuration-options)
-  - [Path to server executable](#path-to-server-executable)
-  - [Security warning](#security-warning)
-  - [Set additional environment variables for the server](#set-additional-environment-variables-for-the-server)
-  - [Downloaded binaries](#downloaded-binaries)
-  - [Setting a specific toolchain](#setting-a-specific-toolchain)
-  - [Supported GHC versions](#supported-ghc-versions)
-- [Using multi-root workspaces](#using-multi-root-workspaces)
-- [Investigating and reporting problems](#investigating-and-reporting-problems)
-- [FAQ](#faq)
-  - [Troubleshooting](#troubleshooting)
-  - [Check issues and tips in the haskell-language-server project](#check-issues-and-tips-in-the-haskell-language-server-project)
-  - [Restarting the language server](#restarting-the-language-server)
-  - [Failed to get project GHC version on darwin M1 with stack](#failed-to-get-project-ghc-version-on-darwin-m1-with-stack)
-  - [GHC ABIs don't match](#ghc-abis-dont-match)
-  - [Using an old configuration](#using-an-old-configuration)
-  - [Stack/Cabal/GHC can not be found](#stackcabalghc-can-not-be-found)
-- [Contributing](#contributing)
-- [Release Notes](#release-notes)
+- [Haskell for Visual Studio Code](#haskell-for-visual-studio-code)
+  - [Table of Contents](#table-of-contents)
+  - [Setup](#setup)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Configuration options](#configuration-options)
+    - [Path to server executable](#path-to-server-executable)
+      - [Security warning](#security-warning)
+    - [Set additional environment variables for the server](#set-additional-environment-variables-for-the-server)
+    - [Downloaded binaries](#downloaded-binaries)
+    - [Setting a specific toolchain](#setting-a-specific-toolchain)
+    - [Supported GHC versions](#supported-ghc-versions)
+  - [Using multi-root workspaces](#using-multi-root-workspaces)
+  - [Investigating and reporting problems](#investigating-and-reporting-problems)
+  - [FAQ](#faq)
+    - [Troubleshooting](#troubleshooting)
+      - [Check issues and tips in the haskell-language-server project](#check-issues-and-tips-in-the-haskell-language-server-project)
+      - [Restarting the language server](#restarting-the-language-server)
+      - [`Failed to get project GHC version` on darwin M1 with stack](#failed-to-get-project-ghc-version-on-darwin-m1-with-stack)
+      - [`GHC ABIs don't match`](#ghc-abis-dont-match)
+      - [Using an old configuration](#using-an-old-configuration)
+      - [Stack/Cabal/GHC can not be found](#stackcabalghc-can-not-be-found)
+  - [Contributing](#contributing)
+  - [Release Notes](#release-notes)
 
 ## Setup
 
@@ -205,7 +207,7 @@ At last, if you don't want `ghcup` to manage any of the external tools except `h
 
 ### Supported GHC versions
 
-These are the versions of GHC that there are binaries of `haskell-language-server-1.7.0` for. Building from source may support more versions!
+These are the versions of GHC that there are binaries of `haskell-language-server-1.7.0` for. [Building from source](https://haskell-language-server.readthedocs.io/en/latest/installation.html) may support more versions!
 
 | GHC                                                                               | Linux | macOS | Windows |
 | --------------------------------------------------------------------------------- | ----- | ----- | ------- |
