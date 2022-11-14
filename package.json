@@ -557,7 +557,7 @@
     "@types/lodash-es": "^4.17.3",
     "@types/lru-cache": "^7.10.10",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^18.11.0",
+    "@types/node": "^18.11.9",
     "@types/vscode": "^1.69.0",
     "@types/which": "^2.0.1",
     "@types/yauzl": "^2.9.1",
