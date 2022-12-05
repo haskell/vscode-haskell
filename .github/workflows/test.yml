@@ -20,6 +20,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
+          ## make sure this corresponds with the version in release.yml
           node-version: latest
       - name: Upgrade ghcup
         run: ghcup upgrade -i -f
