@@ -590,7 +590,7 @@
     "lru-cache": "^7.14.0",
     "ts-pattern": "^4.0.5",
     "vscode-languageclient": "^7.0.0",
-    "which": "^2.0.1",
+    "which": "^3.0.0",
     "yauzl": "^2.10.0"
   }
 }
