@@ -1,5 +1,258 @@
 # Changelog for vscode-haskell
 
+## 2.2.2
+
+- Bump @types/node from 18.11.9 to 18.11.10
+  ([#772](https://github.com/haskell/vscode-haskell/pull/772))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.44.0 to 5.45.0
+  ([#771](https://github.com/haskell/vscode-haskell/pull/771))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.42.0 to 5.44.0
+  ([#768](https://github.com/haskell/vscode-haskell/pull/768))  by @dependabot[bot]
+- Bump typescript from 4.8.4 to 4.9.3
+  ([#767](https://github.com/haskell/vscode-haskell/pull/767))  by @dependabot[bot]
+- Bump which from 2.0.2 to 3.0.0
+  ([#765](https://github.com/haskell/vscode-haskell/pull/765))  by @dependabot[bot]
+- Bump eslint from 8.27.0 to 8.28.0
+  ([#763](https://github.com/haskell/vscode-haskell/pull/763))  by @dependabot[bot]
+- Bump loader-utils from 1.4.0 to 1.4.2
+  ([#759](https://github.com/haskell/vscode-haskell/pull/759))  by @dependabot[bot]
+- Bump husky from 8.0.1 to 8.0.2
+  ([#758](https://github.com/haskell/vscode-haskell/pull/758))  by @dependabot[bot]
+- Bump @types/node from 18.11.0 to 18.11.9
+  ([#757](https://github.com/haskell/vscode-haskell/pull/757))  by @dependabot[bot]
+- Bump webpack from 5.74.0 to 5.75.0
+  ([#756](https://github.com/haskell/vscode-haskell/pull/756))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.40.1 to 5.42.0
+  ([#754](https://github.com/haskell/vscode-haskell/pull/754))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.40.1 to 5.42.0
+  ([#753](https://github.com/haskell/vscode-haskell/pull/753))  by @dependabot[bot]
+- Bump eslint from 8.25.0 to 8.27.0
+  ([#752](https://github.com/haskell/vscode-haskell/pull/752))  by @dependabot[bot]
+- Add link to HLS installation webpage
+  ([#751](https://github.com/haskell/vscode-haskell/pull/751))  by @fendor
+- Bump @typescript-eslint/parser from 5.40.0 to 5.40.1
+  ([#745](https://github.com/haskell/vscode-haskell/pull/745))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.40.0 to 5.40.1
+  ([#744](https://github.com/haskell/vscode-haskell/pull/744))  by @dependabot[bot]
+- Bump @vscode/test-electron from 2.1.5 to 2.2.0
+  ([#743](https://github.com/haskell/vscode-haskell/pull/743))  by @dependabot[bot]
+- Change scope of serverExecutablePath to machine-overridable
+  ([#742](https://github.com/haskell/vscode-haskell/pull/742))  by @fendor
+- Bump mocha from 10.0.0 to 10.1.0
+  ([#741](https://github.com/haskell/vscode-haskell/pull/741))  by @dependabot[bot]
+- Bump @types/node from 18.8.5 to 18.11.0
+  ([#740](https://github.com/haskell/vscode-haskell/pull/740))  by @dependabot[bot]
+- Bump @types/node from 18.8.0 to 18.8.5
+  ([#739](https://github.com/haskell/vscode-haskell/pull/739))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.38.1 to 5.40.0
+  ([#738](https://github.com/haskell/vscode-haskell/pull/738))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.38.1 to 5.40.0
+  ([#737](https://github.com/haskell/vscode-haskell/pull/737))  by @dependabot[bot]
+- Add Fourmolu config property
+  ([#736](https://github.com/haskell/vscode-haskell/pull/736))  by @georgefst
+- Bump eslint from 8.24.0 to 8.25.0
+  ([#733](https://github.com/haskell/vscode-haskell/pull/733))  by @dependabot[bot]
+- Bump @types/mocha from 9.1.1 to 10.0.0
+  ([#728](https://github.com/haskell/vscode-haskell/pull/728))  by @dependabot[bot]
+- Bump typescript from 4.8.3 to 4.8.4
+  ([#727](https://github.com/haskell/vscode-haskell/pull/727))  by @dependabot[bot]
+- Bump @types/node from 18.7.23 to 18.8.0
+  ([#726](https://github.com/haskell/vscode-haskell/pull/726))  by @dependabot[bot]
+- Bump ts-loader from 9.4.0 to 9.4.1
+  ([#725](https://github.com/haskell/vscode-haskell/pull/725))  by @dependabot[bot]
+- Bump @types/node from 18.7.18 to 18.7.23
+  ([#724](https://github.com/haskell/vscode-haskell/pull/724))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.37.0 to 5.38.1
+  ([#723](https://github.com/haskell/vscode-haskell/pull/723))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.38.0 to 5.38.1
+  ([#722](https://github.com/haskell/vscode-haskell/pull/722))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.37.0 to 5.38.0
+  ([#721](https://github.com/haskell/vscode-haskell/pull/721))  by @dependabot[bot]
+- Bump eslint from 8.23.1 to 8.24.0
+  ([#720](https://github.com/haskell/vscode-haskell/pull/720))  by @dependabot[bot]
+- Add missing configuration options for the latest HLS version
+  ([#717](https://github.com/haskell/vscode-haskell/pull/717))  by @fendor
+- Bump @types/node from 18.7.15 to 18.7.18
+  ([#715](https://github.com/haskell/vscode-haskell/pull/715))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.36.2 to 5.37.0
+  ([#714](https://github.com/haskell/vscode-haskell/pull/714))  by @dependabot[bot]
+- Bump ts-loader from 9.3.1 to 9.4.0
+  ([#713](https://github.com/haskell/vscode-haskell/pull/713))  by @dependabot[bot]
+- Bump actions/upload-artifact from 2 to 3
+  ([#712](https://github.com/haskell/vscode-haskell/pull/712))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.33.0 to 5.37.0
+  ([#711](https://github.com/haskell/vscode-haskell/pull/711))  by @dependabot[bot]
+- Change sensible to sensitive
+  ([#709](https://github.com/haskell/vscode-haskell/pull/709))  by @ploeh
+- Bump typescript from 4.7.4 to 4.8.3
+  ([#707](https://github.com/haskell/vscode-haskell/pull/707))  by @dependabot[bot]
+- Bump eslint from 8.23.0 to 8.23.1
+  ([#705](https://github.com/haskell/vscode-haskell/pull/705))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.36.1 to 5.36.2
+  ([#704](https://github.com/haskell/vscode-haskell/pull/704))  by @dependabot[bot]
+- Bump @types/glob from 7.2.0 to 8.0.0
+  ([#702](https://github.com/haskell/vscode-haskell/pull/702))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.35.1 to 5.36.1
+  ([#700](https://github.com/haskell/vscode-haskell/pull/700))  by @dependabot[bot]
+- Bump @types/node from 18.7.13 to 18.7.15
+  ([#699](https://github.com/haskell/vscode-haskell/pull/699))  by @dependabot[bot]
+- Bump eslint from 8.22.0 to 8.23.0
+  ([#696](https://github.com/haskell/vscode-haskell/pull/696))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.33.0 to 5.35.1
+  ([#692](https://github.com/haskell/vscode-haskell/pull/692))  by @dependabot[bot]
+- Bump @types/node from 18.7.4 to 18.7.13
+  ([#691](https://github.com/haskell/vscode-haskell/pull/691))  by @dependabot[bot]
+- Bump lru-cache from 7.13.2 to 7.14.0
+  ([#688](https://github.com/haskell/vscode-haskell/pull/688))  by @dependabot[bot]
+- Bump @types/node from 18.6.1 to 18.7.4
+  ([#685](https://github.com/haskell/vscode-haskell/pull/685))  by @dependabot[bot]
+- Bump eslint from 8.20.0 to 8.22.0
+  ([#682](https://github.com/haskell/vscode-haskell/pull/682))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.31.0 to 5.33.0
+  ([#677](https://github.com/haskell/vscode-haskell/pull/677))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.31.0 to 5.33.0
+  ([#675](https://github.com/haskell/vscode-haskell/pull/675))  by @dependabot[bot]
+- Bump lru-cache from 7.13.1 to 7.13.2
+  ([#674](https://github.com/haskell/vscode-haskell/pull/674))  by @dependabot[bot]
+- Fix test-suite for new GHCUp release
+  ([#672](https://github.com/haskell/vscode-haskell/pull/672))  by @fendor
+- Prepare release 2.2.1
+  ([#657](https://github.com/haskell/vscode-haskell/pull/657))  by @fendor
+- Bump @vscode/test-electron from 2.1.3 to 2.1.5
+  ([#656](https://github.com/haskell/vscode-haskell/pull/656))  by @dependabot[bot]
+- Bump eslint from 8.19.0 to 8.20.0
+  ([#655](https://github.com/haskell/vscode-haskell/pull/655))  by @dependabot[bot]
+- Bump glob from 7.2.0 to 8.0.3
+  ([#654](https://github.com/haskell/vscode-haskell/pull/654))  by @dependabot[bot]
+- Bump lru-cache and @types/lru-cache
+  ([#653](https://github.com/haskell/vscode-haskell/pull/653))  by @dependabot[bot]
+- Bump ts-pattern from 4.0.2 to 4.0.5
+  ([#652](https://github.com/haskell/vscode-haskell/pull/652))  by @dependabot[bot]
+- Bump terser from 5.13.0 to 5.14.2
+  ([#651](https://github.com/haskell/vscode-haskell/pull/651))  by @dependabot[bot]
+- Bump cheerio from 1.0.0-rc.10 to 1.0.0-rc.12
+  ([#647](https://github.com/haskell/vscode-haskell/pull/647))  by @dependabot[bot]
+- Bump webpack from 5.72.0 to 5.73.0
+  ([#646](https://github.com/haskell/vscode-haskell/pull/646))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.21.0 to 5.30.6
+  ([#645](https://github.com/haskell/vscode-haskell/pull/645))  by @dependabot[bot]
+- Bump webpack-cli from 4.9.2 to 4.10.0
+  ([#644](https://github.com/haskell/vscode-haskell/pull/644))  by @dependabot[bot]
+- Bump @types/vscode from 1.66.0 to 1.69.0
+  ([#643](https://github.com/haskell/vscode-haskell/pull/643))  by @dependabot[bot]
+- Bump @types/node from 17.0.29 to 18.0.4
+  ([#642](https://github.com/haskell/vscode-haskell/pull/642))  by @dependabot[bot]
+- Bump husky from 7.0.4 to 8.0.1
+  ([#641](https://github.com/haskell/vscode-haskell/pull/641))  by @dependabot[bot]
+- Bump ts-loader from 9.2.9 to 9.3.1
+  ([#640](https://github.com/haskell/vscode-haskell/pull/640))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.21.0 to 5.30.6
+  ([#638](https://github.com/haskell/vscode-haskell/pull/638))  by @dependabot[bot]
+- Bump eslint from 8.14.0 to 8.19.0
+  ([#637](https://github.com/haskell/vscode-haskell/pull/637))  by @dependabot[bot]
+- Bump haskell/actions from 1 to 2
+  ([#636](https://github.com/haskell/vscode-haskell/pull/636))  by @dependabot[bot]
+- Bump actions/checkout from 2 to 3
+  ([#635](https://github.com/haskell/vscode-haskell/pull/635))  by @dependabot[bot]
+- Bump actions/setup-node from 1 to 3
+  ([#634](https://github.com/haskell/vscode-haskell/pull/634))  by @dependabot[bot]
+- Add dependabot.yml
+  ([#633](https://github.com/haskell/vscode-haskell/pull/633))  by @fendor
+- Replace x32 with ia32 for Architecture matching
+  ([#631](https://github.com/haskell/vscode-haskell/pull/631))  by @fendor
+- Toolchain management dialog: add hint for beginners
+  ([#621](https://github.com/haskell/vscode-haskell/pull/621))  by @runeksvendsen
+- Fix trace.server option
+  ([#617](https://github.com/haskell/vscode-haskell/pull/617))  by @coltenwebb
+- Add TOC
+  ([#615](https://github.com/haskell/vscode-haskell/pull/615))  by @hasufell
+- Cleanups
+  ([#605](https://github.com/haskell/vscode-haskell/pull/605))  by @hasufell
+- Link to VSCode settings page
+  ([#603](https://github.com/haskell/vscode-haskell/pull/603))  by @hasufell
+- Refactor toInstall shenanigans
+  ([#600](https://github.com/haskell/vscode-haskell/pull/600))  by @hasufell
+- Fix confusing download dialog popup
+  ([#599](https://github.com/haskell/vscode-haskell/pull/599))  by @hasufell
+- More troubleshooting
+  ([#598](https://github.com/haskell/vscode-haskell/pull/598))  by @hasufell
+- Bump version to 2.2.0 (Syncs up pre-release and release version)
+  ([#594](https://github.com/haskell/vscode-haskell/pull/594))  by @fendor
+- Prepare release 2.0.1
+  ([#592](https://github.com/haskell/vscode-haskell/pull/592))  by @fendor
+- Fixes #589
+  ([#591](https://github.com/haskell/vscode-haskell/pull/591))  by @hasufell
+- Improve error message, fixes #587
+  ([#588](https://github.com/haskell/vscode-haskell/pull/588))  by @hasufell
+- Properly convert release metadata from json
+  ([#585](https://github.com/haskell/vscode-haskell/pull/585))  by @fendor
+- Prepare pre-release 2.1.2
+  ([#583](https://github.com/haskell/vscode-haskell/pull/583))  by @fendor
+- Ignore missing entries in Release Metadata
+  ([#582](https://github.com/haskell/vscode-haskell/pull/582))  by @fendor
+- Prepare pre-release 2.1.1
+  ([#580](https://github.com/haskell/vscode-haskell/pull/580))  by @fendor
+- Add Tool class and print stacktraces
+  ([#579](https://github.com/haskell/vscode-haskell/pull/579))  by @fendor
+- List Env Vars we care about only
+  ([#578](https://github.com/haskell/vscode-haskell/pull/578))  by @fendor
+- Add docs folder
+  ([#576](https://github.com/haskell/vscode-haskell/pull/576))  by @fendor
+- Add indentation for list item in markdown
+  ([#575](https://github.com/haskell/vscode-haskell/pull/575))  by @fendor
+- Prepare pre-release 2.1.0
+  ([#574](https://github.com/haskell/vscode-haskell/pull/574))  by @fendor
+- Enable pre-release feature for VSX Marketplace
+  ([#573](https://github.com/haskell/vscode-haskell/pull/573))  by @fendor
+- Simplify release script
+  ([#570](https://github.com/haskell/vscode-haskell/pull/570))  by @fendor
+- Bump required VSCode version
+  ([#569](https://github.com/haskell/vscode-haskell/pull/569))  by @fendor
+- Prepare Prerelease 2.0.0 alpha
+  ([#568](https://github.com/haskell/vscode-haskell/pull/568))  by @fendor
+- Upgrade VSCode publishing github action version
+  ([#567](https://github.com/haskell/vscode-haskell/pull/567))  by @fendor
+- Add prettier script
+  ([#566](https://github.com/haskell/vscode-haskell/pull/566))  by @fendor
+- Remove accidental run command
+  ([#565](https://github.com/haskell/vscode-haskell/pull/565))  by @fendor
+- Upgrade dependencies
+  ([#564](https://github.com/haskell/vscode-haskell/pull/564))  by @fendor
+- Add new configuration options for rename plugin
+  ([#563](https://github.com/haskell/vscode-haskell/pull/563))  by @OliverMadine
+- Introduce 'haskell.toolchain' setting
+  ([#562](https://github.com/haskell/vscode-haskell/pull/562))  by @hasufell
+- Improve
+  ([#558](https://github.com/haskell/vscode-haskell/pull/558))  by @hasufell
+- Remove stdout/sterr from user error message
+  ([#556](https://github.com/haskell/vscode-haskell/pull/556))  by @fendor
+- Fix npm security issue
+  ([#555](https://github.com/haskell/vscode-haskell/pull/555))  by @fendor
+- No colour output for GHCup
+  ([#554](https://github.com/haskell/vscode-haskell/pull/554))  by @fendor
+- Add eval plugin configuration
+  ([#549](https://github.com/haskell/vscode-haskell/pull/549))  by @xsebek
+- Manage all the Haskell things
+  ([#547](https://github.com/haskell/vscode-haskell/pull/547))  by @hasufell
+- Consider user installed HLSes (e.g. via ghcup compile)
+  ([#543](https://github.com/haskell/vscode-haskell/pull/543))  by @hasufell
+- Bump lodash-es from 4.17.15 to 4.17.21
+  ([#539](https://github.com/haskell/vscode-haskell/pull/539))  by @dependabot[bot]
+- Update README.MD GHC support
+  ([#537](https://github.com/haskell/vscode-haskell/pull/537))  by @cptwunderlich
+- fix: change deprecated Haskell Platform install link to GHCup
+  ([#536](https://github.com/haskell/vscode-haskell/pull/536))  by @HEIGE-PCloud
+- Add ignorePATH option
+  ([#534](https://github.com/haskell/vscode-haskell/pull/534))  by @soiamsoNG
+- Update HLS installation method
+  ([#533](https://github.com/haskell/vscode-haskell/pull/533))  by @hasufell
+- Bump ajv from 6.12.0 to 6.12.6
+  ([#532](https://github.com/haskell/vscode-haskell/pull/532))  by @dependabot[bot]
+- Fixes related with paths
+  ([#518](https://github.com/haskell/vscode-haskell/pull/518))  by @jneira
+- Reorganize troubleshooting section
+  ([#516](https://github.com/haskell/vscode-haskell/pull/516))  by @jneira
+
 ## 2.2.1
 
 - Fix test-suite for new GHCUp release
