@@ -54,6 +54,6 @@ export class NoMatchingHls extends Error {
     super(`HLS does not support GHC ${ghcProjVersion} yet.`);
   }
   public docLink(): Uri {
-    return Uri.parse('https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html');
+    return Uri.parse('https://haskell-language-server.readthedocs.io/en/latest/support/ghc-version-support.html');
   }
 }
