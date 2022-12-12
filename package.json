@@ -589,7 +589,7 @@
     "lodash-es": "^4.17.21",
     "lru-cache": "^7.14.0",
     "ts-pattern": "^4.0.5",
-    "vscode-languageclient": "^7.0.0",
+    "vscode-languageclient": "^8.0.2",
     "which": "^3.0.0",
     "yauzl": "^2.10.0"
   }
