@@ -1,4 +1,3 @@
-'use strict';
 import * as path from 'path';
 import {
   commands,
@@ -20,9 +19,9 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
-import { CommandNames } from './commands/constants';
-import { ImportIdentifier } from './commands/importIdentifier';
-import { DocsBrowser } from './docsBrowser';
+import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
+import * as ImportIdentifier from './commands/importIdentifier';
+import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import { findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
 import { addPathToProcessPath, expandHomeDir, ExtensionLogger } from './utils';
@@ -57,7 +56,7 @@ export async function activate(context: ExtensionContext) {
   });
 
   // Register editor commands for HIE, but only register the commands once at activation.
-  const restartCmd = commands.registerCommand(CommandNames.RestartServerCommandName, async () => {
+  const restartCmd = commands.registerCommand(RestartServerCommandName, async () => {
     for (const langClient of clients.values()) {
       langClient?.info('Stopping the server');
       await langClient?.stop();
@@ -68,7 +67,7 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(restartCmd);
 
-  const stopCmd = commands.registerCommand(CommandNames.StopServerCommandName, async () => {
+  const stopCmd = commands.registerCommand(StopServerCommandName, async () => {
     for (const langClient of clients.values()) {
       langClient?.info('Stopping the server');
       await langClient?.stop();
@@ -78,7 +77,7 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(stopCmd);
 
-  const startCmd = commands.registerCommand(CommandNames.StartServerCommandName, async () => {
+  const startCmd = commands.registerCommand(StartServerCommandName, async () => {
     for (const langClient of clients.values()) {
       langClient?.info('Starting the server');
       langClient?.start();

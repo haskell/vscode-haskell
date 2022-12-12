@@ -1,5 +1,3 @@
-'use strict';
-
 import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as http from 'http';
@@ -149,7 +147,7 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
   };
 
   return new Promise((resolve, reject) => {
-    let data: string = '';
+    let data = '';
     https
       .get(opts, (res) => {
         if (res.statusCode === 301 || res.statusCode === 302) {
@@ -288,7 +286,7 @@ export async function downloadFile(titleMsg: string, src: string, dest: string):
         }
       }
     )
-    .then((_) => true);
+    .then(() => true);
 
   try {
     if (inFlightDownloads.has(src)) {

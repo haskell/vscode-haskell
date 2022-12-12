@@ -38,7 +38,7 @@ type ProcessCallback = (
   stdout: string,
   stderr: string,
   resolve: (value: string | PromiseLike<string>) => void,
-  reject: (reason?: any) => void
+  reject: (reason?: HlsError | Error | string) => void
 ) => void;
 
 /**
@@ -239,7 +239,7 @@ export async function findHaskellLanguageServer(
     let projectGhc: string | undefined | null;
 
     // support explicit toolchain config
-    const toolchainConfig: ToolConfig = new Map(
+    const toolchainConfig = new Map(
       Object.entries(workspace.getConfiguration('haskell').get('toolchain') as any)
     ) as ToolConfig;
     if (toolchainConfig) {
@@ -523,7 +523,7 @@ export async function getProjectGHCVersion(
       if (err) {
         // Error message emitted by HLS-wrapper
         const regex =
-          /Cradle requires (.+) but couldn't find it|The program \'(.+)\' version .* is required but the version of.*could.*not be determined|Cannot find the program \'(.+)\'\. User-specified/;
+          /Cradle requires (.+) but couldn't find it|The program '(.+)' version .* is required but the version of.*could.*not be determined|Cannot find the program '(.+)'\. User-specified/;
         const res = regex.exec(stderr);
         if (res) {
           for (let i = 1; i < res.length; i++) {
@@ -691,8 +691,8 @@ async function toolInstalled(
   version: string
 ): Promise<InstalledTool> {
   const b = await callGHCup(context, logger, ['whereis', tool, version], undefined, false)
-    .then((_x) => true)
-    .catch((_x) => false);
+    .then(() => true)
+    .catch(() => false);
   return new InstalledTool(tool, version, b);
 }
 
@@ -744,26 +744,26 @@ export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
  */
 async function getHLSesfromMetadata(context: ExtensionContext, logger: Logger): Promise<Map<string, string[]> | null> {
   const storagePath: string = await getStoragePath(context);
-  const metadata = await getReleaseMetadata(context, storagePath, logger).catch((_e) => null);
+  const metadata = await getReleaseMetadata(context, storagePath, logger).catch(() => null);
   if (!metadata) {
     window.showErrorMessage('Could not get release metadata');
     return null;
   }
   const plat: Platform | null = match(process.platform)
-    .with('darwin', (_) => 'Darwin' as Platform)
-    .with('linux', (_) => 'Linux_UnknownLinux' as Platform)
-    .with('win32', (_) => 'Windows' as Platform)
-    .with('freebsd', (_) => 'FreeBSD' as Platform)
-    .otherwise((_) => null);
+    .with('darwin', () => 'Darwin' as Platform)
+    .with('linux', () => 'Linux_UnknownLinux' as Platform)
+    .with('win32', () => 'Windows' as Platform)
+    .with('freebsd', () => 'FreeBSD' as Platform)
+    .otherwise(() => null);
   if (plat === null) {
     throw new Error(`Unknown platform ${process.platform}`);
   }
   const arch: Arch | null = match(process.arch)
-    .with('arm', (_) => 'A_ARM' as Arch)
-    .with('arm64', (_) => 'A_ARM64' as Arch)
-    .with('ia32', (_) => 'A_32' as Arch)
-    .with('x64', (_) => 'A_64' as Arch)
-    .otherwise((_) => null);
+    .with('arm', () => 'A_ARM' as Arch)
+    .with('arm64', () => 'A_ARM64' as Arch)
+    .with('ia32', () => 'A_32' as Arch)
+    .with('x64', () => 'A_64' as Arch)
+    .otherwise(() => null);
   if (arch === null) {
     throw new Error(`Unknown architecture ${process.arch}`);
   }

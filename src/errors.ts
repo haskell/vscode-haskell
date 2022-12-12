@@ -1,6 +1,5 @@
 import { Uri } from 'vscode';
 
-// tslint:disable max-classes-per-file
 export class HlsError extends Error {}
 
 export class MissingToolError extends HlsError {
