@@ -550,7 +550,7 @@
     }
   },
   "devDependencies": {
-    "@types/bent": "^7.3.2",
+    "@types/bent": "^7.3.3",
     "@types/cheerio": "^0.22.30",
     "@types/glob": "^8.0.0",
     "@types/js-yaml": "^4.0.5",
