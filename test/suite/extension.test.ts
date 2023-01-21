@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
-import { CommandNames } from '../../src/commands/constants';
+import { StopServerCommandName } from '../../src/commands/constants';
 
 function getExtension() {
   return vscode.extensions.getExtension('haskell.haskell');
@@ -188,7 +188,7 @@ suite('Extension Test Suite', () => {
     console.log('Disposing all resources');
     disposables.forEach((d) => d.dispose());
     console.log('Stopping the lsp server');
-    await vscode.commands.executeCommand(CommandNames.StopServerCommandName);
+    await vscode.commands.executeCommand(StopServerCommandName);
     await delay(5);
     console.log('Contents of the extension log:');
     const logContent = getExtensionLogContent();

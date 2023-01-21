@@ -4,7 +4,7 @@ import * as yaml from 'js-yaml';
 import escapeRegExp from 'lodash-es/escapeRegExp';
 import * as LRUCache from 'lru-cache';
 import * as vscode from 'vscode';
-import { CommandNames } from './constants';
+import { ImportIdentifierCommandName } from './constants';
 
 const getJson = bent('json');
 
@@ -79,42 +79,38 @@ const doImport = async (arg: { mod: string; package: string }): Promise<void> =>
   );
 };
 
-export namespace ImportIdentifier {
-  'use strict';
+export function registerCommand(): vscode.Disposable {
+  return vscode.commands.registerTextEditorCommand(ImportIdentifierCommandName, async (editor, edit) => {
+    // \u0027 is ' (satisfies the linter)
+    const identifierRegExp = new RegExp('[' + escapeRegExp('!#$%&*+./<=>?@^|-~:') + ']+' + '|' + '[\\w\u0027]+');
 
-  export function registerCommand(): vscode.Disposable {
-    return vscode.commands.registerTextEditorCommand(CommandNames.ImportIdentifierCommandName, async (editor, edit) => {
-      // \u0027 is ' (satisfies the linter)
-      const identifierRegExp = new RegExp('[' + escapeRegExp('!#$%&*+./<=>?@^|-~:') + ']+' + '|' + '[\\w\u0027]+');
+    const identifierRange = editor.selection.isEmpty
+      ? editor.document.getWordRangeAtPosition(editor.selections[0].active, identifierRegExp)
+      : new vscode.Range(editor.selection.start, editor.selection.end);
 
-      const identifierRange = editor.selection.isEmpty
-        ? editor.document.getWordRangeAtPosition(editor.selections[0].active, identifierRegExp)
-        : new vscode.Range(editor.selection.start, editor.selection.end);
-
-      if (!identifierRange) {
-        vscode.window.showErrorMessage(
-          'No Haskell identifier found at the cursor (here is the regex used: ' + identifierRegExp + ' )'
-        );
-        return;
-      }
-
-      const response: any[] = await askHoogleCached(editor.document.getText(identifierRange));
-
-      const choice = await vscode.window.showQuickPick(
-        response
-          .filter((result) => result.module.name)
-          .map((result) => ({
-            result,
-            label: result.package.name,
-            description: result.module.name + ' -- ' + (cheerio.load as any)(result.item, { xml: {} }).text(),
-          }))
+    if (!identifierRange) {
+      vscode.window.showErrorMessage(
+        'No Haskell identifier found at the cursor (here is the regex used: ' + identifierRegExp + ' )'
       );
+      return;
+    }
 
-      if (!choice) {
-        return;
-      }
+    const response: any[] = await askHoogleCached(editor.document.getText(identifierRange));
 
-      await doImport({ mod: choice.result.module.name, package: choice.result.package.name });
-    });
-  }
+    const choice = await vscode.window.showQuickPick(
+      response
+        .filter((result) => result.module.name)
+        .map((result) => ({
+          result,
+          label: result.package.name,
+          description: result.module.name + ' -- ' + (cheerio.load as any)(result.item, { xml: {} }).text(),
+        }))
+    );
+
+    if (!choice) {
+      return;
+    }
+
+    await doImport({ mod: choice.result.module.name, package: choice.result.package.name });
+  });
 }
