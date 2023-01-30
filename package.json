@@ -557,7 +557,7 @@
     "@types/vscode": "^1.74.0",
     "@types/which": "^2.0.1",
     "@types/yauzl": "^2.9.1",
-    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
     "@vscode/test-electron": "^2.2.1",
     "eslint": "^8.33.0",
