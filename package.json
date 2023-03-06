@@ -580,7 +580,7 @@
     "cheerio": "^1.0.0-rc.12",
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
-    "lru-cache": "^7.17.0",
+    "lru-cache": "^7.18.3",
     "ts-pattern": "^4.2.1",
     "vscode-languageclient": "^8.1.0",
     "which": "^3.0.0",
