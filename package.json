@@ -566,7 +566,7 @@
     "@types/lodash-es": "^4.17.3",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.14.2",
-    "@types/vscode": "^1.74.0",
+    "@types/vscode": "^1.77.0",
     "@types/which": "^2.0.2",
     "@types/yauzl": "^2.9.1",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
