@@ -1,6 +1,6 @@
 # Haskell for Visual Studio Code
 
-[![vsmarketplacebadge](https://vsmarketplacebadge.apphb.com/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
+[![vsmarketplacebadge](https://vsmarketplacebadges.dev/version/haskell.haskell.svg)](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
 
 This extension adds language support for [Haskell](https://haskell.org), powered by the [Haskell Language Server](https://github.com/haskell/haskell-language-server).
 As almost all features are provided by the server you might find interesting read its [documentation](https://haskell-language-server.readthedocs.io).
