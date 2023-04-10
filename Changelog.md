@@ -1,5 +1,11 @@
 # Changelog for vscode-haskell
 
+
+## 2.2.4
+
+-  Downgrade vscode language client to 7.0.0
+  ([#843](https://github.com/haskell/vscode-haskell/pull/853))  by @fendor
+
 ## 2.2.3
 
 - Prepare release 2.2.3

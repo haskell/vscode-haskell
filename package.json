@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -594,7 +594,7 @@
     "lodash-es": "^4.17.21",
     "lru-cache": "^7.18.3",
     "ts-pattern": "^4.2.2",
-    "vscode-languageclient": "^8.1.0",
+    "vscode-languageclient": "^7.0.0",
     "which": "^3.0.0",
     "yauzl": "^2.10.0"
   }
