@@ -1661,15 +1661,10 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-lru-cache@^7.18.3:
-  version "7.18.3"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.18.3.tgz#f793896e0fd0e954a59dfdd82f0773808df6aa89"
-  integrity sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==
-
-lru-cache@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-9.0.0.tgz#daece36a9fc332e93f8e75f3fcfd17900253567c"
-  integrity sha512-9AEKXzvOZc4BMacFnYiTOlDH/197LNnQIK9wZ6iMB5NXPzuv4bWR/Msv7iUMplkiMQ1qQL+KSv/JF1mZAB5Lrg==
+lru-cache@^9.0.0, lru-cache@^9.0.3:
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-9.0.3.tgz#8a04f282df5320227bb7215c55df2660d3e4e25b"
+  integrity sha512-cyjNRew29d4kbgnz1sjDqxg7qg8NW4s+HQzCGjeon7DV5T2yDije16W9HaUFV1dhVEMh+SjrOcK0TomBmf3Egg==
 
 merge-stream@^2.0.0:
   version "2.0.0"
