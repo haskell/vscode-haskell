@@ -573,7 +573,7 @@
     "@typescript-eslint/parser": "^5.57.1",
     "@vscode/test-electron": "^2.3.0",
     "eslint": "^8.38.0",
-    "eslint-webpack-plugin": "^4.0.0",
+    "eslint-webpack-plugin": "^4.0.1",
     "glob": "^10.2.2",
     "husky": "^8.0.2",
     "mocha": "^10.2.0",
