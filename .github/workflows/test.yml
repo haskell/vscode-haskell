@@ -31,7 +31,9 @@ jobs:
       - name: Install cabal
         run: ghcup install cabal recommended
       - name: Install GHC
-        run: ghcup install ghc ${{matrix.ghc}}
+        run: |
+          ghcup install ghc ${{matrix.ghc}}
+          ghcup set ghc ${{matrix.ghc}}
       - name: 'Install `tree` for MacOs'
         run: |
           brew update
