@@ -34,15 +34,6 @@ jobs:
         run: |
           ghcup install ghc ${{matrix.ghc}}
           ghcup set ghc ${{matrix.ghc}}
-      - name: 'Install `tree` for MacOs'
-        run: |
-          brew update
-          brew install tree
-        if: runner.os == 'macOS'
-      - name: 'Install `tree` for Windows'
-        run: |
-          choco install tree
-        if: runner.os == 'Windows'
       # Pre-fetch HLS binaries before the tests because otherwise
       # we run into timeouts. Downloading takes longer, since we download
       # per HLS version one HLS binary per GHC version.
@@ -79,7 +70,6 @@ jobs:
         # This is a poor man's workaround that after test execution,
         # the test-workspace still contains binaries and caches.
         run: |
-          tree -a test-workspace/
           rm -rf test-workspace/
         shell: bash
       - name: Package tested extension
