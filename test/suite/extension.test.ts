@@ -70,6 +70,7 @@ suite('Extension Test Suite', () => {
         .then(resolve)
         .catch((reason) => {
           if (retries > 0) {
+            console.log(`${Date.now()}`);
             return wait(delay)
               .then(retryOperation.bind(null, operation, delay, retries - 1))
               .then(resolve)
@@ -169,8 +170,8 @@ suite('Extension Test Suite', () => {
               ? resolve(true) : reject(false);
           }
           ),
-        1000 * 5,
-        30
+        1000 * 1,
+        150
       ),
       'Extension log file has no hls output'
     );
