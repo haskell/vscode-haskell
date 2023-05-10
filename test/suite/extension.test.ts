@@ -160,7 +160,7 @@ suite('Extension Test Suite', () => {
   });
 
   test('4. Extension log should have server output', async () => {
-    await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
+    // await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
       await retryOperation(
         () =>
