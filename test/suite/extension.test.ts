@@ -165,7 +165,7 @@ suite('Extension Test Suite', () => {
       await retryOperation(
         () =>
           new Promise((resolve, reject) => {
-            return getExtensionLogContent()?.match(/Registering ide configuration/i) !== null
+            return getExtensionLogContent()?.match(/Registering IDE configuration/) !== null
               ? resolve(true) : reject(false);
           }
           ),
