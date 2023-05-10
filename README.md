@@ -66,7 +66,7 @@ You can watch demos for some of these features [here](https://haskell-language-s
 
 - For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
-- For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH.
+- For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH and must be [configured to use GHC binaries installed by GHCup](https://www.haskell.org/ghcup/guide/#stack-integration).
 - If you are installing from an offline VSIX file, you need to install [language-haskell](https://github.com/JustusAdam/language-haskell) too after installation (either from the marketplace or offline).
 - Alternatively, you can let the extension manage your entire toolchain automatically (you'll be asked on first startup) via
   [ghcup](https://www.haskell.org/ghcup/), which should be pre-installed
@@ -258,10 +258,9 @@ If you have installed stack via the official cannels, the binary will not be M1 
 
 #### `GHC ABIs don't match`
 
-If you're running stack with GHC 9.0.2, you will get this because of an outdated
-GHC bindist that stack installs.
+If you are using certain versions of GHC (such as 9.0.2 or 9.2.4) while running Stack, you may encounter this issue due to an outdated GHC bindist installed by Stack. The vscode-haskell extension does not support the use of GHC binaries managed by Stack. Therefore, it is recommended to configure Stack to allow GHCup to install these binaries instead. Please [refer to the instructions provided by ghcup for this purpose](https://www.haskell.org/ghcup/guide/#stack-integration).
 
-Force it to install the fixed bindist (that includes profiling libs) by adding this to your stack.yaml (depending on your platform):
+If you really want to use GHC 9.0.2 managed by Stack, force it to install the fixed bindist (that includes profiling libs) by adding this to your stack.yaml (depending on your platform):
 
 ```yml
 setup-info:
@@ -270,12 +269,9 @@ setup-info:
       9.0.2:
         url: 'https://downloads.haskell.org/ghc/9.0.2/ghc-9.0.2a-x86_64-fedora27-linux.tar.xz'
 ```
-
-Alternatively let GHCup install the correct bindist and then set `system-ghc: true` in your `stack.yaml`.
-
 Now make sure to remove cached/installed libraries to avoid getting segfaults at runtime.
 
-If you hit this problem although you're not using stack or GHC 9.0.2, please report an issue. As a workaround, you can try to compile HLS from source (the extension should pick it up) via ghcup, see [https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup](https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup).
+As a final workaround, you can try to compile HLS from source (the extension should pick it up) via ghcup, see [https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup](https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup). In any case, the recommended approach is to let GHCup install the GHC binaries.
 
 #### Using an old configuration
 
