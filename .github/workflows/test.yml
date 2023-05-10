@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-11, ubuntu-latest, windows-latest]
-        ghc: [9.0.2, 8.10.4]
+        ghc: [9.0.2, 8.10.4, 9.2.7, 9.4.5, 9.6.1]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -31,7 +31,9 @@ jobs:
       - name: Install cabal
         run: ghcup install cabal recommended
       - name: Install GHC
-        run: ghcup install ghc ${{matrix.ghc}}
+        run: |
+          ghcup install ghc ${{matrix.ghc}}
+          ghcup set ghc ${{matrix.ghc}}
       # Pre-fetch HLS binaries before the tests because otherwise
       # we run into timeouts. Downloading takes longer, since we download
       # per HLS version one HLS binary per GHC version.
