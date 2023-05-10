@@ -154,13 +154,13 @@ suite('Extension Test Suite', () => {
   });
 
   test('3. Extension should create the extension log file', async () => {
-    await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
+    vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
   });
 
   test('4. Extension log should have server output', async () => {
-    // await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
+    vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
     assert.ok(
       await retryOperation(
         () =>
