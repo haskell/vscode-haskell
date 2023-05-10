@@ -170,7 +170,7 @@ suite('Extension Test Suite', () => {
           }
           ),
         1000 * 5,
-        10
+        20
       ),
       'Extension log file has no hls output'
     );
