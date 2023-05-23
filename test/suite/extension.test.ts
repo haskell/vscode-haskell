@@ -3,7 +3,7 @@
 // 2. Test if the extension can be activated
 // 3. Test if the extension can create the extension log file
 // 4. Test if the extension log contains server output (currently we use this to ensure the server is activated successfully)
-// 5. Test if the server inherit environment variables defined in the settings (why?)
+// 5. Test if the server inherit environment variables defined in the settings
 
 import * as vscode from 'vscode';
 import * as assert from 'assert';
@@ -170,8 +170,8 @@ suite('Extension Test Suite', () => {
               ? resolve(true) : reject(false);
           }
           ),
-        1000 * 1,
-        150
+        1000 * 5,
+        30
       ),
       'Extension log file has no hls output'
     );
