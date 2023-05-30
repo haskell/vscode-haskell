@@ -46,7 +46,7 @@ managed by the Extension, you will have to follow the [installation instructions
 You can watch demos for some of these features [here](https://haskell-language-server.readthedocs.io/en/latest/features.html#demos).
 
 - Warning and error diagnostics from GHC
-- Type information and documentation on hover, [including your own comments](./configuration.md#how-to-show-local-documentation-on-hover).
+- Type information and documentation on hover
 - Jump to definition: [for now only for local code definitions](https://github.com/haskell/haskell-language-server/issues/708)
 - Document symbols
 - Highlight references in document
@@ -64,7 +64,7 @@ You can watch demos for some of these features [here](https://haskell-language-s
 
 ## Requirements
 
-- For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
+- For standalone `.hs`/`.lhs` files, [ghc](https://www.haskell.org/ghc/) must be installed and on the PATH. The easiest way to install it is with [ghcup](https://www.haskell.org/ghcup/).
 - For Cabal based projects, both ghc and [cabal-install](https://www.haskell.org/cabal/) must be installed and on the PATH. It can also be installed with [ghcup](https://www.haskell.org/ghcup/) or [Chocolatey](https://www.haskell.org/platform/windows.html) on Windows.
 - For Stack based projects, [stack](http://haskellstack.org) must be installed and on the PATH and must be [configured to use GHC binaries installed by GHCup](https://www.haskell.org/ghcup/guide/#stack-integration).
 - If you are installing from an offline VSIX file, you need to install [language-haskell](https://github.com/JustusAdam/language-haskell) too after installation (either from the marketplace or offline).
@@ -206,20 +206,13 @@ At last, if you don't want `ghcup` to manage any of the external tools except `h
 
 ### Supported GHC versions
 
-These are the versions of GHC that there are binaries of `haskell-language-server-1.7.0` for. [Building from source](https://haskell-language-server.readthedocs.io/en/latest/installation.html) may support more versions!
+You can check each GHC version's support status and the policy followed for deprecations [here](https://haskell-language-server.readthedocs.io/en/latest/support/ghc-version-support.html).
 
-| GHC                                                                               | Linux | macOS | Windows |
-| --------------------------------------------------------------------------------- | ----- | ----- | ------- |
-| 9.2.2 ([limited](https://github.com/haskell/haskell-language-server/issues/2179)) | ✓     | ✓     | ✓       |
-| 9.2.1 ([limited](https://github.com/haskell/haskell-language-server/issues/2179)) | ✓     | ✓     | ✓       |
-| 9.0.2 ([limited](https://github.com/haskell/haskell-language-server/issues/297))  | ✓     | ✓     | ✓       |
-| 8.10.7                                                                            | ✓     | ✓     | ✓       |
-| 8.8.4                                                                             | ✓     | ✓     | ✓       |
-| 8.6.5                                                                             | ✓     | ✓     | ✓       |
+[Building from source](https://haskell-language-server.readthedocs.io/en/latest/installation.html) may support more versions!
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
 
-You can check the current GHC versions support status and the policy followed for deprecations [here](https://haskell-language-server.readthedocs.io/en/latest/supported-versions.html).
+
 
 ## Using multi-root workspaces
 
@@ -300,8 +293,8 @@ Also make sure GHCup is installed and in `$PATH`. If you're not starting VSCode 
 
 ## Contributing
 
-If you want to help, get started by reading [Contributing](https://github.com/haskell/vscode-haskell/blob/master/Contributing.md) for more details.
+If you want to help, get started by reading [Contributing](./docs/Contributing.md) for more details.
 
 ## Release Notes
 
-See the [Changelog](https://github.com/haskell/vscode-haskell/blob/master/Changelog.md) for more details.
+See the [Changelog](./Changelog.md) for more details.
