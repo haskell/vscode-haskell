@@ -592,7 +592,7 @@
     "cheerio": "^1.0.0-rc.12",
     "js-yaml": "^4.1.0",
     "lodash-es": "^4.17.21",
-    "lru-cache": "^7.18.3",
+    "lru-cache": "^10.0.0",
     "ts-pattern": "^4.2.2",
     "vscode-languageclient": "^7.0.0",
     "which": "^3.0.1",
