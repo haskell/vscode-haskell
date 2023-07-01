@@ -20,7 +20,6 @@ import {
   TransportKind,
 } from 'vscode-languageclient/node';
 import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
-import * as ImportIdentifier from './commands/importIdentifier';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import { findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
@@ -86,8 +85,6 @@ export async function activate(context: ExtensionContext) {
   });
 
   context.subscriptions.push(startCmd);
-
-  context.subscriptions.push(ImportIdentifier.registerCommand());
 
   // Set up the documentation browser.
   const docsDisposable = DocsBrowser.registerDocsBrowser();

@@ -559,11 +559,7 @@
     }
   },
   "devDependencies": {
-    "@types/bent": "^7.3.2",
-    "@types/cheerio": "^0.22.30",
     "@types/glob": "^8.1.0",
-    "@types/js-yaml": "^4.0.5",
-    "@types/lodash-es": "^4.17.7",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.1.0",
     "@types/vscode": "^1.79.1",
@@ -578,7 +574,6 @@
     "husky": "^8.0.2",
     "mocha": "^10.2.0",
     "prettier": "^2.8.7",
-    "pretty-quick": "^3.1.2",
     "ts-loader": "^9.4.2",
     "typescript": "^5.0.4",
     "webpack": "^5.83.1",
@@ -588,11 +583,6 @@
     "justusadam.language-haskell"
   ],
   "dependencies": {
-    "bent": "^7.3.12",
-    "cheerio": "^1.0.0-rc.12",
-    "js-yaml": "^4.1.0",
-    "lodash-es": "^4.17.21",
-    "lru-cache": "^7.18.3",
     "ts-pattern": "^4.2.2",
     "vscode-languageclient": "^7.0.0",
     "which": "^3.0.1",
