@@ -11,139 +11,27 @@ import path = require('path');
 import * as fs from 'fs';
 import { StopServerCommandName } from '../../src/commands/constants';
 
+const LOG = 'hls.log';
+const CACHE = 'cache-test';
+const BIN = 'bin';
+type AllowedKeys = typeof LOG | typeof CACHE;
+
 suite('Extension Test Suite', () => {
-  const extension = vscode.extensions.getExtension('haskell.haskell');
+  const extension: vscode.Extension<unknown> | undefined = vscode.extensions.getExtension('haskell.haskell');
   const haskellConfig = vscode.workspace.getConfiguration('haskell');
-  const filesCreated: Map<string, Promise<vscode.Uri>> = new Map();
-  const disposables: vscode.Disposable[] = [];
-
-  function getWorkspaceRoot(): vscode.WorkspaceFolder {
-    const folders = vscode.workspace.workspaceFolders;
-    if (folders) {
-      return folders[0];
-    } else {
-      throw "workspaceFolders is empty";
-    }
-  }
-
-  function getWorkspaceFile(name: string): vscode.Uri {
-    const wsroot = getWorkspaceRoot().uri;
-    return wsroot.with({ path: path.posix.join(wsroot.path, name) });
-  }
-
-  async function existsWorkspaceFile(pattern: string) {
-    const relPath: vscode.RelativePattern = new vscode.RelativePattern(getWorkspaceRoot(), pattern);
-    const watcher = vscode.workspace.createFileSystemWatcher(relPath);
-    disposables.push(watcher);
-    return new Promise<vscode.Uri>((resolve) => {
-      watcher.onDidCreate((uri) => {
-        console.log(`Created: ${uri}`);
-        resolve(uri);
-      });
-    });
-  }
-
-  function getExtensionLogContent(): string | undefined {
-    const extLog = getWorkspaceFile('hls.log').fsPath;
-    if (fs.existsSync(extLog)) {
-      const logContents = fs.readFileSync(extLog);
-      return logContents.toString();
-    } else {
-      console.log(`${extLog} does not exist!`);
-      return undefined;
-    }
-  }
-
-  async function delay(seconds: number) {
-    return new Promise((resolve) => setTimeout(() => resolve(false), seconds * 1000));
-  }
-
-  async function withTimeout(seconds: number, f: Promise<vscode.Uri>) {
-    return Promise.race([f, delay(seconds)]);
-  }
-
-  const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-  const retryOperation = (operation: () => Promise<boolean>, delay: number, retries: number) =>
-    new Promise((resolve, reject): Promise<void> => {
-      return operation()
-        .then(resolve)
-        .catch((reason) => {
-          if (retries > 0) {
-            console.log(`${Date.now()}`);
-            return wait(delay)
-              .then(retryOperation.bind(null, operation, delay, retries - 1))
-              .then(resolve)
-              .catch(reject);
-          }
-          return reject(reason);
-        });
-    });
-
-  function joinUri(root: vscode.Uri, ...pathSegments: string[]): vscode.Uri {
-    return root.with({ path: path.posix.join(root.path, ...pathSegments) });
-  }
-
-  async function deleteWorkspaceFiles(keepDirs: vscode.Uri[], pred?: (fileName: string) => boolean): Promise<void> {
-    await deleteFiles(getWorkspaceRoot().uri, keepDirs, pred);
-  }
-
-  async function deleteFiles(dir: vscode.Uri, keepDirs: vscode.Uri[], pred?: (fileType: string) => boolean) {
-    const dirContents = await vscode.workspace.fs.readDirectory(dir);
-    console.log(`Looking at ${dir} contents: ${dirContents}`);
-    if (keepDirs.findIndex((val) => val.path === dir.path) !== -1) {
-      console.log(`Keeping ${dir}`);
-    } else {
-      dirContents.forEach(async ([name, type]) => {
-        const uri: vscode.Uri = joinUri(dir, name);
-        if (type === vscode.FileType.File) {
-          if (!pred || pred(name)) {
-            console.log(`Deleting ${uri}`);
-            await vscode.workspace.fs.delete(joinUri(dir, name), {
-              recursive: false,
-              useTrash: false,
-            });
-          }
-        } else if (type === vscode.FileType.Directory) {
-          const subDirectory = joinUri(dir, name);
-          console.log(`Recursing into ${subDirectory}`);
-          await deleteFiles(subDirectory, keepDirs, pred);
-
-          // remove directory if it is empty now
-          const isEmptyNow = await vscode.workspace.fs
-            .readDirectory(subDirectory)
-            .then((contents) => Promise.resolve(contents.length === 0));
-          if (isEmptyNow) {
-            console.log(`Deleting ${subDirectory}`);
-            await vscode.workspace.fs.delete(subDirectory, {
-              recursive: true,
-              useTrash: false,
-            });
-          }
-        }
-      });
-    }
-  }
 
   suiteSetup(async () => {
-    await deleteWorkspaceFiles([
-      joinUri(getWorkspaceRoot().uri, '.vscode'),
-      joinUri(getWorkspaceRoot().uri, 'bin', process.platform === 'win32' ? 'ghcup' : '.ghcup', 'cache'),
-    ]);
     await haskellConfig.update('promptBeforeDownloads', false, vscode.ConfigurationTarget.Global);
     await haskellConfig.update('manageHLS', 'GHCup');
-    await haskellConfig.update('logFile', 'hls.log');
+    await haskellConfig.update('logFile', LOG);
     await haskellConfig.update('trace.server', 'messages');
-    await haskellConfig.update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile('bin').fsPath));
+    await haskellConfig.update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile(BIN).fsPath));
     await haskellConfig.update('serverEnvironment', {
-      XDG_CACHE_HOME: path.normalize(getWorkspaceFile('cache-test').fsPath),
+      XDG_CACHE_HOME: path.normalize(getWorkspaceFile(CACHE).fsPath)
     });
 
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
     await vscode.workspace.fs.writeFile(getWorkspaceFile('Main.hs'), contents);
-
-    filesCreated.set('log', existsWorkspaceFile('hls.log'));
-    filesCreated.set('cache', existsWorkspaceFile('cache-test'));
   });
 
   test('1. Extension should be present', () => {
@@ -151,60 +39,111 @@ suite('Extension Test Suite', () => {
   });
 
   test('2. Extension can be activated', async () => {
-    await extension?.activate();
+    assert.ok(await extension?.activate().then(() => true));
   });
 
   test('3. Extension should create the extension log file', async () => {
+    // Open the document to trigger the extension
     vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    assert.ok(await withTimeout(30, filesCreated.get('log')!), 'Extension log not created in 30 seconds');
+    assert.ok(await runWithIntervalAndTimeout(() => workspaceFileExist(LOG), 1, 30));
   });
 
   test('4. Extension log should have server output', async () => {
     vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(
-      await retryOperation(
-        () =>
-          new Promise((resolve, reject) => {
-            return getExtensionLogContent()?.match(/Registering IDE configuration/i) !== null
-              ? resolve(true) : reject(false);
-          }
-          ),
-        1000 * 5,
-        30
-      ),
-      'Extension log file has no hls output'
-    );
+    const checkServerLog = () => {
+      const logContents = getExtensionLogContent();
+      if (logContents) {
+        return logContents.match(/Registering IDE configuration/i) !== null;
+      }
+      return false;
+    };
+    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 5, 60),
+      'Extension log file has no expected hls output');
   });
 
   test('5. Server should inherit environment variables defined in the settings', async () => {
-    await vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(
-      await retryOperation(
-        () =>
-          new Promise((resolve, reject) => {
-            return filesCreated.get('cache') ? resolve(true) : reject(false);
-          }),
-        1000 * 5,
-        10
-      ),
-      'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings'
-    );
+    vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
+    assert.ok(await runWithIntervalAndTimeout(() => workspaceFileExist(CACHE), 1, 30),
+      'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings');
   });
 
   suiteTeardown(async () => {
-    console.log('Disposing all resources');
-    disposables.forEach(d => d.dispose());
     console.log('Stopping the lsp server');
     await vscode.commands.executeCommand(StopServerCommandName);
 
     console.log('Contents of the extension log:');
-    const logContent = getExtensionLogContent();
-    if (logContent) {
-      console.log(logContent);
+    const logContents = getExtensionLogContent();
+    if (logContents) {
+      console.log(logContents);
     }
-
-    console.log('Deleting test workspace contents');
-    await deleteWorkspaceFiles([], (name) => !name.includes('.log'));
   });
 });
+
+//////////////////////////
+// Helper functions BEGIN
+//////////////////////////
+
+function getWorkspaceRoot(): vscode.WorkspaceFolder {
+  const folders = vscode.workspace.workspaceFolders;
+  if (folders) {
+    return folders[0];
+  } else {
+    throw Error('workspaceFolders is empty');
+  }
+}
+
+function getWorkspaceFile(name: string): vscode.Uri {
+  const wsroot = getWorkspaceRoot().uri;
+  return wsroot.with({ path: path.posix.join(wsroot.path, name) });
+}
+
+/**
+ * Check if the given file exists in the workspace.
+ * @param key The key name
+ * @returns `True` if exists, otherwise `False`
+ */
+function workspaceFileExist(key: AllowedKeys): boolean {
+  const folder = getWorkspaceRoot();
+  const targetPath = path.join(folder.uri.fsPath, key);
+
+  return fs.existsSync(targetPath);
+}
+
+/**
+ * Run a function by given interval and timeout.
+ * @param fn The function to run, which has the signature `() => boolean`
+ * @param interval Interval in seconds
+ * @param timeout Interval in seconds
+ * @returns `true` if `fn` returns `true` before the `timeout`, otherwise `false`
+ */
+async function runWithIntervalAndTimeout(fn: () => boolean, interval: number, timeout: number): Promise<boolean> {
+  const startTime = Date.now();
+  const intervalMs = interval * 1000;
+  const timeoutMs = timeout * 1000;
+  const endTime = startTime + timeoutMs;
+  const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+  while (Date.now() <= endTime) {
+    if (fn()) {
+      return true;
+    }
+    await wait(intervalMs);
+  }
+
+  return false;
+}
+
+function getExtensionLogContent(): string | undefined {
+  const extLog = getWorkspaceFile(LOG).fsPath;
+  if (fs.existsSync(extLog)) {
+    const logContents = fs.readFileSync(extLog);
+    return logContents.toString();
+  } else {
+    console.log(`${extLog} does not exist!`);
+    return undefined;
+  }
+}
+
+//////////////////////////
+// Helper functions END
+//////////////////////////

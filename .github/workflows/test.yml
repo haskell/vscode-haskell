@@ -12,57 +12,60 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-11, ubuntu-latest, windows-latest]
-        ghc: [8.10.4, 9.2.7, 9.6.1]
+        ghc: [8.10.4, 8.10.7, 9.0.2, 9.2.8, 9.4.5, 9.6.2]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           ## make sure this corresponds with the version in release.yml
           node-version: latest
-      - name: Upgrade ghcup
-        run: ghcup upgrade -i -f
-        shell: bash
-      # Setup the environment for the tests
-      - name: Install stack
-        run: ghcup install stack recommended
-      - name: Install cabal
-        run: ghcup install cabal recommended
-      - name: Install GHC
-        run: |
-          ghcup install ghc ${{matrix.ghc}}
-          ghcup set ghc ${{matrix.ghc}}
-      # Pre-fetch HLS binaries before the tests because otherwise
-      # we run into timeouts. Downloading takes longer, since we download
-      # per HLS version one HLS binary per GHC version.
-      - run: |
-          mkdir -p test-workspace/bin/
-          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
-          echo $XDG_BIN_HOME $GHCUP_INSTALL_BASE_PREFIX
-          ghcup config set cache true
-          ghcup --no-verbose prefetch hls 1.4.0
-          ghcup --no-verbose prefetch hls latest
-        shell: bash
 
       # Install test dependencies
       - run: yarn install --immutable --immutable-cache --check-cache
       - run: yarn run webpack
 
-      # Run the tests
-      - run: xvfb-run -s '-screen 0 640x480x16' -a yarn run test
-        if: runner.os == 'Linux'
-      - run: yarn run test
-        if: runner.os != 'Linux'
+      - name: Toolchain settings
+        run: |
+          ghcup upgrade -i -f
+          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
+          ghcup config set cache true
 
-      # Upload test artefacts
-      - name: Upload log file to workflow artifacts on error
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: extension-${{ matrix.os }}.log
-          path: test-workspace/hls.log
+          ghcup install stack latest
+          ghcup install cabal latest
+
+          ghcup install ghc ${{matrix.ghc}}
+          ghcup set ghc ${{matrix.ghc}}
+
+          ghcup install hls 1.4.0
+          ghcup install hls latest
+        shell: bash
+
+      # Run the tests
+      - name: Run the test on Linux
+        run: |
+          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
+          export PATH="$(pwd)/test-workspace/bin/.ghcup/bin:$PATH"
+          xvfb-run -s '-screen 0 640x480x16' -a yarn run test
+        shell: bash
+        if: runner.os == 'Linux'
+      - name: Run the test on macOS
+        run: |
+          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
+          export PATH="$(pwd)/test-workspace/bin/.ghcup/bin:$PATH"
+          yarn run test
+        shell: bash
+        if: runner.os == 'macOS'
+      - name: Run the test on Windows
+        run: |
+          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
+          export PATH="$(pwd)/test-workspace/bin/ghcup/bin:$PATH"
+          yarn run test
+        shell: bash
+        if: runner.os == 'Windows'
 
       # Create package artefacts
       - name: Delete test artefacts
@@ -70,8 +73,10 @@ jobs:
         # This is a poor man's workaround that after test execution,
         # the test-workspace still contains binaries and caches.
         run: |
-          rm -rf test-workspace/
+          rm -rf test-workspace
+          rm -rf out
         shell: bash
+
       - name: Package tested extension
         if: runner.os == 'Linux'
         run: npx vsce package
