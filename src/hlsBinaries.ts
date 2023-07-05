@@ -1,5 +1,4 @@
 import * as child_process from 'child_process';
-import { ExecException } from 'child_process';
 import * as fs from 'fs';
 import { stat } from 'fs/promises';
 import * as https from 'https';
@@ -34,7 +33,7 @@ const exeExt = process.platform === 'win32' ? '.exe' : '';
  * Callback invoked on process termination.
  */
 type ProcessCallback = (
-  error: ExecException | null,
+  error: child_process.ExecFileException | null,
   stdout: string,
   stderr: string,
   resolve: (value: string | PromiseLike<string>) => void,

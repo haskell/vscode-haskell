@@ -17,7 +17,6 @@ import {
   Logger,
   RevealOutputChannelOn,
   ServerOptions,
-  TransportKind,
 } from 'vscode-languageclient/node';
 import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
@@ -236,8 +235,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   // For our intents and purposes, the server should be launched the same way in
   // both debug and run mode.
   const serverOptions: ServerOptions = {
-    run: { command: serverExecutable, transport: TransportKind.stdio, args, options: exeOptions },
-    debug: { command: serverExecutable, transport: TransportKind.stdio, args, options: exeOptions },
+    run: { command: serverExecutable, args, options: exeOptions },
+    debug: { command: serverExecutable, args, options: exeOptions },
   };
 
   logger.info(`run command: ${serverExecutable} ${args.join(' ')}`);
