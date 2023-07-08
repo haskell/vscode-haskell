@@ -1,5 +1,67 @@
 # Changelog for vscode-haskell
 
+## 2.4.0
+
+- Simplify tests
+  ([#904](https://github.com/haskell/vscode-haskell/pull/904))  by @July541
+- Bump webpack from 5.83.1 to 5.88.1
+  ([#902](https://github.com/haskell/vscode-haskell/pull/902))  by @dependabot[bot]
+- Bump glob from 10.2.2 to 10.3.1
+  ([#901](https://github.com/haskell/vscode-haskell/pull/901))  by @dependabot[bot]
+- Bump @typescript-eslint/parser from 5.57.1 to 5.60.1
+  ([#900](https://github.com/haskell/vscode-haskell/pull/900))  by @dependabot[bot]
+- Bump prettier from 2.8.7 to 2.8.8
+  ([#899](https://github.com/haskell/vscode-haskell/pull/899))  by @dependabot[bot]
+- Remove unused code
+  ([#898](https://github.com/haskell/vscode-haskell/pull/898))  by @fendor
+- Remove hoogle command from vscode extension
+  ([#896](https://github.com/haskell/vscode-haskell/pull/896))  by @fendor
+- Bump semver from 7.3.8 to 7.5.3
+  ([#895](https://github.com/haskell/vscode-haskell/pull/895))  by @dependabot[bot]
+- Bump @types/vscode from 1.77.0 to 1.79.1
+  ([#892](https://github.com/haskell/vscode-haskell/pull/892))  by @dependabot[bot]
+- Bump @vscode/test-electron from 2.3.0 to 2.3.3
+  ([#890](https://github.com/haskell/vscode-haskell/pull/890))  by @dependabot[bot]
+- Update readme
+  ([#886](https://github.com/haskell/vscode-haskell/pull/886))  by @VeryMilkyJoe
+- Bump which from 3.0.0 to 3.0.1
+  ([#883](https://github.com/haskell/vscode-haskell/pull/883))  by @dependabot[bot]
+- Bump webpack from 5.82.0 to 5.83.1
+  ([#881](https://github.com/haskell/vscode-haskell/pull/881))  by @dependabot[bot]
+- Fix broken tests
+  ([#880](https://github.com/haskell/vscode-haskell/pull/880))  by @July541
+- Bump @typescript-eslint/eslint-plugin from 5.59.1 to 5.59.5
+  ([#877](https://github.com/haskell/vscode-haskell/pull/877))  by @dependabot[bot]
+- Bump webpack-cli from 5.1.0 to 5.1.1
+  ([#876](https://github.com/haskell/vscode-haskell/pull/876))  by @dependabot[bot]
+- Update README.md: clarify how to use Stack with vscode-haskell extension
+  ([#874](https://github.com/haskell/vscode-haskell/pull/874))  by @miguel-negrao
+- Remove debugger tools from CI
+  ([#873](https://github.com/haskell/vscode-haskell/pull/873))  by @fendor
+- Refactor tests to work correctly
+  ([#872](https://github.com/haskell/vscode-haskell/pull/872))  by @July541
+- Bump webpack-cli from 5.0.1 to 5.1.0
+  ([#868](https://github.com/haskell/vscode-haskell/pull/868))  by @dependabot[bot]
+- Bump @types/node from 18.15.11 to 20.1.0
+  ([#867](https://github.com/haskell/vscode-haskell/pull/867))  by @dependabot[bot]
+- Bump webpack from 5.81.0 to 5.82.0
+  ([#866](https://github.com/haskell/vscode-haskell/pull/866))  by @dependabot[bot]
+- Bump webpack from 5.80.0 to 5.81.0
+  ([#863](https://github.com/haskell/vscode-haskell/pull/863))  by @dependabot[bot]
+- Bump @typescript-eslint/eslint-plugin from 5.57.1 to 5.59.1
+  ([#862](https://github.com/haskell/vscode-haskell/pull/862))  by @dependabot[bot]
+- Bump glob from 10.0.0 to 10.2.2
+  ([#861](https://github.com/haskell/vscode-haskell/pull/861))  by @dependabot[bot]
+- Bump webpack from 5.78.0 to 5.80.0
+  ([#860](https://github.com/haskell/vscode-haskell/pull/860))  by @dependabot[bot]
+- Bump vscode-languageclient from 7.0.0 to 8.1.0
+  ([#857](https://github.com/haskell/vscode-haskell/pull/857))  by @dependabot[bot]
+- Bump eslint-webpack-plugin from 4.0.0 to 4.0.1
+  ([#856](https://github.com/haskell/vscode-haskell/pull/856))  by @dependabot[bot]
+- Downgrade vscode language client to 7.0.0
+  ([#853](https://github.com/haskell/vscode-haskell/pull/853))  by @fendor
+- Update badge url for VSCode Marketplace
+  ([#851](https://github.com/haskell/vscode-haskell/pull/851))  by @fendor
 
 ## 2.2.4
 
