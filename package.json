@@ -582,7 +582,7 @@
     "justusadam.language-haskell"
   ],
   "dependencies": {
-    "ts-pattern": "^4.2.2",
+    "ts-pattern": "^5.0.1",
     "vscode-languageclient": "^8.1.0",
     "which": "^3.0.1"
   }
