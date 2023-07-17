@@ -2050,10 +2050,10 @@ ts-loader@^9.4.2:
     micromatch "^4.0.0"
     semver "^7.3.4"
 
-ts-pattern@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-5.0.1.tgz#340d91647982b90ca6c71645ae438f78518e9842"
-  integrity sha512-ZyNm28Lsg34Co5DS3e9DVyjlX2Y+2exkI4jqTKyU+9/OL6Y2fKOOuL8i+7no71o74C6mVS+UFoP3ekM3iCT1HQ==
+ts-pattern@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-5.0.3.tgz#bd81acab451428eeab2c9cb49eafe0ac9a2611ac"
+  integrity sha512-JMfGCcuRz0/efyv7vI71QgIp7en2n7KxQ/cFk9nlyo8eFFgsa6TEfbnKw3N5mLGo7Mf8oUwOyRpTEqXU0kuV+w==
 
 tslib@^1.8.1:
   version "1.14.1"
