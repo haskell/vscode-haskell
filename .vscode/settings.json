@@ -14,5 +14,6 @@
   "files.associations": {
     ".prettierrc": "yaml"
   },
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "haskell.formattingProvider": "stylish-haskell"
 }

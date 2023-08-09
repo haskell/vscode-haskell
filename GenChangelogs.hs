@@ -31,11 +31,14 @@ main = do
                     token:_ -> github (OAuth $ BS.pack token)
   prs <- githubReq $ pullRequestsForR "haskell" "vscode-haskell" stateClosed FetchAll
   let prsAfterLastTag = either (error . show)
-                        (foldMap (\pr -> [pr | inRange pr]))
+                        (foldMap (\pr -> [pr | inRange pr, isNotDependabot pr]))
                         prs
       inRange pr
         | Just mergedDate <- simplePullRequestMergedAt pr = mergedDate > lastDate
         | otherwise = False
+
+      isNotDependabot SimplePullRequest{..} =
+        untagName (simpleUserLogin simplePullRequestUser) /= "dependabot[bot]"
 
   forM_ prsAfterLastTag $ \SimplePullRequest{..} ->
     putStrLn $ T.unpack $ "- " <> simplePullRequestTitle <> "\n" <>
