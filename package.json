@@ -567,7 +567,7 @@
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vscode/test-electron": "^2.3.4",
-    "eslint": "^8.46.0",
+    "eslint": "^8.47.0",
     "eslint-webpack-plugin": "^4.0.1",
     "glob": "^10.3.3",
     "husky": "^8.0.2",
