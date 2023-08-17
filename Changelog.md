@@ -1,5 +1,10 @@
 # Changelog for vscode-haskell
 
+## 2.5.0
+
+- Add tracking of cabal files
+  ([#618](https://github.com/haskell/vscode-haskell/pull/618))  by @fendor
+
 ## 2.4.1
 
 - Downgrade vscode-languageclient

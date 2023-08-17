@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -59,7 +59,6 @@
           ".cabal"
         ]
       },
-
       {
         "id": "literate haskell",
         "aliases": [
@@ -225,6 +224,12 @@
         "haskell.plugin.cabal.globalOn": {
           "default": true,
           "description": "Enables cabal plugin",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.cabal.completionOn": {
+          "default": true,
+          "description": "Enables cabal completions",
           "scope": "resource",
           "type": "boolean"
         },

@@ -6,6 +6,7 @@ Follow this list for items that must be completed for release of the `vscode-has
   - Fix vulnerabilities.
 - [ ] Run `yarn outdated` to find outdated package version, review what needs to be updated.
   - `yarn upgrade-interactive` and `yarn upgrade-interactive --latest` is helpful here.
+- [ ] Run `haskell-language-server vscode-extension-schema` with the latest `haskell-language-server` to check if there have new fields.
 - [ ] SemVer Compatible Version Bump in `package.json`
   - For pre-releases, we follow the version convention at: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions. We use `major.EVEN_NUMBER.patch` for release versions and `major.ODD_NUMBER.patch` for pre-release versions. For example: `2.0.*` for release and `2.1.*` for pre-release.
 - [ ] Update ChangeLog.md. The output of `./GenChangelogs.hs` usually suffices.
