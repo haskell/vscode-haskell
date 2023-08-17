@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -59,7 +59,6 @@
           ".cabal"
         ]
       },
-
       {
         "id": "literate haskell",
         "aliases": [
