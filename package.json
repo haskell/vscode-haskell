@@ -600,6 +600,6 @@
   "dependencies": {
     "ts-pattern": "^5.0.5",
     "vscode-languageclient": "^7.0.0",
-    "which": "^3.0.1"
+    "which": "^4.0.0"
   }
 }
