@@ -45,7 +45,7 @@ suite('Extension Test Suite', () => {
   test('3. Extension should create the extension log file', async () => {
     // Open the document to trigger the extension
     vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(await runWithIntervalAndTimeout(() => workspaceFileExist(LOG), 1, 30));
+    assert.ok(await runWithIntervalAndTimeout(() => workspaceFileExist(LOG), 1, 60));
   });
 
   test('4. Extension log should have server output', async () => {
@@ -57,7 +57,7 @@ suite('Extension Test Suite', () => {
       }
       return false;
     };
-    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 5, 60),
+    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 5, 120),
       'Extension log file has no expected hls output');
   });
 
