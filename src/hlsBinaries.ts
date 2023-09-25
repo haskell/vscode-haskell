@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { stat } from 'fs/promises';
 import * as https from 'https';
 import * as path from 'path';
+import * as os from 'os';
 import { match } from 'ts-pattern';
 import { promisify } from 'util';
 import { ConfigurationTarget, ExtensionContext, ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
@@ -571,7 +572,40 @@ export async function findGHCup(_context: ExtensionContext, logger: Logger, fold
   } else {
     const localGHCup = ['ghcup'].find(executableExists);
     if (!localGHCup) {
-      throw new MissingToolError('ghcup');
+      logger.info(`probing for GHCup binary`);
+      const ghcupExe = match(process.platform)
+        .with('win32', () => {
+          const ghcupPrefix = process.env.GHCUP_INSTALL_BASE_PREFIX;
+          if (ghcupPrefix) {
+            return path.join(ghcupPrefix, 'ghcup', 'bin', 'ghcup.exe');
+          } else {
+            return path.join('C:\\', 'ghcup', 'bin', 'ghcup.exe');
+          }
+        })
+        .otherwise(() => {
+          const useXDG = process.env.GHCUP_USE_XDG_DIRS;
+          if (useXDG) {
+            const xdgBin = process.env.XDG_BIN_HOME;
+            if (xdgBin) {
+              return path.join(xdgBin, 'ghcup');
+            } else {
+              return path.join(os.homedir(), '.local', 'bin', 'ghcup');
+            }
+          } else {
+            const ghcupPrefix = process.env.GHCUP_INSTALL_BASE_PREFIX;
+            if (ghcupPrefix) {
+              return path.join(ghcupPrefix, '.ghcup', 'bin', 'ghcup');
+            } else {
+              return path.join(os.homedir(), '.ghcup', 'bin', 'ghcup');
+            }
+          }
+        });
+      if (ghcupExe != null && executableExists(ghcupExe)) {
+        return ghcupExe;
+      } else {
+        logger.warn(`ghcup at ${ghcupExe} does not exist`);
+        throw new MissingToolError('ghcup');
+      }
     } else {
       logger.info(`found ghcup at ${localGHCup}`);
       return localGHCup;
