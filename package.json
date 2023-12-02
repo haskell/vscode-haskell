@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.5.0",
+  "version": "2.4.2",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -34,8 +34,7 @@
   },
   "activationEvents": [
     "onLanguage:haskell",
-    "onLanguage:literate haskell",
-    "onLanguage:cabal"
+    "onLanguage:literate haskell"
   ],
   "main": "./dist/extension",
   "contributes": {
@@ -48,15 +47,6 @@
         ],
         "extensions": [
           ".hs"
-        ]
-      },
-      {
-        "id": "cabal",
-        "aliases": [
-          "Cabal"
-        ],
-        "extensions": [
-          ".cabal"
         ]
       },
       {

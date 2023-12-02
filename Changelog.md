@@ -5,6 +5,19 @@
 - Add tracking of cabal files
   ([#618](https://github.com/haskell/vscode-haskell/pull/618))  by @fendor
 
+## 2.4.2
+
+- Add stan plugin option #1000
+  ([#1000](https://github.com/haskell/vscode-haskell/pull/1000))  by @fendor
+- Probe for GHCup binary wrt #962
+  ([#963](https://github.com/haskell/vscode-haskell/pull/963))  by @hasufell
+- Bump old hls version and upgrade test runner to macos-latest
+  ([#960](https://github.com/haskell/vscode-haskell/pull/960))  by @July541
+- Increase time limitation to make test on Windows more stable
+  ([#959](https://github.com/haskell/vscode-haskell/pull/959))  by @July541
+- Update release docs for refreshing CI tokens
+  ([#942](https://github.com/haskell/vscode-haskell/pull/942))  by @fendor
+
 ## 2.4.1
 
 - Downgrade vscode-languageclient
