@@ -225,7 +225,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     };
   }
   const exeOptions: ExecutableOptions = {
-    cwd: folder ? undefined : path.dirname(uri.fsPath),
+    cwd: folder ? folder.uri.fsPath : path.dirname(uri.fsPath),
     env: { ...process.env, ...serverEnvironment },
   };
 
