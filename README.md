@@ -266,6 +266,12 @@ Now make sure to remove cached/installed libraries to avoid getting segfaults at
 
 As a final workaround, you can try to compile HLS from source (the extension should pick it up) via ghcup, see [https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup](https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup). In any case, the recommended approach is to let GHCup install the GHC binaries.
 
+#### `hGetContents: invalid argument (invalid byte sequence)`
+
+This problem was encountered on darwin M2 with ghcup.
+Should you see the error that the "Haskell server crashed 5 times in the last 3 minutes," you can check the Haskell output to see whether this was due to an error mentioning `hGetContents: invalid argument (invalid byte sequence)`.
+If this is the case, setting `terminal.integrated.detectLocale` to `off` might resolve your issue.
+
 #### Using an old configuration
 
 If something just doesn't work, but you recall an old configuration that did, you
