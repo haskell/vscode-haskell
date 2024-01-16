@@ -1,5 +1,9 @@
 # Changelog for vscode-haskell
 
+## 2.5.2
+
+- Includes changes of the 2.4.3 release
+
 ## 2.5.1
 
 - Includes changes of the 2.4.2 release
@@ -8,6 +12,13 @@
 
 - Add tracking of cabal files
   ([#618](https://github.com/haskell/vscode-haskell/pull/618))  by @fendor
+
+## 2.4.3
+
+- Address invalid byte sequence error #1022
+  ([#1022](https://github.com/haskell/vscode-haskell/pull/1022))  by @felixlinker
+- Always set the cwd for the executable (#1011)
+  ([#1011](https://github.com/haskell/vscode-haskell/pull/1011))  by @fendor
 
 ## 2.4.2
 
