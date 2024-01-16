@@ -16,6 +16,19 @@ Follow this list for items that must be completed for release of the `vscode-has
   - Github actions will automatically release the extension to VSCode- and VSX-Marketplace.
   - If you want to create a pre-release, create a [pre-release in Github](https://github.com/haskell/vscode-haskell/releases). The github action will perform the appropriate actions automatically and publish the pre-release of the extension to VSCode- and VSX-Marketplace.
 
+## Branching policy
+
+Sometimes there is a release (stable) and pre-release (unstable) at the same time and we need to do a release for the stable release and sometimes we need to do a release for the pre-release series.
+To simplify the release management, the following policy is in place:
+
+* The branch `master` contains the current pre-release
+  * As such, its `package.json` must always have the form `major.ODD_NUMBER.patch`
+  * Dependency version bumps are automatically performed by dependabot against `master`
+  * For each release, a tag must be created
+* Stable releases are located on a separate branch called `release-<major.EVEN_NUMBER>`
+  * Before a release, the branch is rebased on top of current master
+  * For each stable release, a tag must be created of the form `major.EVEN_NUMBER.patch`
+
 ## Release CI
 
 The release CI has access tokens for VSX Marketplace and the VSCode Marketplace.
