@@ -21,13 +21,13 @@ Follow this list for items that must be completed for release of the `vscode-has
 Sometimes there is a release (stable) and pre-release (unstable) at the same time and we need to do a release for the stable release and sometimes we need to do a release for the pre-release series.
 To simplify the release management, the following policy is in place:
 
-* The branch `master` contains the current stable release
-  * As such, its `package.json` must always have the form `major.EVEN_NUMBER.patch`
+* The branch `master` contains the current pre-release
+  * As such, its `package.json` must always have the form `major.ODD_NUMBER.patch`
   * Dependency version bumps are automatically performed by dependabot against `master`
   * For each release, a tag must be created
-* Pre-releases are located on a separate branch called `pre-release-<major.ODD_NUMBER>`
+* Stable releases are located on a separate branch called `release-<major.EVEN_NUMBER>`
   * Before a release, the branch is rebased on top of current master
-  * For each pre-release, a tag must be created
+  * For each stable release, a tag must be created of the form `major.EVEN_NUMBER.patch`
 
 ## Release CI
 
