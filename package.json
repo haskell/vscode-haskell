@@ -59,7 +59,6 @@
           ".cabal"
         ]
       },
-
       {
         "id": "literate haskell",
         "aliases": [
@@ -1153,8 +1152,8 @@
     "@types/node": "^20.11.16",
     "@types/vscode": "^1.82.0",
     "@types/which": "^3.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vscode/test-electron": "^2.3.8",
     "eslint": "^8.56.0",
     "eslint-webpack-plugin": "^4.0.1",
