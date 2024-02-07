@@ -19,6 +19,7 @@
         "argsIgnorePattern": "^_"
       }
     ],
+    "@typescript-eslint/no-explicit-any": "off",
     "semi": ["error", "always"]
   }
 }
