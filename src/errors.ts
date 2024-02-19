@@ -1,6 +1,6 @@
 import { Uri } from 'vscode';
 
-export class HlsError extends Error {}
+export class HlsError extends Error { }
 
 export class MissingToolError extends HlsError {
   public readonly tool: string;
