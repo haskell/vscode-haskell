@@ -1154,7 +1154,7 @@
     "@types/which": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/test-electron": "^2.3.8",
+    "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.57.0",
     "eslint-webpack-plugin": "^4.0.1",
     "glob": "^10.3.10",
