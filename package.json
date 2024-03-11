@@ -1162,7 +1162,7 @@
     "mocha": "^10.3.0",
     "prettier": "^3.2.5",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.2",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.1"
   },
