@@ -1162,7 +1162,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.57.0",
-    "eslint-webpack-plugin": "^4.0.1",
+    "eslint-webpack-plugin": "^4.1.0",
     "glob": "^10.3.10",
     "husky": "^9.0.11",
     "mocha": "^10.3.0",
