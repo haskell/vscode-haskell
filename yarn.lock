@@ -2116,10 +2116,10 @@ ts-loader@^9.5.1:
     semver "^7.3.4"
     source-map "^0.7.4"
 
-ts-pattern@^5.0.8:
-  version "5.0.8"
-  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-5.0.8.tgz#47fa76776350bfbffaa6252a69ce5990ae05db95"
-  integrity sha512-aafbuAQOTEeWmA7wtcL94w6I89EgLD7F+IlWkr596wYxeb0oveWDO5dQpv85YP0CGbxXT/qXBIeV6IYLcoZ2uA==
+ts-pattern@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/ts-pattern/-/ts-pattern-5.1.0.tgz#a478d108683dda6c4be359103c11294b44b36d49"
+  integrity sha512-sULbgZDTXrcr6WMeuR8gPb+dvNN/fNpxE8GHfosFHPJRPuxHVNtGcEiiNuQa6nxu40/dY6xYdTJmc7MG3w8B5g==
 
 type-check@^0.4.0, type-check@~0.4.0:
   version "0.4.0"
