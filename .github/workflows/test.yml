@@ -76,13 +76,3 @@ jobs:
           rm -rf test-workspace
           rm -rf out
         shell: bash
-
-      - name: Package tested extension
-        if: runner.os == 'Linux'
-        run: npx vsce package
-      - name: Upload extension vsix to workflow artifacts
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v3
-        with:
-          name: haskell-${{ github.sha }}.vsix
-          path: haskell-*.vsix
