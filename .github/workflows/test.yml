@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        ghc: [8.10.7, 9.0.2, 9.2.8, 9.4.7, 9.6.2]
+        ghc: [8.10.7, 9.4.7, 9.6.2, 9.8.2]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -28,6 +28,11 @@ jobs:
       - run: yarn install --immutable --immutable-cache --check-cache
       - run: yarn run webpack
 
+      # Setup toolchains, install ghcup, install ghc, etc...
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: ${{ matrix.ghc }}
       - name: Toolchain settings
         run: |
           ghcup upgrade -i -f
@@ -37,8 +42,8 @@ jobs:
           ghcup install stack latest
           ghcup install cabal latest
 
-          ghcup install ghc ${{matrix.ghc}}
-          ghcup set ghc ${{matrix.ghc}}
+          ghcup install ghc ${{ matrix.ghc }}
+          ghcup set ghc ${{ matrix.ghc }}
 
           ghcup install hls 2.2.0.0
           ghcup install hls latest
