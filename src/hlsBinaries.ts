@@ -278,13 +278,13 @@ export async function findHaskellLanguageServer(
       const stackInstalled = latestStack ? await toolInstalled(context, logger, 'stack', latestStack) : undefined;
       const ghcInstalled = executableExists('ghc')
         ? new InstalledTool(
-            'ghc',
-            await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false)
-          )
+          'ghc',
+          await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false)
+        )
         : // if recGHC is null, that means user disabled automatic handling,
         recGHC !== null
-        ? await toolInstalled(context, logger, 'ghc', recGHC)
-        : undefined;
+          ? await toolInstalled(context, logger, 'ghc', recGHC)
+          : undefined;
       const toInstall: InstalledTool[] = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(
         (tool) => tool && !tool.installed
       ) as InstalledTool[];
@@ -459,12 +459,12 @@ async function getLatestProjectHLS(
   // get project GHC version, but fallback to system ghc if necessary.
   const projectGhc = toolchainBindir
     ? await getProjectGHCVersion(toolchainBindir, workingDir, logger).catch(async (e) => {
-        logger.error(`${e}`);
-        window.showWarningMessage(
-          `I had trouble figuring out the exact GHC version for the project. Falling back to using 'ghc${exeExt}'.`
-        );
-        return await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
-      })
+      logger.error(`${e}`);
+      window.showWarningMessage(
+        `I had trouble figuring out the exact GHC version for the project. Falling back to using 'ghc${exeExt}'.`
+      );
+      return await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
+    })
     : await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
 
   // first we get supported GHC versions from available HLS bindists (whether installed or not)
@@ -858,13 +858,13 @@ async function getReleaseMetadata(
     : undefined;
   const opts: https.RequestOptions = releasesUrl
     ? {
-        host: releasesUrl.host,
-        path: releasesUrl.pathname,
-      }
+      host: releasesUrl.host,
+      path: releasesUrl.pathname,
+    }
     : {
-        host: 'raw.githubusercontent.com',
-        path: '/haskell/ghcup-metadata/master/hls-metadata-0.0.1.json',
-      };
+      host: 'raw.githubusercontent.com',
+      path: '/haskell/ghcup-metadata/master/hls-metadata-0.0.1.json',
+    };
 
   const offlineCache = path.join(storagePath, 'ghcupReleases.cache.json');
 
@@ -915,7 +915,7 @@ async function getReleaseMetadata(
 
       window.showWarningMessage(
         "Couldn't get the latest haskell-language-server releases from GitHub, used local cache instead: " +
-          githubError.message
+        githubError.message
       );
       return cachedInfoParsed;
     } catch (fileError) {

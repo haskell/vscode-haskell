@@ -197,8 +197,8 @@ export function resolvePATHPlaceHolders(path: string) {
   return path
     .replace('${HOME}', os.homedir)
     .replace('${home}', os.homedir)
-    .replace('$PATH', process.env.PATH!)
-    .replace('${PATH}', process.env.PATH!);
+    .replace('$PATH', process.env.PATH ?? '$PATH')
+    .replace('${PATH}', process.env.PATH ?? '${PATH}');
 }
 
 // also honours serverEnvironment.PATH
@@ -207,7 +207,7 @@ export async function addPathToProcessPath(extraPath: string): Promise<string> {
   const serverEnvironment: IEnvVars = (await workspace.getConfiguration('haskell').get('serverEnvironment')) || {};
   const path: string[] = serverEnvironment.PATH
     ? serverEnvironment.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p))
-    : process.env.PATH!.split(pathSep);
+    : process.env.PATH?.split(pathSep) ?? [];
   path.unshift(extraPath);
   return path.join(pathSep);
 }
