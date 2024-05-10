@@ -8,6 +8,8 @@
   ([#1077](https://github.com/haskell/vscode-haskell/pull/1077))  by @fendor
 - Tooling update
   ([#1043](https://github.com/haskell/vscode-haskell/pull/1043))  by @bzm3r
+- Add `haskell.plugin.fourmolu.config.path` option
+  ([#987](https://github.com/haskell/vscode-haskell/pull/987))  by @georgefst
 
 ## 2.5.2
 
