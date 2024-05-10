@@ -2,11 +2,11 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.4.3",
+  "version": "2.4.4",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
-    "vscode": "^1.82.0"
+    "vscode": "^1.88.0"
   },
   "keywords": [
     "language",
@@ -199,6 +199,20 @@
           "default": true,
           "description": "Whether to typecheck the entire project on load. It could drive to bad performance in large projects."
         },
+        "haskell.sessionLoading": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "singleComponent",
+            "multipleComponents"
+          ],
+          "default": "singleComponent",
+          "description": "Preferred approach for loading package components. Setting this to 'multiple components' (EXPERIMENTAL) allows the build tool (such as `cabal` or `stack`) to [load multiple components at once](https://github.com/haskell/cabal/pull/8726), which is a significant improvement.",
+          "enumDescriptions": [
+            "Always load only a single component at a time. This is the most reliable option if you encountered any issues with the other options.",
+            "Prefer a multiple component session, if the build tool supports it. At the moment, only `cabal` supports multiple components session loading. If the `cabal` version does not support loading multiple components at once, we gracefully fall back to \"singleComponent\" mode."
+          ]
+        },
         "haskell.maxCompletions": {
           "scope": "resource",
           "default": 40,
@@ -288,6 +302,12 @@
           "markdownDescription": "Call out to an external \"fourmolu\" executable, rather than using the bundled library",
           "scope": "resource",
           "type": "boolean"
+        },
+        "haskell.plugin.fourmolu.config.path": {
+          "default": "fourmolu",
+          "markdownDescription": "Set path to executable (for \"external\" mode)",
+          "scope": "resource",
+          "type": "string"
         },
         "haskell.plugin.gadt.globalOn": {
           "default": true,
@@ -1139,28 +1159,28 @@
   "devDependencies": {
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.10.7",
-    "@types/vscode": "^1.82.0",
+    "@types/node": "^20.12.8",
+    "@types/vscode": "^1.88.0",
     "@types/which": "^3.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "@vscode/test-electron": "^2.3.8",
-    "eslint": "^8.56.0",
-    "eslint-webpack-plugin": "^4.0.1",
-    "glob": "^10.3.10",
-    "husky": "^8.0.2",
-    "mocha": "^10.2.0",
-    "prettier": "^3.1.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vscode/test-electron": "^2.3.9",
+    "eslint": "^8.57.0",
+    "eslint-webpack-plugin": "^4.1.0",
+    "glob": "^10.3.12",
+    "husky": "^9.0.11",
+    "mocha": "^10.4.0",
+    "prettier": "^3.2.5",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.3.3",
-    "webpack": "^5.89.0",
+    "typescript": "^5.4.5",
+    "webpack": "^5.91.0",
     "webpack-cli": "^5.1.1"
   },
   "extensionDependencies": [
     "justusadam.language-haskell"
   ],
   "dependencies": {
-    "ts-pattern": "^5.0.6",
+    "ts-pattern": "^5.1.1",
     "vscode-languageclient": "^7.0.0",
     "which": "^4.0.0"
   }

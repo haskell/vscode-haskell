@@ -1,5 +1,13 @@
 # Changelog for vscode-haskell
 
+## 2.5.2
+
+- Includes changes of the 2.4.3 release
+
+## 2.5.1
+
+- Includes changes of the 2.4.2 release
+
 ## 2.5.0
 
 - Add tracking of cabal files
