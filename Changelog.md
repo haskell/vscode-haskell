@@ -1,9 +1,32 @@
 # Changelog for vscode-haskell
 
+## 2.5.3
+
+- Includes changes of the 2.4.4 release
+
+## 2.5.2
+
+- Includes changes of the 2.4.3 release
+
+## 2.5.1
+
+- Includes changes of the 2.4.2 release
+
 ## 2.5.0
 
 - Add tracking of cabal files
   ([#618](https://github.com/haskell/vscode-haskell/pull/618))  by @fendor
+
+## 2.4.4
+
+- Split out packaging action
+  ([#1080](https://github.com/haskell/vscode-haskell/pull/1080))  by @fendor
+- Add Session Loading style to list of known configs
+  ([#1077](https://github.com/haskell/vscode-haskell/pull/1077))  by @fendor
+- Tooling update
+  ([#1043](https://github.com/haskell/vscode-haskell/pull/1043))  by @bzm3r
+- Add `haskell.plugin.fourmolu.config.path` option
+  ([#987](https://github.com/haskell/vscode-haskell/pull/987))  by @georgefst
 
 ## 2.4.3
 

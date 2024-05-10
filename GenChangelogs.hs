@@ -19,10 +19,10 @@ import           System.Process
 
 main = do
   callCommand "git fetch --tags"
-  tags <- filter (isPrefixOf "1.") . lines <$>
+  tag <- last . lines <$>
     readProcess "git" ["tag", "--list", "--sort=v:refname"] ""
 
-  lastDateStr <- last . lines <$> readProcess "git" ["show", "-s", "--format=%cI", "-1", last tags] ""
+  lastDateStr <- last . lines <$> readProcess "git" ["show", "-s", "--format=%cI", "-1", tag] ""
   lastDate <- zonedTimeToUTC <$> iso8601ParseM lastDateStr
 
   args <- getArgs

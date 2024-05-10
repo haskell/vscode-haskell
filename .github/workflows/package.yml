@@ -1,0 +1,35 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          ## make sure this corresponds with the version in release.yml
+          node-version: latest
+
+
+      - run: yarn install --immutable --immutable-cache --check-cache
+
+      - name: Package extension
+        run: npx vsce package
+      - name: Upload extension vsix to workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: haskell-${{ github.sha }}.vsix
+          path: haskell-*.vsix
