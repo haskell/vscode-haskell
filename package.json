@@ -1301,7 +1301,7 @@
     "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.57.0",
     "eslint-webpack-plugin": "^4.1.0",
-    "glob": "^10.3.15",
+    "glob": "^10.4.1",
     "husky": "^9.0.11",
     "mocha": "^10.4.0",
     "prettier": "^3.2.5",
