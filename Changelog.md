@@ -1,5 +1,12 @@
 # Changelog for vscode-haskell
 
+## 2.6.0
+
+- Add cabalFormattingProvider to package.json
+  ([#1100](https://github.com/haskell/vscode-haskell/pull/1100))  by @fendor
+- Prepare 2.4.4
+  ([#1083](https://github.com/haskell/vscode-haskell/pull/1083))  by @fendor
+
 ## 2.5.3
 
 - Split out packaging action
