@@ -1326,7 +1326,7 @@
   ],
   "dependencies": {
     "ts-pattern": "^5.1.2",
-    "vscode-languageclient": "^7.0.0",
+    "vscode-languageclient": "9.0.1",
     "which": "^4.0.0"
   }
 }
