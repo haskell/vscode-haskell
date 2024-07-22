@@ -1306,7 +1306,7 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.14.11",
     "@types/vscode": "^1.88.0",
-    "@types/which": "^3.0.3",
+    "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.12.0",
     "@vscode/test-electron": "^2.4.0",
