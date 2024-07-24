@@ -43,7 +43,7 @@ async function main() {
       vscodeExecutablePath,
       extensionDevelopmentPath,
       extensionTestsPath,
-      launchArgs: [testWorkspace],
+      launchArgs: ['--disable-gpu', testWorkspace],
     });
   } catch (err) {
     console.error(err);
