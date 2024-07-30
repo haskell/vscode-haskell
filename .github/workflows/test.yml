@@ -29,10 +29,14 @@ jobs:
       - run: yarn run webpack
 
       # Setup toolchains, install ghcup, install ghc, etc...
-      - name: Setup Haskell
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: ${{ matrix.ghc }}
+      - name: Install GHCup
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+          ghcup --version
+        env:
+          BOOTSTRAP_HASKELL_NONINTERACTIVE: 1
+          BOOTSTRAP_HASKELL_MINIMAL: 1
+
       - name: Toolchain settings
         run: |
           ghcup upgrade -i -f
