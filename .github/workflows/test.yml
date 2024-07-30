@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         ghc: [8.10.7, 9.4.8, 9.6.4, 9.8.2]
     runs-on: ${{ matrix.os }}
     steps:
@@ -32,10 +32,22 @@ jobs:
       - name: Install GHCup
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-          ghcup --version
+        shell: bash
         env:
           BOOTSTRAP_HASKELL_NONINTERACTIVE: 1
           BOOTSTRAP_HASKELL_MINIMAL: 1
+
+      - name: Check GHCup (Windows)
+        run: |
+          echo "c:/ghcup/bin" >> $GITHUB_PATH
+        shell: bash
+        if: runner.os == 'Windows'
+
+      - name: Check GHCup (Unix)
+        run: |
+          echo "${HOME}/.ghcup/bin" >> $GITHUB_PATH
+        shell: bash
+        if: runner.os != 'Windows'
 
       - name: Toolchain settings
         run: |
