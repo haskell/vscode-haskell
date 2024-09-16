@@ -1303,7 +1303,7 @@
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.6",
+    "@types/mocha": "^10.0.8",
     "@types/node": "^22.5.4",
     "@types/vscode": "^1.88.0",
     "@types/which": "^3.0.4",
@@ -1314,7 +1314,7 @@
     "eslint-webpack-plugin": "^4.2.0",
     "glob": "^11.0.0",
     "husky": "^9.1.5",
-    "mocha": "^10.4.0",
+    "mocha": "^10.7.3",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.4",
