@@ -21,7 +21,7 @@ async function main() {
     );
 
     // We have to install this dependant extension
-    installExtension(vscodeExecutablePath, 'justusadam.language-haskell');
+    installExtension(vscodeExecutablePath, 'JustusAdam.language-haskell');
 
     // The folder containing the Extension Manifest package.json
     // Passed to `--extensionDevelopmentPath`
