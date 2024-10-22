@@ -57,7 +57,7 @@ suite('Extension Test Suite', () => {
       }
       return false;
     };
-    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 5, 120),
+    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 1, 60),
       'Extension log file has no expected hls output');
   });
 
