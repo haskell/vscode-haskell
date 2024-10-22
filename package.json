@@ -1323,7 +1323,7 @@
     "webpack-cli": "^5.1.1"
   },
   "extensionDependencies": [
-    "JustusAdam.language-haskell"
+    "justusadam.language-haskell"
   ],
   "dependencies": {
     "ts-pattern": "^5.5.0",
