@@ -3,13 +3,13 @@
 ## 2.5.3
 
 - Split out packaging action
-  ([#1080](https://github.com/haskell/vscode-haskell/pull/1080))  by @fendor
+  ([#1080](https://github.com/haskell/vscode-haskell/pull/1080)) by @fendor
 - Add Session Loading style to list of known configs
-  ([#1077](https://github.com/haskell/vscode-haskell/pull/1077))  by @fendor
+  ([#1077](https://github.com/haskell/vscode-haskell/pull/1077)) by @fendor
 - Tooling update
-  ([#1043](https://github.com/haskell/vscode-haskell/pull/1043))  by @bzm3r
+  ([#1043](https://github.com/haskell/vscode-haskell/pull/1043)) by @bzm3r
 - Add `haskell.plugin.fourmolu.config.path` option
-  ([#987](https://github.com/haskell/vscode-haskell/pull/987))  by @georgefst
+  ([#987](https://github.com/haskell/vscode-haskell/pull/987)) by @georgefst
 
 ## 2.5.2
 
@@ -22,94 +22,94 @@
 ## 2.5.0
 
 - Add tracking of cabal files
-  ([#618](https://github.com/haskell/vscode-haskell/pull/618))  by @fendor
+  ([#618](https://github.com/haskell/vscode-haskell/pull/618)) by @fendor
 
 ## 2.4.3
 
 - Address invalid byte sequence error #1022
-  ([#1022](https://github.com/haskell/vscode-haskell/pull/1022))  by @felixlinker
+  ([#1022](https://github.com/haskell/vscode-haskell/pull/1022)) by @felixlinker
 - Always set the cwd for the executable (#1011)
-  ([#1011](https://github.com/haskell/vscode-haskell/pull/1011))  by @fendor
+  ([#1011](https://github.com/haskell/vscode-haskell/pull/1011)) by @fendor
 
 ## 2.4.2
 
 - Add stan plugin option #1000
-  ([#1000](https://github.com/haskell/vscode-haskell/pull/1000))  by @fendor
+  ([#1000](https://github.com/haskell/vscode-haskell/pull/1000)) by @fendor
 - Probe for GHCup binary wrt #962
-  ([#963](https://github.com/haskell/vscode-haskell/pull/963))  by @hasufell
+  ([#963](https://github.com/haskell/vscode-haskell/pull/963)) by @hasufell
 - Bump old hls version and upgrade test runner to macos-latest
-  ([#960](https://github.com/haskell/vscode-haskell/pull/960))  by @July541
+  ([#960](https://github.com/haskell/vscode-haskell/pull/960)) by @July541
 - Increase time limitation to make test on Windows more stable
-  ([#959](https://github.com/haskell/vscode-haskell/pull/959))  by @July541
+  ([#959](https://github.com/haskell/vscode-haskell/pull/959)) by @July541
 - Update release docs for refreshing CI tokens
-  ([#942](https://github.com/haskell/vscode-haskell/pull/942))  by @fendor
+  ([#942](https://github.com/haskell/vscode-haskell/pull/942)) by @fendor
 
 ## 2.4.1
 
 - Downgrade vscode-languageclient
-  ([#934](https://github.com/haskell/vscode-haskell/pull/934))  by @fendor
+  ([#934](https://github.com/haskell/vscode-haskell/pull/934)) by @fendor
 - Bump vscode to 1.80.0
-  ([#912](https://github.com/haskell/vscode-haskell/pull/912))  by @July541
+  ([#912](https://github.com/haskell/vscode-haskell/pull/912)) by @July541
 
 ## 2.4.0
 
 - Prepare release 2.4.0
-  ([#906](https://github.com/haskell/vscode-haskell/pull/906))  by @VeryMilkyJoe
+  ([#906](https://github.com/haskell/vscode-haskell/pull/906)) by @VeryMilkyJoe
 - Simplify tests
-  ([#904](https://github.com/haskell/vscode-haskell/pull/904))  by @July541
+  ([#904](https://github.com/haskell/vscode-haskell/pull/904)) by @July541
 - Remove unused code
-  ([#898](https://github.com/haskell/vscode-haskell/pull/898))  by @fendor
+  ([#898](https://github.com/haskell/vscode-haskell/pull/898)) by @fendor
 - Remove hoogle command from vscode extension
-  ([#896](https://github.com/haskell/vscode-haskell/pull/896))  by @fendor
+  ([#896](https://github.com/haskell/vscode-haskell/pull/896)) by @fendor
 - Update readme
-  ([#886](https://github.com/haskell/vscode-haskell/pull/886))  by @VeryMilkyJoe
+  ([#886](https://github.com/haskell/vscode-haskell/pull/886)) by @VeryMilkyJoe
 - Fix broken tests
-  ([#880](https://github.com/haskell/vscode-haskell/pull/880))  by @July541
+  ([#880](https://github.com/haskell/vscode-haskell/pull/880)) by @July541
 - Update README.md: clarify how to use Stack with vscode-haskell extension
-  ([#874](https://github.com/haskell/vscode-haskell/pull/874))  by @miguel-negrao
+  ([#874](https://github.com/haskell/vscode-haskell/pull/874)) by @miguel-negrao
 - Remove debugger tools from CI
-  ([#873](https://github.com/haskell/vscode-haskell/pull/873))  by @fendor
+  ([#873](https://github.com/haskell/vscode-haskell/pull/873)) by @fendor
 - Refactor tests to work correctly
-  ([#872](https://github.com/haskell/vscode-haskell/pull/872))  by @July541
+  ([#872](https://github.com/haskell/vscode-haskell/pull/872)) by @July541
 - Downgrade vscode language client to 7.0.0
-  ([#853](https://github.com/haskell/vscode-haskell/pull/853))  by @fendor
+  ([#853](https://github.com/haskell/vscode-haskell/pull/853)) by @fendor
 - Update badge url for VSCode Marketplace
-  ([#851](https://github.com/haskell/vscode-haskell/pull/851))  by @fendor
+  ([#851](https://github.com/haskell/vscode-haskell/pull/851)) by @fendor
 
 ## 2.2.4
 
--  Downgrade vscode language client to 7.0.0
-  ([#843](https://github.com/haskell/vscode-haskell/pull/853))  by @fendor
+- Downgrade vscode language client to 7.0.0
+  ([#843](https://github.com/haskell/vscode-haskell/pull/853)) by @fendor
 
 ## 2.2.3
 
 - Prepare release 2.2.3
-  ([#843](https://github.com/haskell/vscode-haskell/pull/843))  by @fendor
+  ([#843](https://github.com/haskell/vscode-haskell/pull/843)) by @fendor
 - Add new plugins fields
-  ([#842](https://github.com/haskell/vscode-haskell/pull/842))  by @fendor
+  ([#842](https://github.com/haskell/vscode-haskell/pull/842)) by @fendor
   - Migrate to eslint
-  ([#782](https://github.com/haskell/vscode-haskell/pull/782))  by @fendor
+    ([#782](https://github.com/haskell/vscode-haskell/pull/782)) by @fendor
 - Bump minor versions of package dependencies
-  ([#781](https://github.com/haskell/vscode-haskell/pull/781))  by @fendor
+  ([#781](https://github.com/haskell/vscode-haskell/pull/781)) by @fendor
 - Update unsupported GHC doc link
-  ([#776](https://github.com/haskell/vscode-haskell/pull/776))  by @limaak
+  ([#776](https://github.com/haskell/vscode-haskell/pull/776)) by @limaak
 - Fix release CI
-  ([#775](https://github.com/haskell/vscode-haskell/pull/775))  by @fendor
+  ([#775](https://github.com/haskell/vscode-haskell/pull/775)) by @fendor
 - Fix mistake in generated ChangeLog
-  ([#774](https://github.com/haskell/vscode-haskell/pull/774))  by @fendor
+  ([#774](https://github.com/haskell/vscode-haskell/pull/774)) by @fendor
 
 ## 2.2.2
 
 - Add link to HLS installation webpage
-  ([#751](https://github.com/haskell/vscode-haskell/pull/751))  by @fendor
+  ([#751](https://github.com/haskell/vscode-haskell/pull/751)) by @fendor
 - Change scope of serverExecutablePath to machine-overridable
-  ([#742](https://github.com/haskell/vscode-haskell/pull/742))  by @fendor
+  ([#742](https://github.com/haskell/vscode-haskell/pull/742)) by @fendor
 - Add Fourmolu config property
-  ([#736](https://github.com/haskell/vscode-haskell/pull/736))  by @georgefst
+  ([#736](https://github.com/haskell/vscode-haskell/pull/736)) by @georgefst
 - Add missing configuration options for the latest HLS version
-  ([#717](https://github.com/haskell/vscode-haskell/pull/717))  by @fendor
+  ([#717](https://github.com/haskell/vscode-haskell/pull/717)) by @fendor
 - Change sensible to sensitive
-  ([#709](https://github.com/haskell/vscode-haskell/pull/709))  by @ploeh
+  ([#709](https://github.com/haskell/vscode-haskell/pull/709)) by @ploeh
 
 ## 2.2.1
 

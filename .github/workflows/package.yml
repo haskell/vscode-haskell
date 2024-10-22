@@ -23,7 +23,6 @@ jobs:
           ## make sure this corresponds with the version in release.yml
           node-version: latest
 
-
       - run: yarn install --immutable --immutable-cache --check-cache
 
       - name: Package extension

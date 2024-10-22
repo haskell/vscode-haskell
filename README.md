@@ -212,8 +212,6 @@ You can check each GHC version's support status and the policy followed for depr
 
 The exact list of binaries can be checked in the last release of haskell-language-server: <https://github.com/haskell/haskell-language-server/releases/latest>
 
-
-
 ## Using multi-root workspaces
 
 First, check out [what multi-root workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) are. The idea of using multi-root workspaces, is to be able to work on several different Haskell projects, where the GHC version or stackage LTS could differ, and have it work smoothly.
@@ -262,6 +260,7 @@ setup-info:
       9.0.2:
         url: 'https://downloads.haskell.org/ghc/9.0.2/ghc-9.0.2a-x86_64-fedora27-linux.tar.xz'
 ```
+
 Now make sure to remove cached/installed libraries to avoid getting segfaults at runtime.
 
 As a final workaround, you can try to compile HLS from source (the extension should pick it up) via ghcup, see [https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup](https://haskell-language-server.readthedocs.io/en/stable/installation.html#ghcup). In any case, the recommended approach is to let GHCup install the GHC binaries.

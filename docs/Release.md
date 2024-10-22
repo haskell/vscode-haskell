@@ -21,13 +21,13 @@ Follow this list for items that must be completed for release of the `vscode-has
 Sometimes there is a release (stable) and pre-release (unstable) at the same time and we need to do a release for the stable release and sometimes we need to do a release for the pre-release series.
 To simplify the release management, the following policy is in place:
 
-* The branch `master` contains the current pre-release
-  * As such, its `package.json` must always have the form `major.ODD_NUMBER.patch`
-  * Dependency version bumps are automatically performed by dependabot against `master`
-  * For each release, a tag must be created
-* Stable releases are located on a separate branch called `release-<major.EVEN_NUMBER>`
-  * Before a release, the branch is rebased on top of current master
-  * For each stable release, a tag must be created of the form `major.EVEN_NUMBER.patch`
+- The branch `master` contains the current pre-release
+  - As such, its `package.json` must always have the form `major.ODD_NUMBER.patch`
+  - Dependency version bumps are automatically performed by dependabot against `master`
+  - For each release, a tag must be created
+- Stable releases are located on a separate branch called `release-<major.EVEN_NUMBER>`
+  - Before a release, the branch is rebased on top of current master
+  - For each stable release, a tag must be created of the form `major.EVEN_NUMBER.patch`
 
 ## Release CI
 
@@ -37,9 +37,9 @@ Seemingly, the VSX Marketplace token does not expire. If it is lost for some rea
 
 The latter needs to be refreshed once a year.
 
-* Send an email to `committee@haskell.org` requesting the token
-  * Include your public GPG key so they can send you the token encrypted
-* Update the repository secrets
-  * People from the [@haskell-ide](https://github.com/orgs/haskell/teams/haskell-ide) have full access to the vscode-haskell repo and can update secrets
+- Send an email to `committee@haskell.org` requesting the token
+  - Include your public GPG key so they can send you the token encrypted
+- Update the repository secrets
+  - People from the [@haskell-ide](https://github.com/orgs/haskell/teams/haskell-ide) have full access to the vscode-haskell repo and can update secrets
 
 Last time the VSCode Marketplace token was updated: 2023-08-17
