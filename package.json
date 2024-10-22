@@ -1294,7 +1294,7 @@
     "push-tag": "git tag -a $npm_package_version -m \"Version $npm_package_version\" && git push origin $npm_package_version",
     "pretest": "tsc --alwaysStrict -p ./",
     "format": "prettier . --write",
-    "test": "node ./out/test/runTest.js"
+    "test": "vscode-test"
   },
   "husky": {
     "hooks": {
@@ -1309,6 +1309,7 @@
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^8.57.0",
     "eslint-webpack-plugin": "^4.2.0",
