@@ -27,7 +27,7 @@ suite('Extension Test Suite', () => {
     await haskellConfig.update('trace.server', 'messages');
     await haskellConfig.update('releasesDownloadStoragePath', path.normalize(getWorkspaceFile(BIN).fsPath));
     await haskellConfig.update('serverEnvironment', {
-      XDG_CACHE_HOME: path.normalize(getWorkspaceFile(CACHE).fsPath)
+      XDG_CACHE_HOME: path.normalize(getWorkspaceFile(CACHE).fsPath),
     });
 
     const contents = new TextEncoder().encode('main = putStrLn "hi vscode tests"');
@@ -57,14 +57,15 @@ suite('Extension Test Suite', () => {
       }
       return false;
     };
-    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 1, 60),
-      'Extension log file has no expected hls output');
+    assert.ok(await runWithIntervalAndTimeout(checkServerLog, 1, 60), 'Extension log file has no expected hls output');
   });
 
   test('5. Server should inherit environment variables defined in the settings', async () => {
     vscode.workspace.openTextDocument(getWorkspaceFile('Main.hs'));
-    assert.ok(await runWithIntervalAndTimeout(() => workspaceFileExist(CACHE), 1, 30),
-      'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings');
+    assert.ok(
+      await runWithIntervalAndTimeout(() => workspaceFileExist(CACHE), 1, 30),
+      'Server did not inherit XDG_CACHE_DIR from environment variables set in the settings',
+    );
   });
 
   suiteTeardown(async () => {
@@ -121,7 +122,7 @@ async function runWithIntervalAndTimeout(fn: () => boolean, interval: number, ti
   const intervalMs = interval * 1000;
   const timeoutMs = timeout * 1000;
   const endTime = startTime + timeoutMs;
-  const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   while (Date.now() <= endTime) {
     if (fn()) {

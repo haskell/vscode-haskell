@@ -4,9 +4,7 @@
     "moduleResolution": "node",
     "target": "es6",
     "outDir": "out",
-    "lib": [
-      "es6"
-    ],
+    "lib": ["es6"],
     "sourceMap": true,
     "rootDir": ".",
     "noUnusedLocals": true,
@@ -16,13 +14,6 @@
     "noFallthroughCasesInSwitch": true,
     "strictNullChecks": true
   },
-  "include": [
-    "./src/**/*.ts",
-    "./test/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    ".vscode",
-    ".vscode-test"
-  ]
+  "include": ["./src/**/*.ts", "./test/**/*.ts"],
+  "exclude": ["node_modules", ".vscode", ".vscode-test"]
 }

@@ -8,8 +8,8 @@ module.exports = defineConfig([
     workspaceFolder: './test-workspace',
     installExtensions: ['justusadam.language-haskell'],
     mocha: {
-      timeout: 120 * 1000 // 2 minute timeout
-    }
-  }
+      timeout: 120 * 1000, // 2 minute timeout
+    },
+  },
   // you can specify additional test configurations, too
 ]);

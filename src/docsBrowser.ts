@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { dirname } from 'path';
 import {
   CancellationToken,
@@ -99,7 +100,7 @@ export function hoverLinksMiddlewareHook(
   document: TextDocument,
   position: Position,
   token: CancellationToken,
-  next: ProvideHoverSignature
+  next: ProvideHoverSignature,
 ): ProviderResult<Hover> {
   const res = next(document, position, token);
   return Promise.resolve(res).then((r) => {
@@ -115,7 +116,7 @@ export function completionLinksMiddlewareHook(
   position: Position,
   context: CompletionContext,
   token: CancellationToken,
-  next: ProvideCompletionItemsSignature
+  next: ProvideCompletionItemsSignature,
 ): ProviderResult<CompletionItem[] | CompletionList> {
   const res = next(document, position, context, token);
 
@@ -141,7 +142,7 @@ function processLink(ms: MarkdownString | MarkedString): string | MarkdownString
   function transform(s: string): string {
     return s.replace(
       /\[(.+)\]\((file:.+\/doc\/(?:.*html\/libraries\/)?([^/]+)\/(?:.*\/)?(.+\.html#?.*))\)/gi,
-      (all, title, localPath, packageName, fileAndAnchor) => {
+      (_all, title, localPath, packageName, fileAndAnchor) => {
         let hackageUri: string;
         if (title === 'Documentation') {
           hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/${fileAndAnchor}`;
@@ -156,7 +157,7 @@ function processLink(ms: MarkdownString | MarkedString): string | MarkdownString
         } else if (title === 'Source') {
           hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/src/${fileAndAnchor.replace(
             /-/gi,
-            '.'
+            '.',
           )}`;
           const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
           let cmd: string;
@@ -169,7 +170,7 @@ function processLink(ms: MarkdownString | MarkedString): string | MarkdownString
         } else {
           return s;
         }
-      }
+      },
     );
   }
   if (typeof ms === 'string') {

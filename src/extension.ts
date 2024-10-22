@@ -153,7 +153,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       context,
       logger,
       currentWorkingDir,
-      folder
+      folder,
     );
     if (!serverExecutable) {
       return;

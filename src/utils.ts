@@ -159,14 +159,13 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
   });
 }
 
-
 /*
  * Checks if the executable is on the PATH
  */
 export function executableExists(exe: string): boolean {
   const isWindows = process.platform === 'win32';
   let newEnv: IEnvVars = resolveServerEnvironmentPATH(
-    workspace.getConfiguration('haskell').get('serverEnvironment') || {}
+    workspace.getConfiguration('haskell').get('serverEnvironment') || {},
   );
   newEnv = { ...(process.env as IEnvVars), ...newEnv };
   const cmd: string = isWindows ? 'where' : 'which';
@@ -207,7 +206,7 @@ export async function addPathToProcessPath(extraPath: string): Promise<string> {
   const serverEnvironment: IEnvVars = (await workspace.getConfiguration('haskell').get('serverEnvironment')) || {};
   const path: string[] = serverEnvironment.PATH
     ? serverEnvironment.PATH.split(pathSep).map((p) => resolvePATHPlaceHolders(p))
-    : process.env.PATH?.split(pathSep) ?? [];
+    : (process.env.PATH?.split(pathSep) ?? []);
   path.unshift(extraPath);
   return path.join(pathSep);
 }
