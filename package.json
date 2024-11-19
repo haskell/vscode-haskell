@@ -1309,7 +1309,7 @@
     "@types/vscode": "^1.88.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
-    "@typescript-eslint/parser": "^8.13.0",
+    "@typescript-eslint/parser": "^8.14.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.14.0",
