@@ -1304,7 +1304,7 @@
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.9",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.9.0",
     "@types/vscode": "^1.88.0",
     "@types/which": "^3.0.4",
