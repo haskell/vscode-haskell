@@ -303,10 +303,10 @@
   dependencies:
     undici-types "~6.19.8"
 
-"@types/vscode@^1.88.0":
-  version "1.88.0"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.88.0.tgz#2dc690237f7ef049942508c8609b6b9f5216b4d3"
-  integrity sha512-rWY+Bs6j/f1lvr8jqZTyp5arRMfovdxolcqGi+//+cPDOh8SBvzXH90e7BiSXct5HJ9HGW6jATchbRTpTJpEkw==
+"@types/vscode@^1.95.0":
+  version "1.95.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.95.0.tgz#484aee82c69fa2d73e29d4bf2a91191e570dbc70"
+  integrity sha512-0LBD8TEiNbet3NvWsmn59zLzOFu/txSlGxnv5yAFHCrhG9WvAnR3IvfHzMOs2aeWqgvNjq9pO99IUw8d3n+unw==
 
 "@types/which@^3.0.4":
   version "3.0.4"
