@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.5.3",
+  "version": "2.6.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -220,26 +220,6 @@
           "default": true,
           "description": "Whether to typecheck the entire project on load. It could drive to bad performance in large projects."
         },
-        "haskell.sessionLoading": {
-          "scope": "resource",
-          "type": "string",
-          "enum": [
-            "singleComponent",
-            "multipleComponents"
-          ],
-          "default": "singleComponent",
-          "description": "Preferred approach for loading package components. Setting this to 'multiple components' (EXPERIMENTAL) allows the build tool (such as `cabal` or `stack`) to [load multiple components at once](https://github.com/haskell/cabal/pull/8726), which is a significant improvement.",
-          "enumDescriptions": [
-            "Always load only a single component at a time. This is the most reliable option if you encountered any issues with the other options.",
-            "Prefer a multiple component session, if the build tool supports it. At the moment, only `cabal` supports multiple components session loading. If the `cabal` version does not support loading multiple components at once, we gracefully fall back to \"singleComponent\" mode."
-          ]
-        },
-        "haskell.maxCompletions": {
-          "scope": "resource",
-          "default": 40,
-          "type": "integer",
-          "description": "Maximum number of completions sent to the editor."
-        },
         "haskell.plugin.alternateNumberFormat.globalOn": {
           "default": true,
           "description": "Enables alternateNumberFormat plugin",
@@ -273,6 +253,24 @@
         "haskell.plugin.cabal.diagnosticsOn": {
           "default": true,
           "description": "Enables cabal diagnostics",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.cabal.hoverOn": {
+          "default": true,
+          "description": "Enables cabal hover",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.cabal.symbolsOn": {
+          "default": true,
+          "description": "Enables cabal symbols",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.cabalHaskellIntegration.globalOn": {
+          "default": true,
+          "description": "Enables cabalHaskellIntegration plugin",
           "scope": "resource",
           "type": "boolean"
         },
@@ -318,9 +316,15 @@
           "scope": "resource",
           "type": "boolean"
         },
-        "haskell.plugin.explicit-fields.globalOn": {
+        "haskell.plugin.explicit-fields.codeActionsOn": {
           "default": true,
-          "description": "Enables explicit-fields plugin",
+          "description": "Enables explicit-fields code actions",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.explicit-fields.inlayHintsOn": {
+          "default": true,
+          "description": "Enables explicit-fields inlay hints",
           "scope": "resource",
           "type": "boolean"
         },
@@ -451,6 +455,12 @@
         "haskell.plugin.importLens.codeLensOn": {
           "default": true,
           "description": "Enables importLens code lenses",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.importLens.inlayHintsOn": {
+          "default": true,
+          "description": "Enables importLens inlay hints",
           "scope": "resource",
           "type": "boolean"
         },

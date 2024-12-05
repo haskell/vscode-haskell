@@ -1,5 +1,20 @@
 # Changelog for vscode-haskell
 
+## 2.6.0
+
+- Upgrade project to use latest eslint version
+  ([#1150](https://github.com/haskell/vscode-haskell/pull/1150))  by @fendor
+- Fix windows CI
+  ([#1149](https://github.com/haskell/vscode-haskell/pull/1149))  by @fendor
+- Manually install ghcup into image
+  ([#1119](https://github.com/haskell/vscode-haskell/pull/1119))  by @fendor
+- bump vscode-languageclient version to 9.0.1
+  ([#1108](https://github.com/haskell/vscode-haskell/pull/1108))  by @jetjinser
+- Add cabalFormattingProvider to package.json
+  ([#1100](https://github.com/haskell/vscode-haskell/pull/1100))  by @fendor
+- Prepare 2.4.4
+  ([#1083](https://github.com/haskell/vscode-haskell/pull/1083))  by @fendor
+
 ## 2.5.3
 
 - Split out packaging action
