@@ -324,10 +324,10 @@
   dependencies:
     undici-types "~6.19.8"
 
-"@types/vscode@^1.88.0":
-  version "1.88.0"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.88.0.tgz#2dc690237f7ef049942508c8609b6b9f5216b4d3"
-  integrity sha512-rWY+Bs6j/f1lvr8jqZTyp5arRMfovdxolcqGi+//+cPDOh8SBvzXH90e7BiSXct5HJ9HGW6jATchbRTpTJpEkw==
+"@types/vscode@^1.96.0":
+  version "1.96.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.96.0.tgz#3181004bf25d71677ae4aacdd7605a3fd7edf08e"
+  integrity sha512-qvZbSZo+K4ZYmmDuaodMbAa67Pl6VDQzLKFka6rq+3WUTY4Kro7Bwoi0CuZLO/wema0ygcmpwow7zZfPJTs5jg==
 
 "@types/which@^3.0.4":
   version "3.0.4"
