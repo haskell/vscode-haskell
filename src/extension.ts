@@ -1,15 +1,4 @@
-import * as path from 'path';
-import {
-  commands,
-  env,
-  ExtensionContext,
-  OutputChannel,
-  TextDocument,
-  Uri,
-  window,
-  workspace,
-  WorkspaceFolder,
-} from 'vscode';
+import { commands, env, ExtensionContext, TextDocument, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import {
   ExecutableOptions,
   LanguageClient,
@@ -22,7 +11,8 @@ import { RestartServerCommandName, StartServerCommandName, StopServerCommandName
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import { callAsync, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
-import { addPathToProcessPath, comparePVP, expandHomeDir, ExtensionLogger } from './utils';
+import { addPathToProcessPath, comparePVP } from './utils';
+import { initConfig, initLoggerFromConfig, logConfig } from './config';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -112,39 +102,17 @@ async function activeServer(context: ExtensionContext, document: TextDocument) {
 
 async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
   const clientsKey = folder ? folder.uri.toString() : uri.toString();
-  // Set a unique name per workspace folder (useful for multi-root workspaces).
-  const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
-
   // If the client already has an LSP server for this uri/folder, then don't start a new one.
   if (clients.has(clientsKey)) {
     return;
   }
-
-  const currentWorkingDir = folder ? folder.uri.fsPath : path.dirname(uri.fsPath);
-
   // Set the key to null to prevent multiple servers being launched at once
   clients.set(clientsKey, null);
 
-  const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
-  const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
-  const logFile: string = workspace.getConfiguration('haskell', uri).logFile;
+  const config = initConfig(workspace.getConfiguration('haskell', uri), uri, folder);
+  const logger: Logger = initLoggerFromConfig(config);
 
-  const outputChannel: OutputChannel = window.createOutputChannel(langName);
-
-  const logFilePath = logFile !== '' ? path.resolve(currentWorkingDir, expandHomeDir(logFile)) : undefined;
-  const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel, logFilePath);
-  if (logFilePath) {
-    logger.info(`Writing client log to file ${logFilePath}`);
-  }
-  logger.log('Environment variables:');
-  Object.entries(process.env).forEach(([key, value]: [string, string | undefined]) => {
-    // only list environment variables that we actually care about.
-    // this makes it safe for users to just paste the logs to whoever,
-    // and avoids leaking secrets.
-    if (['PATH'].includes(key)) {
-      logger.log(`  ${key}: ${value}`);
-    }
-  });
+  logConfig(logger, config);
 
   let serverExecutable: string;
   let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
@@ -152,7 +120,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     [serverExecutable, addInternalServerPath] = await findHaskellLanguageServer(
       context,
       logger,
-      currentWorkingDir,
+      config.workingDir,
       folder,
     );
     if (!serverExecutable) {
@@ -190,31 +158,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     return;
   }
 
-  let args: string[] = ['--lsp'];
-
-  if (logLevel === 'messages') {
-    args = args.concat(['-d']);
-  }
-
-  if (logFile !== '') {
-    args = args.concat(['-l', logFile]);
-  }
-
-  const extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
-  if (extraArgs !== '') {
-    args = args.concat(extraArgs.split(' '));
-  }
-
-  const cabalFileSupport: 'automatic' | 'enable' | 'disable' = workspace.getConfiguration(
-    'haskell',
-    uri,
-  ).supportCabalFiles;
-  logger.info(`Support for '.cabal' files: ${cabalFileSupport}`);
-
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
-  let cwdMsg = `Activating the language server in working dir: ${currentWorkingDir}`;
+  let cwdMsg = `Activating the language server in working dir: ${config.workingDir}`;
   if (folder) {
     cwdMsg += ' (the workspace folder)';
   } else {
@@ -231,22 +178,19 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     };
   }
   const exeOptions: ExecutableOptions = {
-    cwd: folder ? folder.uri.fsPath : path.dirname(uri.fsPath),
+    cwd: config.workingDir,
     env: { ...process.env, ...serverEnvironment },
   };
-
-  // We don't want empty strings in our args
-  args = args.map((x) => x.trim()).filter((x) => x !== '');
 
   // For our intents and purposes, the server should be launched the same way in
   // both debug and run mode.
   const serverOptions: ServerOptions = {
-    run: { command: serverExecutable, args, options: exeOptions },
-    debug: { command: serverExecutable, args, options: exeOptions },
+    run: { command: serverExecutable, args: config.serverArgs, options: exeOptions },
+    debug: { command: serverExecutable, args: config.serverArgs, options: exeOptions },
   };
 
-  logger.info(`run command: ${serverExecutable} ${args.join(' ')}`);
-  logger.info(`debug command: ${serverExecutable} ${args.join(' ')}`);
+  logger.info(`run command: ${serverExecutable} ${config.serverArgs.join(' ')}`);
+  logger.info(`debug command: ${serverExecutable} ${config.serverArgs.join(' ')}`);
   if (exeOptions.cwd) {
     logger.info(`server cwd: ${exeOptions.cwd}`);
   }
@@ -268,13 +212,19 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const documentSelector = [...haskellDocumentSelector];
 
+  const cabalFileSupport: 'automatic' | 'enable' | 'disable' = workspace.getConfiguration(
+    'haskell',
+    uri,
+  ).supportCabalFiles;
+  logger.info(`Support for '.cabal' files: ${cabalFileSupport}`);
+
   switch (cabalFileSupport) {
     case 'automatic':
       const hlsVersion = await callAsync(
         serverExecutable,
         ['--numeric-version'],
         logger,
-        currentWorkingDir,
+        config.workingDir,
         undefined /* this command is very fast, don't show anything */,
         false,
         serverEnvironment,
@@ -301,10 +251,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       // Synchronize the setting section 'haskell' to the server.
       configurationSection: 'haskell',
     },
-    diagnosticCollectionName: langName,
+    diagnosticCollectionName: config.langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
-    outputChannel,
-    outputChannelName: langName,
+    outputChannel: config.outputChannel,
+    outputChannelName: config.langName,
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
       provideCompletionItem: DocsBrowser.completionLinksMiddlewareHook,
@@ -314,15 +264,15 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   };
 
   // Create the LSP client.
-  const langClient = new LanguageClient('haskell', langName, serverOptions, clientOptions);
+  const langClient = new LanguageClient('haskell', config.langName, serverOptions, clientOptions);
 
   // Register ClientCapabilities for stuff like window/progress
   langClient.registerProposedFeatures();
 
   // Finally start the client and add it to the list of clients.
   logger.info('Starting language server');
-  langClient.start();
   clients.set(clientsKey, langClient);
+  await langClient.start();
 }
 
 /*
