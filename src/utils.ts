@@ -7,7 +7,7 @@ import { Logger } from 'vscode-languageclient';
 import * as which from 'which';
 
 // Used for environment variables later on
-export interface IEnvVars {
+export type IEnvVars = {
   [key: string]: string;
 }
 
