@@ -139,22 +139,22 @@ export async function callAsync(
 
 /** Gets serverExecutablePath and fails if it's not set.
  */
-async function findServerExecutable(logger: Logger, folder?: WorkspaceFolder): Promise<string> {
-  let exePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
-  logger.info(`Trying to find the server executable in: ${exePath}`);
-  exePath = resolvePathPlaceHolders(exePath, folder);
-  logger.log(`Location after path variables substitution: ${exePath}`);
-  if (executableExists(exePath)) {
-    return exePath;
+function findServerExecutable(logger: Logger, folder?: WorkspaceFolder): string {
+  const rawExePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
+  logger.info(`Trying to find the server executable in: ${rawExePath}`);
+  const resolvedExePath = resolvePathPlaceHolders(rawExePath, folder);
+  logger.log(`Location after path variables substitution: ${resolvedExePath}`);
+  if (executableExists(resolvedExePath)) {
+    return resolvedExePath;
   } else {
-    const msg = `Could not find a HLS binary at ${exePath}! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.`;
-    throw new Error(msg);
+    const msg = `Could not find a HLS binary at ${resolvedExePath}! Consider installing HLS via ghcup or change "haskell.manageHLS" in your settings.`;
+    throw new HlsError(msg);
   }
 }
 
 /** Searches the PATH. Fails if nothing is found.
  */
-async function findHLSinPATH(_context: ExtensionContext, logger: Logger): Promise<string> {
+function findHlsInPath(_context: ExtensionContext, logger: Logger): string {
   // try PATH
   const exes: string[] = ['haskell-language-server-wrapper', 'haskell-language-server'];
   logger.info(`Searching for server executables ${exes.join(',')} in $PATH`);
@@ -210,16 +210,16 @@ export async function findHaskellLanguageServer(
 ): Promise<HlsExecutable> {
   logger.info('Finding haskell-language-server');
 
-  if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string) {
-    const exe = await findServerExecutable(logger, folder);
+  const hasConfigForExecutable = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
+  if (hasConfigForExecutable) {
+    const exe = findServerExecutable(logger, folder);
     return {
       location: exe,
       tag: 'config',
     };
   }
 
-  const storagePath: string = await getStoragePath(context);
-
+  const storagePath: string = getStoragePath(context);
   if (!fs.existsSync(storagePath)) {
     fs.mkdirSync(storagePath);
   }
@@ -228,7 +228,7 @@ export async function findHaskellLanguageServer(
   manageHLS = await promptUserForManagingHls(context, manageHLS);
 
   if (manageHLS === 'PATH') {
-    const exe = await findHLSinPATH(context, logger);
+    const exe = findHlsInPath(context, logger);
     return {
       location: exe,
       tag: 'path',
@@ -512,7 +512,7 @@ async function getLatestProjectHLS(
     : await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false);
 
   // first we get supported GHC versions from available HLS bindists (whether installed or not)
-  const metadataMap = (await getHLSesfromMetadata(context, logger)) || new Map<string, string[]>();
+  const metadataMap = (await getHlsMetadata(context, logger)) || new Map<string, string[]>();
   // then we get supported GHC versions from currently installed HLS versions
   const ghcupMap = (await getHLSesFromGHCup(context, logger)) || new Map<string, string[]>();
   // since installed HLS versions may support a different set of GHC versions than the bindists
@@ -657,8 +657,8 @@ export async function findGHCup(_context: ExtensionContext, logger: Logger, fold
   }
 }
 
-export async function getStoragePath(context: ExtensionContext): Promise<string> {
-  let storagePath: string | undefined = await workspace.getConfiguration('haskell').get('releasesDownloadStoragePath');
+export function getStoragePath(context: ExtensionContext): string {
+  let storagePath: string | undefined = workspace.getConfiguration('haskell').get('releasesDownloadStoragePath');
 
   if (!storagePath) {
     storagePath = context.globalStorageUri.fsPath;
@@ -838,8 +838,8 @@ export type ReleaseMetadata = Map<string, Map<string, Map<string, string[]>>>;
  * @param logger Logger for feedback
  * @returns Map of supported HLS versions or null if metadata could not be fetched.
  */
-async function getHLSesfromMetadata(context: ExtensionContext, logger: Logger): Promise<Map<string, string[]> | null> {
-  const storagePath: string = await getStoragePath(context);
+async function getHlsMetadata(context: ExtensionContext, logger: Logger): Promise<Map<string, string[]> | null> {
+  const storagePath: string = getStoragePath(context);
   const metadata = await getReleaseMetadata(context, storagePath, logger).catch(() => null);
   if (!metadata) {
     window.showErrorMessage('Could not get release metadata');
