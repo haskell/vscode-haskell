@@ -1,6 +1,6 @@
 import { OutputChannel, Uri, window,  WorkspaceConfiguration,  WorkspaceFolder } from 'vscode';
 import { expandHomeDir, ExtensionLogger, IEnvVars } from './utils';
-import path = require('path');
+import * as path from 'path';
 import { Logger } from 'vscode-languageclient';
 
 export type LogLevel = 'off' | 'messages' | 'verbose';
