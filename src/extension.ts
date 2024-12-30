@@ -10,9 +10,9 @@ import {
 import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
-import { callAsync, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
+import { callAsync, findHaskellLanguageServer, HlsExecutable, IEnvVars } from './hlsBinaries';
 import { addPathToProcessPath, comparePVP } from './utils';
-import { initConfig, initLoggerFromConfig, logConfig } from './config';
+import { Config, initConfig, initLoggerFromConfig, logConfig } from './config';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -114,18 +114,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   logConfig(logger, config);
 
-  let serverExecutable: string;
-  let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
+  let hlsExecutable: HlsExecutable;
   try {
-    [serverExecutable, addInternalServerPath] = await findHaskellLanguageServer(
-      context,
-      logger,
-      config.workingDir,
-      folder,
-    );
-    if (!serverExecutable) {
-      return;
-    }
+    hlsExecutable = await findHaskellLanguageServer(context, logger, config.workingDir, folder);
   } catch (e) {
     if (e instanceof MissingToolError) {
       const link = e.installLink();
@@ -169,14 +160,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
   logger.info(cwdMsg);
 
-  let serverEnvironment: IEnvVars = await workspace.getConfiguration('haskell', uri).serverEnvironment;
-  if (addInternalServerPath !== undefined) {
-    const newPath = await addPathToProcessPath(addInternalServerPath);
-    serverEnvironment = {
-      ...serverEnvironment,
-      ...{ PATH: newPath },
-    };
-  }
+  const serverEnvironment: IEnvVars = initServerEnvironment(config, hlsExecutable);
   const exeOptions: ExecutableOptions = {
     cwd: config.workingDir,
     env: { ...process.env, ...serverEnvironment },
@@ -185,12 +169,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   // For our intents and purposes, the server should be launched the same way in
   // both debug and run mode.
   const serverOptions: ServerOptions = {
-    run: { command: serverExecutable, args: config.serverArgs, options: exeOptions },
-    debug: { command: serverExecutable, args: config.serverArgs, options: exeOptions },
+    run: { command: hlsExecutable.location, args: config.serverArgs, options: exeOptions },
+    debug: { command: hlsExecutable.location, args: config.serverArgs, options: exeOptions },
   };
 
-  logger.info(`run command: ${serverExecutable} ${config.serverArgs.join(' ')}`);
-  logger.info(`debug command: ${serverExecutable} ${config.serverArgs.join(' ')}`);
+  logger.info(`run command: ${hlsExecutable.location} ${config.serverArgs.join(' ')}`);
+  logger.info(`debug command: ${hlsExecutable.location} ${config.serverArgs.join(' ')}`);
   if (exeOptions.cwd) {
     logger.info(`server cwd: ${exeOptions.cwd}`);
   }
@@ -221,7 +205,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   switch (cabalFileSupport) {
     case 'automatic':
       const hlsVersion = await callAsync(
-        serverExecutable,
+        hlsExecutable.location,
         ['--numeric-version'],
         logger,
         config.workingDir,
@@ -273,6 +257,18 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   logger.info('Starting language server');
   clients.set(clientsKey, langClient);
   await langClient.start();
+}
+
+function initServerEnvironment(config: Config, hlsExecutable: HlsExecutable) {
+  let serverEnvironment: IEnvVars = config.serverEnvironment;
+  if (hlsExecutable.tag === 'ghcup') {
+    const newPath = addPathToProcessPath(hlsExecutable.binaryDirectory);
+    serverEnvironment = {
+      ...serverEnvironment,
+      ...{ PATH: newPath },
+    };
+  }
+  return serverEnvironment;
 }
 
 /*

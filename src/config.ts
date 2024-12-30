@@ -1,5 +1,5 @@
 import { OutputChannel, Uri, window,  WorkspaceConfiguration,  WorkspaceFolder } from 'vscode';
-import { expandHomeDir, ExtensionLogger } from './utils';
+import { expandHomeDir, ExtensionLogger, IEnvVars } from './utils';
 import path = require('path');
 import { Logger } from 'vscode-languageclient';
 
@@ -17,6 +17,7 @@ export type Config = {
   workingDir: string;
   outputChannel: OutputChannel;
   serverArgs: string[];
+  serverEnvironment: IEnvVars;
 };
 
 export function initConfig(workspaceConfig: WorkspaceConfiguration, uri: Uri, folder?: WorkspaceFolder): Config {
@@ -41,6 +42,7 @@ export function initConfig(workspaceConfig: WorkspaceConfiguration, uri: Uri, fo
     workingDir: currentWorkingDir,
     outputChannel: outputChannel,
     serverArgs: serverArgs,
+    serverEnvironment: workspaceConfig.serverEnvironment,
   };
 }
 
