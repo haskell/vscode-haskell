@@ -149,17 +149,6 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     return;
   }
 
-  // If we're operating on a standalone file (i.e. not in a folder) then we need
-  // to launch the server in a reasonable current directory. Otherwise the cradle
-  // guessing logic in hie-bios will be wrong!
-  let cwdMsg = `Activating the language server in working dir: ${config.workingDir}`;
-  if (folder) {
-    cwdMsg += ' (the workspace folder)';
-  } else {
-    cwdMsg += ` (parent dir of loaded file ${uri.fsPath})`;
-  }
-  logger.info(cwdMsg);
-
   const serverEnvironment: IEnvVars = initServerEnvironment(config, hlsExecutable);
   const exeOptions: ExecutableOptions = {
     cwd: config.workingDir,
@@ -172,6 +161,17 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     run: { command: hlsExecutable.location, args: config.serverArgs, options: exeOptions },
     debug: { command: hlsExecutable.location, args: config.serverArgs, options: exeOptions },
   };
+
+  // If we're operating on a standalone file (i.e. not in a folder) then we need
+  // to launch the server in a reasonable current directory. Otherwise the cradle
+  // guessing logic in hie-bios will be wrong!
+  let cwdMsg = `Activating the language server in working dir: ${config.workingDir}`;
+  if (folder) {
+    cwdMsg += ' (the workspace folder)';
+  } else {
+    cwdMsg += ` (parent dir of loaded file ${uri.fsPath})`;
+  }
+  logger.info(cwdMsg);
 
   logger.info(`run command: ${hlsExecutable.location} ${config.serverArgs.join(' ')}`);
   logger.info(`debug command: ${hlsExecutable.location} ${config.serverArgs.join(' ')}`);
