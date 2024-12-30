@@ -26,11 +26,13 @@ export async function activate(context: ExtensionContext) {
   // just support
   // https://microsoft.github.io/language-server-protocol/specifications/specification-3-15/#workspace_workspaceFolders
   // and then we can just launch one server
-  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activeServer(context, document));
-  workspace.textDocuments.forEach(async (document: TextDocument) => await activeServer(context, document));
+  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateServer(context, document));
+  for (const document of workspace.textDocuments) {
+    await activateServer(context, document);
+  }
 
   // Stop the server from any workspace folders that are removed.
-  workspace.onDidChangeWorkspaceFolders((event) => {
+  workspace.onDidChangeWorkspaceFolders(async (event) => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
@@ -38,7 +40,7 @@ export async function activate(context: ExtensionContext) {
         client.info(`Deleting folder for clients: ${uri}`);
         clients.delete(uri);
         client.info('Stopping the server');
-        client.stop();
+        await client.stop();
       }
     }
   });
@@ -49,7 +51,7 @@ export async function activate(context: ExtensionContext) {
       langClient?.info('Stopping the server');
       await langClient?.stop();
       langClient?.info('Starting the server');
-      langClient?.start();
+      await langClient?.start();
     }
   });
 
@@ -68,7 +70,7 @@ export async function activate(context: ExtensionContext) {
   const startCmd = commands.registerCommand(StartServerCommandName, async () => {
     for (const langClient of clients.values()) {
       langClient?.info('Starting the server');
-      langClient?.start();
+      await langClient?.start();
       langClient?.info('Server started');
     }
   });
@@ -83,7 +85,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(openOnHackageDisposable);
 }
 
-async function activeServer(context: ExtensionContext, document: TextDocument) {
+async function activateServer(context: ExtensionContext, document: TextDocument) {
   // We are only interested in Haskell files.
   if (
     (document.languageId !== 'haskell' &&
@@ -97,7 +99,7 @@ async function activeServer(context: ExtensionContext, document: TextDocument) {
   const uri = document.uri;
   const folder = workspace.getWorkspaceFolder(uri);
 
-  activateServerForFolder(context, uri, folder);
+  await activateServerForFolder(context, uri, folder);
 }
 
 async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
