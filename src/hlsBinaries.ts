@@ -28,6 +28,11 @@ type ToolConfig = Map<Tool, string>;
 type ManageHLS = 'GHCup' | 'PATH';
 let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS;
 
+export type Context = {
+  manageHls: ManageHLS;
+  serverResolved?: HlsExecutable;
+};
+
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
 
@@ -163,6 +168,27 @@ async function findHLSinPATH(_context: ExtensionContext, logger: Logger): Promis
   throw new MissingToolError('hls');
 }
 
+export type HlsExecutable = HlsOnPath | HlsViaVSCodeConfig | HlsViaGhcup;
+
+export type HlsOnPath = {
+  location: string;
+  tag: 'path';
+};
+
+export type HlsViaVSCodeConfig = {
+  location: string;
+  tag: 'config';
+};
+
+export type HlsViaGhcup = {
+  location: string;
+  /**
+   * if we download HLS, add that bin dir to PATH
+   */
+  binaryDirectory: string;
+  tag: 'ghcup';
+};
+
 /**
  * Downloads the latest haskell-language-server binaries via GHCup.
  * Makes sure that either `ghcup` is available locally, otherwise installs
@@ -181,12 +207,15 @@ export async function findHaskellLanguageServer(
   logger: Logger,
   workingDir: string,
   folder?: WorkspaceFolder,
-): Promise<[string, string | undefined]> {
+): Promise<HlsExecutable> {
   logger.info('Finding haskell-language-server');
 
   if (workspace.getConfiguration('haskell').get('serverExecutablePath') as string) {
     const exe = await findServerExecutable(logger, folder);
-    return [exe, undefined];
+    return {
+      location: exe,
+      tag: 'config',
+    };
   }
 
   const storagePath: string = await getStoragePath(context);
@@ -196,47 +225,24 @@ export async function findHaskellLanguageServer(
   }
 
   // first plugin initialization
-  if (manageHLS !== 'GHCup' && (!context.globalState.get('pluginInitialized') as boolean | null)) {
-    const promptMessage = `How do you want the extension to manage/discover HLS and the relevant toolchain?
-
-    Choose "Automatically" if you're in doubt.
-    `;
-
-    const popup = window.showInformationMessage(
-      promptMessage,
-      { modal: true },
-      'Automatically via GHCup',
-      'Manually via PATH',
-    );
-
-    const decision = (await popup) || null;
-    if (decision === 'Automatically via GHCup') {
-      manageHLS = 'GHCup';
-    } else if (decision === 'Manually via PATH') {
-      manageHLS = 'PATH';
-    } else {
-      window.showWarningMessage(
-        "Choosing default PATH method for HLS discovery. You can change this via 'haskell.manageHLS' in the settings.",
-      );
-      manageHLS = 'PATH';
-    }
-    workspace.getConfiguration('haskell').update('manageHLS', manageHLS, ConfigurationTarget.Global);
-    context.globalState.update('pluginInitialized', true);
-  }
+  manageHLS = await promptUserForManagingHls(context, manageHLS);
 
   if (manageHLS === 'PATH') {
     const exe = await findHLSinPATH(context, logger);
-    return [exe, undefined];
+    return {
+      location: exe,
+      tag: 'path',
+    };
   } else {
     // we manage HLS, make sure ghcup is installed/available
     await upgradeGHCup(context, logger);
 
     // boring init
-    let latestHLS: string | undefined | null;
+    let latestHLS: string | undefined;
     let latestCabal: string | undefined | null;
     let latestStack: string | undefined | null;
     let recGHC: string | undefined | null = 'recommended';
-    let projectHls: string | undefined | null;
+    let projectHls: string | undefined;
     let projectGhc: string | undefined | null;
 
     // support explicit toolchain config
@@ -358,7 +364,7 @@ export async function findHaskellLanguageServer(
 
     // more download popups
     if (promptBeforeDownloads) {
-      const hlsInstalled = projectHls ? await toolInstalled(context, logger, 'hls', projectHls) : undefined;
+      const hlsInstalled = await toolInstalled(context, logger, 'hls', projectHls);
       const ghcInstalled = projectGhc ? await toolInstalled(context, logger, 'ghc', projectGhc) : undefined;
       const toInstall: InstalledTool[] = [hlsInstalled, ghcInstalled].filter(
         (tool) => tool && !tool.installed,
@@ -398,7 +404,7 @@ export async function findHaskellLanguageServer(
       logger,
       [
         'run',
-        ...(projectHls ? ['--hls', projectHls] : []),
+        ...['--hls', projectHls],
         ...(latestCabal ? ['--cabal', latestCabal] : []),
         ...(latestStack ? ['--stack', latestStack] : []),
         ...(projectGhc ? ['--ghc', projectGhc] : []),
@@ -416,12 +422,45 @@ export async function findHaskellLanguageServer(
       true,
     );
 
-    if (projectHls) {
-      return [path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`), hlsBinDir];
+    return {
+      binaryDirectory: hlsBinDir,
+      location: path.join(hlsBinDir, `haskell-language-server-wrapper${exeExt}`),
+      tag: 'ghcup',
+    };
+  }
+}
+
+async function promptUserForManagingHls(context: ExtensionContext, manageHlsSetting: ManageHLS): Promise<ManageHLS> {
+  if (manageHlsSetting !== 'GHCup' && (!context.globalState.get('pluginInitialized') as boolean | null)) {
+    const promptMessage = `How do you want the extension to manage/discover HLS and the relevant toolchain?
+
+    Choose "Automatically" if you're in doubt.
+    `;
+
+    const popup = window.showInformationMessage(
+      promptMessage,
+      { modal: true },
+      'Automatically via GHCup',
+      'Manually via PATH',
+    );
+
+    const decision = (await popup) || null;
+    let howToManage: ManageHLS;
+    if (decision === 'Automatically via GHCup') {
+      howToManage = 'GHCup';
+    } else if (decision === 'Manually via PATH') {
+      howToManage = 'PATH';
     } else {
-      const exe = await findHLSinPATH(context, logger);
-      return [exe, hlsBinDir];
+      window.showWarningMessage(
+        "Choosing default PATH method for HLS discovery. You can change this via 'haskell.manageHLS' in the settings.",
+      );
+      howToManage = 'PATH';
     }
+    workspace.getConfiguration('haskell').update('manageHLS', howToManage, ConfigurationTarget.Global);
+    context.globalState.update('pluginInitialized', true);
+    return howToManage;
+  } else {
+    return manageHlsSetting;
   }
 }
 
