@@ -15,8 +15,7 @@ import {
   IEnvVars,
   resolvePathPlaceHolders,
 } from './utils';
-import * as ghcup from './ghcup';
-import { ToolConfig, Tool } from './ghcup';
+import { ToolConfig, Tool, initDefaultGHCup, GHCup, GHCupConfig } from './ghcup';
 export { IEnvVars };
 
 type ManageHLS = 'GHCup' | 'PATH';
@@ -99,6 +98,7 @@ export type HlsViaGhcup = {
 export async function findHaskellLanguageServer(
   context: ExtensionContext,
   logger: Logger,
+  ghcupConfig: GHCupConfig,
   workingDir: string,
   folder?: WorkspaceFolder,
 ): Promise<HlsExecutable> {
@@ -129,7 +129,8 @@ export async function findHaskellLanguageServer(
     };
   } else {
     // we manage HLS, make sure ghcup is installed/available
-    await ghcup.upgradeGHCup(logger);
+    const ghcup = initDefaultGHCup(ghcupConfig, logger, folder);
+    await ghcup.upgrade();
 
     // boring init
     let latestHLS: string | undefined;
@@ -157,26 +158,24 @@ export async function findHaskellLanguageServer(
     // (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
     if (latestHLS === undefined) {
-      latestHLS = await ghcup.getLatestToolFromGHCup(logger, 'hls');
+      latestHLS = await ghcup.getLatestVersion('hls');
     }
     if (latestCabal === undefined) {
-      latestCabal = await ghcup.getLatestToolFromGHCup(logger, 'cabal');
+      latestCabal = await ghcup.getLatestVersion('cabal');
     }
     if (latestStack === undefined) {
-      latestStack = await ghcup.getLatestToolFromGHCup(logger, 'stack');
+      latestStack = await ghcup.getLatestVersion('stack');
     }
     if (recGHC === undefined) {
-      recGHC = !executableExists('ghc')
-        ? await ghcup.getLatestAvailableToolFromGHCup(logger, 'ghc', 'recommended')
-        : null;
+      recGHC = !executableExists('ghc') ? await ghcup.getLatestAvailableVersion('ghc', 'recommended') : null;
     }
 
     // download popups
     const promptBeforeDownloads = workspace.getConfiguration('haskell').get('promptBeforeDownloads') as boolean;
     if (promptBeforeDownloads) {
-      const hlsInstalled = latestHLS ? await toolInstalled(logger, 'hls', latestHLS) : undefined;
-      const cabalInstalled = latestCabal ? await toolInstalled(logger, 'cabal', latestCabal) : undefined;
-      const stackInstalled = latestStack ? await toolInstalled(logger, 'stack', latestStack) : undefined;
+      const hlsInstalled = latestHLS ? await toolInstalled(ghcup, 'hls', latestHLS) : undefined;
+      const cabalInstalled = latestCabal ? await toolInstalled(ghcup, 'cabal', latestCabal) : undefined;
+      const stackInstalled = latestStack ? await toolInstalled(ghcup, 'stack', latestStack) : undefined;
       const ghcInstalled = executableExists('ghc')
         ? new InstalledTool(
             'ghc',
@@ -184,7 +183,7 @@ export async function findHaskellLanguageServer(
           )
         : // if recGHC is null, that means user disabled automatic handling,
           recGHC !== null
-          ? await toolInstalled(logger, 'ghc', recGHC)
+          ? await toolInstalled(ghcup, 'ghc', recGHC)
           : undefined;
       const toInstall: InstalledTool[] = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(
         (tool) => tool && !tool.installed,
@@ -222,8 +221,7 @@ export async function findHaskellLanguageServer(
     }
 
     // our preliminary toolchain
-    const latestToolchainBindir = await ghcup.callGHCup(
-      logger,
+    const latestToolchainBindir = await ghcup.call(
       [
         'run',
         ...(latestHLS ? ['--hls', latestHLS] : []),
@@ -246,7 +244,7 @@ export async function findHaskellLanguageServer(
     // now figure out the actual project GHC version and the latest supported HLS version
     // we need for it (e.g. this might in fact be a downgrade for old GHCs)
     if (projectHls === undefined || projectGhc === undefined) {
-      const res = await getLatestProjectHLS(context, logger, workingDir, latestToolchainBindir);
+      const res = await getLatestProjectHLS(ghcup, context, logger, workingDir, latestToolchainBindir);
       if (projectHls === undefined) {
         projectHls = res[0];
       }
@@ -257,8 +255,8 @@ export async function findHaskellLanguageServer(
 
     // more download popups
     if (promptBeforeDownloads) {
-      const hlsInstalled = await toolInstalled(logger, 'hls', projectHls);
-      const ghcInstalled = projectGhc ? await toolInstalled(logger, 'ghc', projectGhc) : undefined;
+      const hlsInstalled = await toolInstalled(ghcup, 'hls', projectHls);
+      const ghcInstalled = projectGhc ? await toolInstalled(ghcup, 'ghc', projectGhc) : undefined;
       const toInstall: InstalledTool[] = [hlsInstalled, ghcInstalled].filter(
         (tool) => tool && !tool.installed,
       ) as InstalledTool[];
@@ -292,8 +290,7 @@ export async function findHaskellLanguageServer(
     }
 
     // now install the proper versions
-    const hlsBinDir = await ghcup.callGHCup(
-      logger,
+    const hlsBinDir = await ghcup.call(
       [
         'run',
         ...['--hls', projectHls],
@@ -357,6 +354,7 @@ async function promptUserForManagingHls(context: ExtensionContext, manageHlsSett
 }
 
 async function getLatestProjectHLS(
+  ghcup: GHCup,
   context: ExtensionContext,
   logger: Logger,
   workingDir: string,
@@ -376,7 +374,7 @@ async function getLatestProjectHLS(
   // first we get supported GHC versions from available HLS bindists (whether installed or not)
   const metadataMap = (await getHlsMetadata(context, logger)) || new Map<string, string[]>();
   // then we get supported GHC versions from currently installed HLS versions
-  const ghcupMap = (await findAvailableHlsBinariesFromGHCup(logger)) || new Map<string, string[]>();
+  const ghcupMap = (await findAvailableHlsBinariesFromGHCup(ghcup)) || new Map<string, string[]>();
   // since installed HLS versions may support a different set of GHC versions than the bindists
   // (e.g. because the user ran 'ghcup compile hls'), we need to merge both maps, preferring
   // values from already installed HLSes
@@ -471,16 +469,14 @@ export function getStoragePath(context: ExtensionContext): string {
  * If 'targetGhc' is omitted, picks the latest 'haskell-language-server-wrapper',
  * otherwise ensures the specified GHC is supported.
  *
- * @param context
- * @param logger
- * @returns
+ * @param ghcup GHCup wrapper.
+ * @returns A Map of the locally installed HLS versions and with which `GHC` versions they are compatible.
  */
 
-async function findAvailableHlsBinariesFromGHCup(logger: Logger): Promise<Map<string, string[]> | null> {
-  const hlsVersions = await ghcup.callGHCup(logger, ['list', '-t', 'hls', '-c', 'installed', '-r'], undefined, false);
+async function findAvailableHlsBinariesFromGHCup(ghcup: GHCup): Promise<Map<string, string[]> | null> {
+  const hlsVersions = await ghcup.call(['list', '-t', 'hls', '-c', 'installed', '-r'], undefined, false);
 
-  const bindir = await ghcup.callGHCup(logger, ['whereis', 'bindir'], undefined, false);
-
+  const bindir = await ghcup.call(['whereis', 'bindir'], undefined, false);
   const files = fs.readdirSync(bindir).filter((e) => {
     const stat = fs.statSync(path.join(bindir, e));
     return stat.isFile();
@@ -498,16 +494,15 @@ async function findAvailableHlsBinariesFromGHCup(logger: Logger): Promise<Map<st
         });
       myMap.set(hls, ghcs);
     });
-
     return myMap;
   } else {
     return null;
   }
 }
 
-async function toolInstalled(logger: Logger, tool: Tool, version: string): Promise<InstalledTool> {
+async function toolInstalled(ghcup: GHCup, tool: Tool, version: string): Promise<InstalledTool> {
   const b = await ghcup
-    .callGHCup(logger, ['whereis', tool, version], undefined, false)
+    .call(['whereis', tool, version], undefined, false)
     .then(() => true)
     .catch(() => false);
   return new InstalledTool(tool, version, b);
@@ -650,7 +645,7 @@ async function getReleaseMetadata(storagePath: string, logger: Logger): Promise<
   /**
    * Convert a json value to ReleaseMetadata.
    * Assumes the json is well-formed and a valid Release-Metadata.
-   * @param obj Release Metadata without any typing information but well-formed.
+   * @param someObj Release Metadata without any typing information but well-formed.
    * @returns Typed ReleaseMetadata.
    */
   const objectToMetadata = (someObj: any): ReleaseMetadata => {

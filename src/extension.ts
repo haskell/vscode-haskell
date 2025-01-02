@@ -118,7 +118,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   let hlsExecutable: HlsExecutable;
   try {
-    hlsExecutable = await findHaskellLanguageServer(context, logger, config.workingDir, folder);
+    hlsExecutable = await findHaskellLanguageServer(context, logger, config.ghcupConfig, config.workingDir, folder);
   } catch (e) {
     if (e instanceof MissingToolError) {
       const link = e.installLink();
