@@ -2,80 +2,116 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as os from 'os';
-import { OutputChannel, workspace, WorkspaceFolder } from 'vscode';
+import * as process from 'process';
+import { ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import * as which from 'which';
+import { HlsError } from './errors';
 
 // Used for environment variables later on
 export type IEnvVars = {
   [key: string]: string;
-}
+};
 
-enum LogLevel {
-  Off,
-  Error,
-  Warn,
-  Info,
-  Debug,
-}
-export class ExtensionLogger implements Logger {
-  public readonly name: string;
-  public readonly level: LogLevel;
-  public readonly channel: OutputChannel;
-  public readonly logFile: string | undefined;
+/**
+ * Callback invoked on process termination.
+ */
+export type ProcessCallback = (
+  error: child_process.ExecFileException | null,
+  stdout: string,
+  stderr: string,
+  resolve: (value: string | PromiseLike<string>) => void,
+  reject: (reason?: HlsError | Error | string) => void,
+) => void;
 
-  constructor(name: string, level: string, channel: OutputChannel, logFile: string | undefined) {
-    this.name = name;
-    this.level = this.getLogLevel(level);
-    this.channel = channel;
-    this.logFile = logFile;
-  }
-  public warn(message: string): void {
-    this.logLevel(LogLevel.Warn, message);
-  }
-
-  public info(message: string): void {
-    this.logLevel(LogLevel.Info, message);
-  }
-
-  public error(message: string) {
-    this.logLevel(LogLevel.Error, message);
-  }
-
-  public log(message: string) {
-    this.logLevel(LogLevel.Debug, message);
-  }
-
-  private write(msg: string) {
-    let now = new Date();
-    // Ugly hack to make js date iso format similar to hls one
-    const offset = now.getTimezoneOffset();
-    now = new Date(now.getTime() - offset * 60 * 1000);
-    const timedMsg = `${new Date().toISOString().replace('T', ' ').replace('Z', '0000')} ${msg}`;
-    this.channel.appendLine(timedMsg);
-    if (this.logFile) {
-      fs.appendFileSync(this.logFile, timedMsg + '\n');
-    }
-  }
-
-  private logLevel(level: LogLevel, msg: string) {
-    if (level <= this.level) {
-      this.write(`[${this.name}] ${LogLevel[level].toUpperCase()} ${msg}`);
-    }
-  }
-
-  private getLogLevel(level: string) {
-    switch (level) {
-      case 'off':
-        return LogLevel.Off;
-      case 'error':
-        return LogLevel.Error;
-      case 'debug':
-        return LogLevel.Debug;
-      default:
-        return LogLevel.Info;
-    }
-  }
+/**
+ * Call a process asynchronously.
+ * While doing so, update the windows with progress information.
+ * If you need to run a process, consider preferring this over running
+ * the command directly.
+ *
+ * @param binary Name of the binary to invoke.
+ * @param args Arguments passed directly to the binary.
+ * @param dir Directory in which the process shall be executed.
+ * @param logger Logger for progress updates.
+ * @param title Title of the action, shown to users if available.
+ * @param cancellable Can the user cancel this process invocation?
+ * @param envAdd Extra environment variables for this process only.
+ * @param callback Upon process termination, execute this callback. If given, must resolve promise. On error, stderr and stdout are logged regardless of whether the callback has been specified.
+ * @returns Stdout of the process invocation, trimmed off newlines, or whatever the `callback` resolved to.
+ */
+export function callAsync(
+  binary: string,
+  args: string[],
+  logger: Logger,
+  dir?: string,
+  title?: string,
+  cancellable?: boolean,
+  envAdd?: IEnvVars,
+  callback?: ProcessCallback,
+): Thenable<string> {
+  let newEnv: IEnvVars = resolveServerEnvironmentPATH(
+    workspace.getConfiguration('haskell').get('serverEnvironment') || {},
+  );
+  newEnv = { ...(process.env as IEnvVars), ...newEnv, ...(envAdd || {}) };
+  return window.withProgress(
+    {
+      location: ProgressLocation.Notification,
+      title,
+      cancellable,
+    },
+    async (_, token) => {
+      return new Promise<string>((resolve, reject) => {
+        const command: string = binary + ' ' + args.join(' ');
+        logger.info(`Executing '${command}' in cwd '${dir ? dir : process.cwd()}'`);
+        token.onCancellationRequested(() => {
+          logger.warn(`User canceled the execution of '${command}'`);
+        });
+        // Need to set the encoding to 'utf8' in order to get back a string
+        // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
+        const childProcess = child_process
+          .execFile(
+            process.platform === 'win32' ? `"${binary}"` : binary,
+            args,
+            { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32', env: newEnv },
+            (err, stdout, stderr) => {
+              if (err) {
+                logger.error(`Error executing '${command}' with error code ${err.code}`);
+                logger.error(`stderr: ${stderr}`);
+                if (stdout) {
+                  logger.error(`stdout: ${stdout}`);
+                }
+              }
+              if (callback) {
+                callback(err, stdout, stderr, resolve, reject);
+              } else {
+                if (err) {
+                  reject(
+                    Error(`\`${command}\` exited with exit code ${err.code}.
+                              Consult the [Extensions Output](https://github.com/haskell/vscode-haskell#investigating-and-reporting-problems)
+                              for details.`),
+                  );
+                } else {
+                  resolve(stdout?.trim());
+                }
+              }
+            },
+          )
+          .on('exit', (code, signal) => {
+            const msg =
+              `Execution of '${command}' terminated with code ${code}` + (signal ? `and signal ${signal}` : '');
+            logger.log(msg);
+          })
+          .on('error', (err) => {
+            if (err) {
+              logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
+              reject(err);
+            }
+          });
+        token.onCancellationRequested(() => childProcess.kill());
+      });
+    },
+  );
 }
 
 /**
@@ -159,8 +195,9 @@ export async function httpsGetSilently(options: https.RequestOptions): Promise<s
   });
 }
 
-/*
+/**
  * Checks if the executable is on the PATH
+ * @param exe Name of the executable to find. Caller must ensure '.exe' extension is included on windows.
  */
 export function executableExists(exe: string): boolean {
   const isWindows = process.platform === 'win32';
