@@ -1,50 +1,122 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as process from 'process';
-import { workspace, WorkspaceFolder } from 'vscode';
+import { WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import { MissingToolError } from './errors';
-import { resolvePathPlaceHolders, executableExists, callAsync, ProcessCallback } from './utils';
+import { resolvePathPlaceHolders, executableExists, callAsync, ProcessCallback, IEnvVars } from './utils';
 import { match } from 'ts-pattern';
 
 export type Tool = 'hls' | 'ghc' | 'cabal' | 'stack';
 
 export type ToolConfig = Map<Tool, string>;
 
-export async function callGHCup(
-  logger: Logger,
-  args: string[],
-  title?: string,
-  cancellable?: boolean,
-  callback?: ProcessCallback,
-): Promise<string> {
-  const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
-  const ghcup = findGHCup(logger);
-  return await callAsync(
-    ghcup,
-    ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
-    logger,
-    undefined,
-    title,
-    cancellable,
-    {
-      // omit colourful output because the logs are uglier
-      NO_COLOR: '1',
-    },
-    callback,
-  );
+export function initDefaultGHCup(config: GHCupConfig, logger: Logger, folder?: WorkspaceFolder): GHCup {
+  const ghcupLoc = findGHCup(logger, config.executablePath, folder);
+  return new GHCup(logger, ghcupLoc, config, {
+    // omit colourful output because the logs are uglier
+    NO_COLOR: '1',
+  });
 }
 
-export async function upgradeGHCup(logger: Logger): Promise<void> {
-  const upgrade = workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
-  if (upgrade) {
-    await callGHCup(logger, ['upgrade'], 'Upgrading ghcup', true);
+export type GHCupConfig = {
+  metadataUrl?: string;
+  upgradeGHCup: boolean;
+  executablePath?: string;
+};
+
+export class GHCup {
+  constructor(
+    readonly logger: Logger,
+    readonly location: string,
+    readonly config: GHCupConfig,
+    readonly environment: IEnvVars,
+  ) {}
+
+  /**
+   * Most generic way to run the `ghcup` binary.
+   * @param args Arguments to run the `ghcup` binary with.
+   * @param title Displayed to the user for long-running tasks.
+   * @param cancellable Whether this invocation can be cancelled by the user.
+   * @param callback Handle success or failures.
+   * @returns The output of the `ghcup` invocation. If no {@link callback} is given, this is the stdout. Otherwise, whatever {@link callback} produces.
+   */
+  public async call(
+    args: string[],
+    title?: string,
+    cancellable?: boolean,
+    callback?: ProcessCallback,
+  ): Promise<string> {
+    const metadataUrl = this.config.metadataUrl; // ;
+    return await callAsync(
+      this.location,
+      ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
+      this.logger,
+      undefined,
+      title,
+      cancellable,
+      this.environment,
+      callback,
+    );
+  }
+
+  /**
+   * Upgrade the `ghcup` binary unless this option was disabled by the user.
+   */
+  public async upgrade(): Promise<void> {
+    const upgrade = this.config.upgradeGHCup; // workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
+    if (upgrade) {
+      await this.call(['upgrade'], 'Upgrading ghcup', true);
+    }
+  }
+
+  /**
+   * Find the latest version of a {@link Tool} that we can find in GHCup.
+   * Prefer already installed versions, but fall back to all available versions, if there aren't any.
+   * @param tool Tool you want to know the latest version of.
+   * @returns The latest installed or generally available version of the {@link tool}
+   */
+  public async getLatestVersion(tool: Tool): Promise<string> {
+    // these might be custom/stray/compiled, so we try first
+    const installedVersions = await this.call(['list', '-t', tool, '-c', 'installed', '-r'], undefined, false);
+    const latestInstalled = installedVersions.split(/\r?\n/).pop();
+    if (latestInstalled) {
+      return latestInstalled.split(/\s+/)[1];
+    }
+
+    return this.getLatestAvailableVersion(tool);
+  }
+
+  /**
+   * Find the latest available version that we can find in GHCup with a certain {@link tag}.
+   * Corresponds to the `ghcup list -t <tool> -c available -r` command.
+   * The tag can be used to further filter the list of versions, for example you can provide
+   * @param tool Tool you want to know the latest version of.
+   * @param tag The tag to filter the available versions with. By default `"latest"`.
+   * @returns The latest available version filtered by {@link tag}.
+   */
+  public async getLatestAvailableVersion(tool: Tool, tag: string = 'latest'): Promise<string> {
+    // fall back to installable versions
+    const availableVersions = await this.call(['list', '-t', tool, '-c', 'available', '-r'], undefined, false).then(
+      (s) => s.split(/\r?\n/),
+    );
+
+    let latestAvailable: string | null = null;
+    availableVersions.forEach((ver) => {
+      if (ver.split(/\s+/)[2].split(',').includes(tag)) {
+        latestAvailable = ver.split(/\s+/)[1];
+      }
+    });
+    if (!latestAvailable) {
+      throw new Error(`Unable to find ${tag} tool ${tool}`);
+    } else {
+      return latestAvailable;
+    }
   }
 }
 
-export function findGHCup(logger: Logger, folder?: WorkspaceFolder): string {
+function findGHCup(logger: Logger, exePath?: string, folder?: WorkspaceFolder): string {
   logger.info('Checking for ghcup installation');
-  let exePath = workspace.getConfiguration('haskell').get('ghcupExecutablePath') as string;
   if (exePath) {
     logger.info(`Trying to find the ghcup executable in: ${exePath}`);
     exePath = resolvePathPlaceHolders(exePath, folder);
@@ -95,49 +167,5 @@ export function findGHCup(logger: Logger, folder?: WorkspaceFolder): string {
       logger.info(`found ghcup at ${localGHCup}`);
       return localGHCup;
     }
-  }
-}
-
-// the tool might be installed or not
-export async function getLatestToolFromGHCup(logger: Logger, tool: Tool): Promise<string> {
-  // these might be custom/stray/compiled, so we try first
-  const installedVersions = await callGHCup(logger, ['list', '-t', tool, '-c', 'installed', '-r'], undefined, false);
-  const latestInstalled = installedVersions.split(/\r?\n/).pop();
-  if (latestInstalled) {
-    return latestInstalled.split(/\s+/)[1];
-  }
-
-  return getLatestAvailableToolFromGHCup(logger, tool);
-}
-
-export async function getLatestAvailableToolFromGHCup(
-  logger: Logger,
-  tool: Tool,
-  tag?: string,
-  criteria?: string,
-): Promise<string> {
-  // fall back to installable versions
-  const availableVersions = await callGHCup(
-    logger,
-    ['list', '-t', tool, '-c', criteria ? criteria : 'available', '-r'],
-    undefined,
-    false,
-  ).then((s) => s.split(/\r?\n/));
-
-  let latestAvailable: string | null = null;
-  availableVersions.forEach((ver) => {
-    if (
-      ver
-        .split(/\s+/)[2]
-        .split(',')
-        .includes(tag ? tag : 'latest')
-    ) {
-      latestAvailable = ver.split(/\s+/)[1];
-    }
-  });
-  if (!latestAvailable) {
-    throw new Error(`Unable to find ${tag ? tag : 'latest'} tool ${tool}`);
-  } else {
-    return latestAvailable;
   }
 }

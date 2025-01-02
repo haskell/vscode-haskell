@@ -3,6 +3,7 @@ import { expandHomeDir, IEnvVars } from './utils';
 import * as path from 'path';
 import { Logger } from 'vscode-languageclient';
 import { ExtensionLogger } from './logger';
+import { GHCupConfig } from './ghcup';
 
 export type LogLevel = 'off' | 'messages' | 'verbose';
 export type ClientLogLevel = 'off' | 'error' | 'info' | 'debug';
@@ -19,6 +20,7 @@ export type Config = {
   outputChannel: OutputChannel;
   serverArgs: string[];
   serverEnvironment: IEnvVars;
+  ghcupConfig: GHCupConfig;
 };
 
 export function initConfig(workspaceConfig: WorkspaceConfiguration, uri: Uri, folder?: WorkspaceFolder): Config {
@@ -44,6 +46,11 @@ export function initConfig(workspaceConfig: WorkspaceConfiguration, uri: Uri, fo
     outputChannel: outputChannel,
     serverArgs: serverArgs,
     serverEnvironment: workspaceConfig.serverEnvironment,
+    ghcupConfig: {
+      metadataUrl: workspaceConfig.metadataURL as string,
+      upgradeGHCup: workspaceConfig.get('upgradeGHCup') as boolean,
+      executablePath: workspaceConfig.get('ghcupExecutablePath') as string,
+    },
   };
 }
 
