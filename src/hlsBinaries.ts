@@ -1,139 +1,35 @@
-import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as path from 'path';
-import * as os from 'os';
 import { match } from 'ts-pattern';
 import { promisify } from 'util';
-import { ConfigurationTarget, ExtensionContext, ProgressLocation, window, workspace, WorkspaceFolder } from 'vscode';
+import { ConfigurationTarget, ExtensionContext, window, workspace, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import {
   addPathToProcessPath,
+  callAsync,
   comparePVP,
   executableExists,
   httpsGetSilently,
   IEnvVars,
   resolvePathPlaceHolders,
-  resolveServerEnvironmentPATH,
 } from './utils';
+import * as ghcup from './ghcup';
+import { ToolConfig, Tool } from './ghcup';
 export { IEnvVars };
-
-type Tool = 'hls' | 'ghc' | 'cabal' | 'stack';
-
-type ToolConfig = Map<Tool, string>;
 
 type ManageHLS = 'GHCup' | 'PATH';
 let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS;
 
 export type Context = {
   manageHls: ManageHLS;
-  serverResolved?: HlsExecutable;
+  serverExecutable?: HlsExecutable;
+  logger: Logger;
 };
 
 // On Windows the executable needs to be stored somewhere with an .exe extension
 const exeExt = process.platform === 'win32' ? '.exe' : '';
-
-/**
- * Callback invoked on process termination.
- */
-type ProcessCallback = (
-  error: child_process.ExecFileException | null,
-  stdout: string,
-  stderr: string,
-  resolve: (value: string | PromiseLike<string>) => void,
-  reject: (reason?: HlsError | Error | string) => void,
-) => void;
-
-/**
- * Call a process asynchronously.
- * While doing so, update the windows with progress information.
- * If you need to run a process, consider preferring this over running
- * the command directly.
- *
- * @param binary Name of the binary to invoke.
- * @param args Arguments passed directly to the binary.
- * @param dir Directory in which the process shall be executed.
- * @param logger Logger for progress updates.
- * @param title Title of the action, shown to users if available.
- * @param cancellable Can the user cancel this process invocation?
- * @param envAdd Extra environment variables for this process only.
- * @param callback Upon process termination, execute this callback. If given, must resolve promise. On error, stderr and stdout are logged regardless of whether the callback has been specified.
- * @returns Stdout of the process invocation, trimmed off newlines, or whatever the `callback` resolved to.
- */
-export async function callAsync(
-  binary: string,
-  args: string[],
-  logger: Logger,
-  dir?: string,
-  title?: string,
-  cancellable?: boolean,
-  envAdd?: IEnvVars,
-  callback?: ProcessCallback,
-): Promise<string> {
-  let newEnv: IEnvVars = resolveServerEnvironmentPATH(
-    workspace.getConfiguration('haskell').get('serverEnvironment') || {},
-  );
-  newEnv = { ...(process.env as IEnvVars), ...newEnv, ...(envAdd || {}) };
-  return window.withProgress(
-    {
-      location: ProgressLocation.Notification,
-      title,
-      cancellable,
-    },
-    async (_, token) => {
-      return new Promise<string>((resolve, reject) => {
-        const command: string = binary + ' ' + args.join(' ');
-        logger.info(`Executing '${command}' in cwd '${dir ? dir : process.cwd()}'`);
-        token.onCancellationRequested(() => {
-          logger.warn(`User canceled the execution of '${command}'`);
-        });
-        // Need to set the encoding to 'utf8' in order to get back a string
-        // We execute the command in a shell for windows, to allow use .cmd or .bat scripts
-        const childProcess = child_process
-          .execFile(
-            process.platform === 'win32' ? `"${binary}"` : binary,
-            args,
-            { encoding: 'utf8', cwd: dir, shell: process.platform === 'win32', env: newEnv },
-            (err, stdout, stderr) => {
-              if (err) {
-                logger.error(`Error executing '${command}' with error code ${err.code}`);
-                logger.error(`stderr: ${stderr}`);
-                if (stdout) {
-                  logger.error(`stdout: ${stdout}`);
-                }
-              }
-              if (callback) {
-                callback(err, stdout, stderr, resolve, reject);
-              } else {
-                if (err) {
-                  reject(
-                    Error(`\`${command}\` exited with exit code ${err.code}.
-                              Consult the [Extensions Output](https://github.com/haskell/vscode-haskell#investigating-and-reporting-problems)
-                              for details.`),
-                  );
-                } else {
-                  resolve(stdout?.trim());
-                }
-              }
-            },
-          )
-          .on('exit', (code, signal) => {
-            const msg =
-              `Execution of '${command}' terminated with code ${code}` + (signal ? `and signal ${signal}` : '');
-            logger.log(msg);
-          })
-          .on('error', (err) => {
-            if (err) {
-              logger.error(`Error executing '${command}': name = ${err.name}, message = ${err.message}`);
-              reject(err);
-            }
-          });
-        token.onCancellationRequested(() => childProcess.kill());
-      });
-    },
-  );
-}
 
 /** Gets serverExecutablePath and fails if it's not set.
  */
@@ -233,7 +129,7 @@ export async function findHaskellLanguageServer(
     };
   } else {
     // we manage HLS, make sure ghcup is installed/available
-    await upgradeGHCup(logger);
+    await ghcup.upgradeGHCup(logger);
 
     // boring init
     let latestHLS: string | undefined;
@@ -261,16 +157,18 @@ export async function findHaskellLanguageServer(
     // (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
     if (latestHLS === undefined) {
-      latestHLS = await getLatestToolFromGHCup(logger, 'hls');
+      latestHLS = await ghcup.getLatestToolFromGHCup(logger, 'hls');
     }
     if (latestCabal === undefined) {
-      latestCabal = await getLatestToolFromGHCup(logger, 'cabal');
+      latestCabal = await ghcup.getLatestToolFromGHCup(logger, 'cabal');
     }
     if (latestStack === undefined) {
-      latestStack = await getLatestToolFromGHCup(logger, 'stack');
+      latestStack = await ghcup.getLatestToolFromGHCup(logger, 'stack');
     }
     if (recGHC === undefined) {
-      recGHC = !executableExists('ghc') ? await getLatestAvailableToolFromGHCup(logger, 'ghc', 'recommended') : null;
+      recGHC = !executableExists('ghc')
+        ? await ghcup.getLatestAvailableToolFromGHCup(logger, 'ghc', 'recommended')
+        : null;
     }
 
     // download popups
@@ -324,7 +222,7 @@ export async function findHaskellLanguageServer(
     }
 
     // our preliminary toolchain
-    const latestToolchainBindir = await callGHCup(
+    const latestToolchainBindir = await ghcup.callGHCup(
       logger,
       [
         'run',
@@ -394,7 +292,7 @@ export async function findHaskellLanguageServer(
     }
 
     // now install the proper versions
-    const hlsBinDir = await callGHCup(
+    const hlsBinDir = await ghcup.callGHCup(
       logger,
       [
         'run',
@@ -455,35 +353,6 @@ async function promptUserForManagingHls(context: ExtensionContext, manageHlsSett
     return howToManage;
   } else {
     return manageHlsSetting;
-  }
-}
-
-async function callGHCup(
-  logger: Logger,
-  args: string[],
-  title?: string,
-  cancellable?: boolean,
-  callback?: ProcessCallback,
-): Promise<string> {
-  const metadataUrl = workspace.getConfiguration('haskell').metadataURL;
-
-  if (manageHLS === 'GHCup') {
-    const ghcup = findGHCup(logger);
-    return await callAsync(
-      ghcup,
-      ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
-      logger,
-      undefined,
-      title,
-      cancellable,
-      {
-        // omit colourful output because the logs are uglier
-        NO_COLOR: '1',
-      },
-      callback,
-    );
-  } else {
-    throw new HlsError(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
   }
 }
 
@@ -583,73 +452,6 @@ export async function getProjectGhcVersion(
   );
 }
 
-export async function upgradeGHCup(logger: Logger): Promise<void> {
-  if (manageHLS === 'GHCup') {
-    const upgrade = workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
-    if (upgrade) {
-      await callGHCup(logger, ['upgrade'], 'Upgrading ghcup', true);
-    }
-  } else {
-    throw new Error(`Internal error: tried to call ghcup while haskell.manageHLS is set to ${manageHLS}. Aborting!`);
-  }
-}
-
-export function findGHCup(logger: Logger, folder?: WorkspaceFolder): string {
-  logger.info('Checking for ghcup installation');
-  let exePath = workspace.getConfiguration('haskell').get('ghcupExecutablePath') as string;
-  if (exePath) {
-    logger.info(`Trying to find the ghcup executable in: ${exePath}`);
-    exePath = resolvePathPlaceHolders(exePath, folder);
-    logger.log(`Location after path variables substitution: ${exePath}`);
-    if (executableExists(exePath)) {
-      return exePath;
-    } else {
-      throw new Error(`Could not find a ghcup binary at ${exePath}!`);
-    }
-  } else {
-    const localGHCup = ['ghcup'].find(executableExists);
-    if (!localGHCup) {
-      logger.info(`probing for GHCup binary`);
-      const ghcupExe = match(process.platform)
-        .with('win32', () => {
-          const ghcupPrefix = process.env.GHCUP_INSTALL_BASE_PREFIX;
-          if (ghcupPrefix) {
-            return path.join(ghcupPrefix, 'ghcup', 'bin', 'ghcup.exe');
-          } else {
-            return path.join('C:\\', 'ghcup', 'bin', 'ghcup.exe');
-          }
-        })
-        .otherwise(() => {
-          const useXDG = process.env.GHCUP_USE_XDG_DIRS;
-          if (useXDG) {
-            const xdgBin = process.env.XDG_BIN_HOME;
-            if (xdgBin) {
-              return path.join(xdgBin, 'ghcup');
-            } else {
-              return path.join(os.homedir(), '.local', 'bin', 'ghcup');
-            }
-          } else {
-            const ghcupPrefix = process.env.GHCUP_INSTALL_BASE_PREFIX;
-            if (ghcupPrefix) {
-              return path.join(ghcupPrefix, '.ghcup', 'bin', 'ghcup');
-            } else {
-              return path.join(os.homedir(), '.ghcup', 'bin', 'ghcup');
-            }
-          }
-        });
-      if (ghcupExe != null && executableExists(ghcupExe)) {
-        return ghcupExe;
-      } else {
-        logger.warn(`ghcup at ${ghcupExe} does not exist`);
-        throw new MissingToolError('ghcup');
-      }
-    } else {
-      logger.info(`found ghcup at ${localGHCup}`);
-      return localGHCup;
-    }
-  }
-}
-
 export function getStoragePath(context: ExtensionContext): string {
   let storagePath: string | undefined = workspace.getConfiguration('haskell').get('releasesDownloadStoragePath');
 
@@ -660,50 +462,6 @@ export function getStoragePath(context: ExtensionContext): string {
   }
 
   return storagePath;
-}
-
-// the tool might be installed or not
-async function getLatestToolFromGHCup(logger: Logger, tool: Tool): Promise<string> {
-  // these might be custom/stray/compiled, so we try first
-  const installedVersions = await callGHCup(logger, ['list', '-t', tool, '-c', 'installed', '-r'], undefined, false);
-  const latestInstalled = installedVersions.split(/\r?\n/).pop();
-  if (latestInstalled) {
-    return latestInstalled.split(/\s+/)[1];
-  }
-
-  return getLatestAvailableToolFromGHCup(logger, tool);
-}
-
-async function getLatestAvailableToolFromGHCup(
-  logger: Logger,
-  tool: Tool,
-  tag?: string,
-  criteria?: string,
-): Promise<string> {
-  // fall back to installable versions
-  const availableVersions = await callGHCup(
-    logger,
-    ['list', '-t', tool, '-c', criteria ? criteria : 'available', '-r'],
-    undefined,
-    false,
-  ).then((s) => s.split(/\r?\n/));
-
-  let latestAvailable: string | null = null;
-  availableVersions.forEach((ver) => {
-    if (
-      ver
-        .split(/\s+/)[2]
-        .split(',')
-        .includes(tag ? tag : 'latest')
-    ) {
-      latestAvailable = ver.split(/\s+/)[1];
-    }
-  });
-  if (!latestAvailable) {
-    throw new Error(`Unable to find ${tag ? tag : 'latest'} tool ${tool}`);
-  } else {
-    return latestAvailable;
-  }
 }
 
 /**
@@ -719,9 +477,9 @@ async function getLatestAvailableToolFromGHCup(
  */
 
 async function findAvailableHlsBinariesFromGHCup(logger: Logger): Promise<Map<string, string[]> | null> {
-  const hlsVersions = await callGHCup(logger, ['list', '-t', 'hls', '-c', 'installed', '-r'], undefined, false);
+  const hlsVersions = await ghcup.callGHCup(logger, ['list', '-t', 'hls', '-c', 'installed', '-r'], undefined, false);
 
-  const bindir = await callGHCup(logger, ['whereis', 'bindir'], undefined, false);
+  const bindir = await ghcup.callGHCup(logger, ['whereis', 'bindir'], undefined, false);
 
   const files = fs.readdirSync(bindir).filter((e) => {
     const stat = fs.statSync(path.join(bindir, e));
@@ -748,7 +506,8 @@ async function findAvailableHlsBinariesFromGHCup(logger: Logger): Promise<Map<st
 }
 
 async function toolInstalled(logger: Logger, tool: Tool, version: string): Promise<InstalledTool> {
-  const b = await callGHCup(logger, ['whereis', tool, version], undefined, false)
+  const b = await ghcup
+    .callGHCup(logger, ['whereis', tool, version], undefined, false)
     .then(() => true)
     .catch(() => false);
   return new InstalledTool(tool, version, b);

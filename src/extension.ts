@@ -10,8 +10,8 @@ import {
 import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
-import { callAsync, findHaskellLanguageServer, HlsExecutable, IEnvVars } from './hlsBinaries';
-import { addPathToProcessPath, comparePVP } from './utils';
+import { findHaskellLanguageServer, HlsExecutable, IEnvVars } from './hlsBinaries';
+import { addPathToProcessPath, comparePVP, callAsync } from './utils';
 import { Config, initConfig, initLoggerFromConfig, logConfig } from './config';
 
 // The current map of documents & folders to language servers.
