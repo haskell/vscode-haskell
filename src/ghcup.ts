@@ -9,7 +9,7 @@ import { match } from 'ts-pattern';
 
 export type Tool = 'hls' | 'ghc' | 'cabal' | 'stack';
 
-export type ToolConfig = Map<Tool, string>;
+export type ToolConfig = Map<Tool, string | null>;
 
 export function initDefaultGHCup(config: GHCupConfig, logger: Logger, folder?: WorkspaceFolder): GHCup {
   const ghcupLoc = findGHCup(logger, config.executablePath, folder);
