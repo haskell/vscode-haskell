@@ -120,34 +120,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   try {
     hlsExecutable = await findHaskellLanguageServer(context, logger, config.ghcupConfig, config.workingDir, folder);
   } catch (e) {
-    if (e instanceof MissingToolError) {
-      const link = e.installLink();
-      if (link) {
-        if (await window.showErrorMessage(e.message, `Install ${e.tool}`)) {
-          env.openExternal(link);
-        }
-      } else {
-        await window.showErrorMessage(e.message);
-      }
-    } else if (e instanceof HlsError) {
-      logger.error(`General HlsError: ${e.message}`);
-      window.showErrorMessage(e.message);
-    } else if (e instanceof NoMatchingHls) {
-      const link = e.docLink();
-      logger.error(`${e.message}`);
-      if (await window.showErrorMessage(e.message, 'Open documentation')) {
-        env.openExternal(link);
-      }
-    } else if (e instanceof Error) {
-      logger.error(`Internal Error: ${e.message}`);
-      window.showErrorMessage(e.message);
-    }
-    if (e instanceof Error) {
-      // general stack trace printing
-      if (e.stack) {
-        logger.error(`${e.stack}`);
-      }
-    }
+    await handleInitializationError(e, logger);
     return;
   }
 
@@ -259,6 +232,43 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   logger.info('Starting language server');
   clients.set(clientsKey, langClient);
   await langClient.start();
+}
+
+/**
+ * Handle errors the extension may throw. Errors are expected to be fatal.
+ *
+ * @param e Error thrown during the extension initialization.
+ * @param logger
+ */
+async function handleInitializationError(e: unknown, logger: Logger) {
+  if (e instanceof MissingToolError) {
+    const link = e.installLink();
+    if (link) {
+      if (await window.showErrorMessage(e.message, `Install ${e.tool}`)) {
+        env.openExternal(link);
+      }
+    } else {
+      await window.showErrorMessage(e.message);
+    }
+  } else if (e instanceof HlsError) {
+    logger.error(`General HlsError: ${e.message}`);
+    window.showErrorMessage(e.message);
+  } else if (e instanceof NoMatchingHls) {
+    const link = e.docLink();
+    logger.error(`${e.message}`);
+    if (await window.showErrorMessage(e.message, 'Open documentation')) {
+      env.openExternal(link);
+    }
+  } else if (e instanceof Error) {
+    logger.error(`Internal Error: ${e.message}`);
+    window.showErrorMessage(e.message);
+  }
+  if (e instanceof Error) {
+    // general stack trace printing
+    if (e.stack) {
+      logger.error(`${e.stack}`);
+    }
+  }
 }
 
 function initServerEnvironment(config: Config, hlsExecutable: HlsExecutable) {
