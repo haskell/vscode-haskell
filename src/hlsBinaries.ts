@@ -49,7 +49,11 @@ function findServerExecutable(logger: Logger, folder?: WorkspaceFolder): string 
   }
 }
 
-/** Searches the PATH. Fails if nothing is found.
+/**
+ * Searches the `PATH` for `haskell-language-server` or `haskell-language-server-wrapper` binary.
+ * Fails if nothing is found.
+ * @param logger Log all the stuff!
+ * @returns Location of the `haskell-language-server` or `haskell-language-server-wrapper` binary if found.
  */
 function findHlsInPath(logger: Logger): string {
   // try PATH
@@ -87,17 +91,19 @@ export type HlsViaGhcup = {
 };
 
 /**
- * Downloads the latest haskell-language-server binaries via GHCup.
- * Makes sure that either `ghcup` is available locally, otherwise installs
- * it into an isolated location.
- * If we figure out the correct GHC version, but it isn't compatible with
- * the latest HLS executables, we download the latest compatible HLS binaries
- * as a fallback.
+ * Find and setup the Haskell Language Server.
+ *
+ * We support three ways of finding the HLS binary:
+ *
+ * 1. Let the user provide a location via `haskell.serverExecutablePath` option.
+ * 2. Find a `haskell-language-server` binary on the `$PATH` if the user wants to do that.
+ * 3. Use GHCup to install and locate HLS and other required tools, such as cabal, stack and ghc.
  *
  * @param context Context of the extension, required for metadata.
  * @param logger Logger for progress updates.
  * @param workingDir Working directory in VSCode.
- * @returns Path to haskell-language-server-wrapper
+ * @param folder Optional workspace folder. If given, will be preferred over {@link workingDir} for finding configuration entries.
+ * @returns Path to haskell-language-server, paired with additional data required for setting up.
  */
 export async function findHaskellLanguageServer(
   context: ExtensionContext,
@@ -125,6 +131,7 @@ export async function findHaskellLanguageServer(
   // first extension initialization
   manageHLS = await promptUserForManagingHls(context, manageHLS);
 
+  // based on the user-decision
   if (manageHLS === 'PATH') {
     const exe = findHlsInPath(logger);
     return {
@@ -177,21 +184,21 @@ export async function findHaskellLanguageServer(
     // download popups
     const promptBeforeDownloads = workspace.getConfiguration('haskell').get('promptBeforeDownloads') as boolean;
     if (promptBeforeDownloads) {
-      const hlsInstalled = latestHLS ? await toolInstalled(ghcup, 'hls', latestHLS) : undefined;
-      const cabalInstalled = latestCabal ? await toolInstalled(ghcup, 'cabal', latestCabal) : undefined;
-      const stackInstalled = latestStack ? await toolInstalled(ghcup, 'stack', latestStack) : undefined;
+      const hlsInstalled = latestHLS ? await installationStatusOfGhcupTool(ghcup, 'hls', latestHLS) : undefined;
+      const cabalInstalled = latestCabal ? await installationStatusOfGhcupTool(ghcup, 'cabal', latestCabal) : undefined;
+      const stackInstalled = latestStack ? await installationStatusOfGhcupTool(ghcup, 'stack', latestStack) : undefined;
       const ghcInstalled = executableExists('ghc')
-        ? new InstalledTool(
+        ? new ToolStatus(
             'ghc',
             await callAsync(`ghc${exeExt}`, ['--numeric-version'], logger, undefined, undefined, false),
           )
         : // if recGHC is null, that means user disabled automatic handling,
           recGHC !== null
-          ? await toolInstalled(ghcup, 'ghc', recGHC)
+          ? await installationStatusOfGhcupTool(ghcup, 'ghc', recGHC)
           : undefined;
-      const toInstall: InstalledTool[] = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(
+      const toInstall: ToolStatus[] = [hlsInstalled, cabalInstalled, stackInstalled, ghcInstalled].filter(
         (tool) => tool && !tool.installed,
-      ) as InstalledTool[];
+      ) as ToolStatus[];
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
           `Need to download ${toInstall.map((t) => t.nameWithVersion).join(', ')}, continue?`,
@@ -259,11 +266,11 @@ export async function findHaskellLanguageServer(
 
     // more download popups
     if (promptBeforeDownloads) {
-      const hlsInstalled = projectHls ? await toolInstalled(ghcup, 'hls', projectHls) : undefined;
-      const ghcInstalled = projectGhc ? await toolInstalled(ghcup, 'ghc', projectGhc) : undefined;
-      const toInstall: InstalledTool[] = [hlsInstalled, ghcInstalled].filter(
+      const hlsInstalled = projectHls ? await installationStatusOfGhcupTool(ghcup, 'hls', projectHls) : undefined;
+      const ghcInstalled = projectGhc ? await installationStatusOfGhcupTool(ghcup, 'ghc', projectGhc) : undefined;
+      const toInstall: ToolStatus[] = [hlsInstalled, ghcInstalled].filter(
         (tool) => tool && !tool.installed,
-      ) as InstalledTool[];
+      ) as ToolStatus[];
       if (toInstall.length > 0) {
         const decision = await window.showInformationMessage(
           `Need to download ${toInstall.map((t) => t.nameWithVersion).join(', ')}, continue?`,
@@ -512,18 +519,18 @@ async function findAvailableHlsBinariesFromGHCup(ghcup: GHCup): Promise<Map<stri
   }
 }
 
-async function toolInstalled(ghcup: GHCup, tool: Tool, version: string): Promise<InstalledTool> {
+async function installationStatusOfGhcupTool(ghcup: GHCup, tool: Tool, version: string): Promise<ToolStatus> {
   const b = await ghcup
     .call(['whereis', tool, version], undefined, false)
     .then(() => true)
     .catch(() => false);
-  return new InstalledTool(tool, version, b);
+  return new ToolStatus(tool, version, b);
 }
 
 /**
  * Tracks the name, version and installation state of tools we need.
  */
-class InstalledTool {
+class ToolStatus {
   /**
    * "\<name\>-\<version\>" of the installed Tool.
    */
