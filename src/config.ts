@@ -1,4 +1,4 @@
-import { OutputChannel, Uri, window,  WorkspaceConfiguration,  WorkspaceFolder } from 'vscode';
+import { OutputChannel, Uri, window, WorkspaceConfiguration, WorkspaceFolder } from 'vscode';
 import { expandHomeDir, IEnvVars } from './utils';
 import * as path from 'path';
 import { Logger } from 'vscode-languageclient';
@@ -94,10 +94,10 @@ function getClientLogLevel(workspaceConfig: WorkspaceConfiguration): ClientLogLe
         clientLogLevel = clientLogLevel_;
         break;
       default:
-        throw new Error();
+        throw new Error("Option \"haskell.trace.client\" is expected to be one of 'off', 'error', 'info', 'debug'.");
     }
   } else {
-    throw new Error();
+    throw new Error('Option "haskell.trace.client" is expected to be a string');
   }
   return clientLogLevel;
 }
@@ -113,10 +113,10 @@ function getLogLevel(workspaceConfig: WorkspaceConfiguration): LogLevel {
         logLevel = logLevel_;
         break;
       default:
-        throw new Error("haskell.trace.server is expected to be one of 'off', 'messages', 'verbose'.");
+        throw new Error("Option \"haskell.trace.server\" is expected to be one of 'off', 'messages', 'verbose'.");
     }
   } else {
-    throw new Error('haskell.trace.server is expected to be a string');
+    throw new Error('Option "haskell.trace.server" is expected to be a string');
   }
   return logLevel;
 }
