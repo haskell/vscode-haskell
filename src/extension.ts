@@ -7,20 +7,32 @@ import {
   RevealOutputChannelOn,
   ServerOptions,
 } from 'vscode-languageclient/node';
-import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
+import * as constants from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import { findHaskellLanguageServer, HlsExecutable, IEnvVars } from './hlsBinaries';
 import { addPathToProcessPath, comparePVP, callAsync } from './utils';
 import { Config, initConfig, initLoggerFromConfig, logConfig } from './config';
+import { HaskellStatusBar } from './statusBar';
+
+/**
+ * Global information about the running clients.
+ */
+type Client = {
+  client: LanguageClient;
+  config: Config;
+};
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
 // in which case don't try to launch another one for that uri
-const clients: Map<string, LanguageClient | null> = new Map();
+const clients: Map<string, Client | null> = new Map();
 
 // This is the entrypoint to our extension
 export async function activate(context: ExtensionContext) {
+  const statusBar = new HaskellStatusBar(context.extension.packageJSON.version as string | undefined);
+  context.subscriptions.push(statusBar);
+
   // (Possibly) launch the language server every time a document is opened, so
   // it works across multiple workspace folders. Eventually, haskell-lsp should
   // just support
@@ -37,41 +49,69 @@ export async function activate(context: ExtensionContext) {
       const client = clients.get(folder.uri.toString());
       if (client) {
         const uri = folder.uri.toString();
-        client.info(`Deleting folder for clients: ${uri}`);
+        client.client.info(`Deleting folder for clients: ${uri}`);
         clients.delete(uri);
-        client.info('Stopping the server');
-        await client.stop();
+        client.client.info('Stopping the server');
+        await client.client.stop();
       }
     }
   });
 
   // Register editor commands for HIE, but only register the commands once at activation.
-  const restartCmd = commands.registerCommand(RestartServerCommandName, async () => {
+  const restartCmd = commands.registerCommand(constants.RestartServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Stopping the server');
-      await langClient?.stop();
-      langClient?.info('Starting the server');
-      await langClient?.start();
+      langClient?.client.info('Stopping the server');
+      await langClient?.client.stop();
+      langClient?.client.info('Starting the server');
+      await langClient?.client.start();
     }
   });
 
   context.subscriptions.push(restartCmd);
 
-  const stopCmd = commands.registerCommand(StopServerCommandName, async () => {
+  const openLogsCmd = commands.registerCommand(constants.OpenLogsCommandName, () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Stopping the server');
-      await langClient?.stop();
-      langClient?.info('Server stopped');
+      langClient?.config.outputChannel.show();
+    }
+  });
+
+  context.subscriptions.push(openLogsCmd);
+
+  const restartExtensionCmd = commands.registerCommand(constants.RestartExtensionCommandName, async () => {
+    for (const langClient of clients.values()) {
+      langClient?.client.info('Stopping the server');
+      await langClient?.client.stop();
+    }
+    clients.clear();
+
+    for (const document of workspace.textDocuments) {
+      await activateServer(context, document);
+    }
+  });
+
+  context.subscriptions.push(restartExtensionCmd);
+
+  const showVersionsCmd = commands.registerCommand(constants.ShowExtensionVersions, () => {
+    void window.showInformationMessage(`Extension Version: ${context.extension.packageJSON.version ?? '<unknown>'}`);
+  });
+
+  context.subscriptions.push(showVersionsCmd);
+
+  const stopCmd = commands.registerCommand(constants.StopServerCommandName, async () => {
+    for (const langClient of clients.values()) {
+      langClient?.client.info('Stopping the server');
+      await langClient?.client.stop();
+      langClient?.client.info('Server stopped');
     }
   });
 
   context.subscriptions.push(stopCmd);
 
-  const startCmd = commands.registerCommand(StartServerCommandName, async () => {
+  const startCmd = commands.registerCommand(constants.StartServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Starting the server');
-      await langClient?.start();
-      langClient?.info('Server started');
+      langClient?.client.info('Starting the server');
+      await langClient?.client.start();
+      langClient?.client.info('Server started');
     }
   });
 
@@ -83,6 +123,9 @@ export async function activate(context: ExtensionContext) {
 
   const openOnHackageDisposable = DocsBrowser.registerDocsOpenOnHackage();
   context.subscriptions.push(openOnHackageDisposable);
+
+  statusBar.refresh();
+  statusBar.show();
 }
 
 async function activateServer(context: ExtensionContext, document: TextDocument) {
@@ -178,7 +221,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   logger.info(`Support for '.cabal' files: ${cabalFileSupport}`);
 
   switch (cabalFileSupport) {
-    case 'automatic':
+    case 'automatic': {
       const hlsVersion = await callAsync(
         hlsExecutable.location,
         ['--numeric-version'],
@@ -193,6 +236,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
         documentSelector.push(cabalDocumentSelector);
       }
       break;
+    }
     case 'enable':
       documentSelector.push(cabalDocumentSelector);
       break;
@@ -230,7 +274,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   // Finally start the client and add it to the list of clients.
   logger.info('Starting language server');
-  clients.set(clientsKey, langClient);
+  clients.set(clientsKey, {
+    client: langClient,
+    config,
+  });
   await langClient.start();
 }
 
@@ -290,7 +337,7 @@ export async function deactivate() {
   const promises: Thenable<void>[] = [];
   for (const client of clients.values()) {
     if (client) {
-      promises.push(client.stop());
+      promises.push(client.client.stop());
     }
   }
   await Promise.all(promises);
