@@ -1320,7 +1320,7 @@
     "mocha": "^11.1.0",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.5.4",
+    "typescript": "^5.7.3",
     "typescript-eslint": "^8.17.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
