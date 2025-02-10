@@ -5,8 +5,7 @@ import { match } from 'ts-pattern';
 import { promisify } from 'util';
 import { window, workspace } from 'vscode';
 import { Logger } from 'vscode-languageclient';
-import { httpsGetSilently, IEnvVars } from './utils';
-export { IEnvVars };
+import { httpsGetSilently } from './utils';
 
 /**
  * Metadata of release information.
