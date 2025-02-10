@@ -15,9 +15,6 @@ import { ToolConfig, Tool, initDefaultGHCup, GHCup, GHCupConfig } from './ghcup'
 import { getHlsMetadata } from './metadata';
 export { IEnvVars };
 
-type ManageHLS = 'GHCup' | 'PATH';
-let manageHLS = workspace.getConfiguration('haskell').get('manageHLS') as ManageHLS;
-
 export type Context = {
   manageHls: ManageHLS;
   storagePath: string;
@@ -26,9 +23,17 @@ export type Context = {
 };
 
 /**
+ * Global configuration for this extension.
+ */
+const haskellConfig = workspace.getConfiguration('haskell');
+
+/**
  * On Windows the executable needs to be stored somewhere with an .exe extension
  */
 const exeExt = process.platform === 'win32' ? '.exe' : '';
+
+type ManageHLS = 'GHCup' | 'PATH';
+let manageHLS = haskellConfig.get('manageHLS') as ManageHLS;
 
 /**
  * Gets serverExecutablePath and fails if it's not set.
@@ -37,7 +42,7 @@ const exeExt = process.platform === 'win32' ? '.exe' : '';
  * @returns Path to an HLS executable binary.
  */
 function findServerExecutable(logger: Logger, folder?: WorkspaceFolder): string {
-  const rawExePath = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
+  const rawExePath = haskellConfig.get('serverExecutablePath') as string;
   logger.info(`Trying to find the server executable in: ${rawExePath}`);
   const resolvedExePath = resolvePathPlaceHolders(rawExePath, folder);
   logger.log(`Location after path variables substitution: ${resolvedExePath}`);
@@ -114,7 +119,7 @@ export async function findHaskellLanguageServer(
 ): Promise<HlsExecutable> {
   logger.info('Finding haskell-language-server');
 
-  const hasConfigForExecutable = workspace.getConfiguration('haskell').get('serverExecutablePath') as string;
+  const hasConfigForExecutable = haskellConfig.get('serverExecutablePath') as string;
   if (hasConfigForExecutable) {
     const exe = findServerExecutable(logger, folder);
     return {
@@ -152,9 +157,7 @@ export async function findHaskellLanguageServer(
     let projectGhc: string | undefined | null;
 
     // support explicit toolchain config
-    const toolchainConfig = new Map(
-      Object.entries(workspace.getConfiguration('haskell').get('toolchain') as ToolConfig),
-    ) as ToolConfig;
+    const toolchainConfig = new Map(Object.entries(haskellConfig.get('toolchain') as ToolConfig)) as ToolConfig;
     if (toolchainConfig) {
       latestHLS = toolchainConfig.get('hls');
       latestCabal = toolchainConfig.get('cabal');
@@ -182,7 +185,7 @@ export async function findHaskellLanguageServer(
     }
 
     // download popups
-    const promptBeforeDownloads = workspace.getConfiguration('haskell').get('promptBeforeDownloads') as boolean;
+    const promptBeforeDownloads = haskellConfig.get('promptBeforeDownloads') as boolean;
     if (promptBeforeDownloads) {
       const hlsInstalled = latestHLS ? await installationStatusOfGhcupTool(ghcup, 'hls', latestHLS) : undefined;
       const cabalInstalled = latestCabal ? await installationStatusOfGhcupTool(ghcup, 'cabal', latestCabal) : undefined;
@@ -212,7 +215,7 @@ export async function findHaskellLanguageServer(
           logger.info(
             `User accepted download for ${toInstall.map((t) => t.nameWithVersion).join(', ')} and won't be asked again.`,
           );
-          workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
+          haskellConfig.update('promptBeforeDownloads', false);
         } else {
           toInstall.forEach((tool) => {
             if (tool !== undefined && !tool.installed) {
@@ -285,7 +288,7 @@ export async function findHaskellLanguageServer(
           logger.info(
             `User accepted download for ${toInstall.map((t) => t.nameWithVersion).join(', ')} and won't be asked again.`,
           );
-          workspace.getConfiguration('haskell').update('promptBeforeDownloads', false);
+          haskellConfig.update('promptBeforeDownloads', false);
         } else {
           toInstall.forEach((tool) => {
             if (!tool.installed) {
@@ -364,7 +367,7 @@ async function promptUserForManagingHls(context: ExtensionContext, manageHlsSett
       );
       howToManage = 'PATH';
     }
-    workspace.getConfiguration('haskell').update('manageHLS', howToManage, ConfigurationTarget.Global);
+    haskellConfig.update('manageHLS', howToManage, ConfigurationTarget.Global);
     context.globalState.update('pluginInitialized', true);
     return howToManage;
   } else {
@@ -469,8 +472,15 @@ export async function getProjectGhcVersion(
   );
 }
 
+/**
+ * Find the storage path for the extension.
+ * If no custom location was given
+ *
+ * @param context Extension context for the 'Storage Path'.
+ * @returns
+ */
 export function getStoragePath(context: ExtensionContext): string {
-  let storagePath: string | undefined = workspace.getConfiguration('haskell').get('releasesDownloadStoragePath');
+  let storagePath: string | undefined = haskellConfig.get('releasesDownloadStoragePath');
 
   if (!storagePath) {
     storagePath = context.globalStorageUri.fsPath;
