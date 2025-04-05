@@ -6,7 +6,7 @@
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.96.0"
   },
   "keywords": [
     "language",
@@ -1306,16 +1306,16 @@
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.14.0",
-    "@types/vscode": "^1.99.0",
+    "@types/vscode": "^1.96.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.24.0",
-    "eslint-webpack-plugin": "^4.2.0",
+    "eslint-webpack-plugin": "^5.0.0",
     "glob": "^11.0.1",
-    "globals": "^15.15.0",
+    "globals": "^16.0.0",
     "husky": "^9.1.7",
     "mocha": "^11.1.0",
     "prettier": "^3.5.3",
