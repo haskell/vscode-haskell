@@ -234,6 +234,12 @@
             "Prefer a multiple component session, if the build tool supports it. At the moment, only `cabal` supports multiple components session loading. If the `cabal` version does not support loading multiple components at once, we gracefully fall back to \"singleComponent\" mode."
           ]
         },
+        "haskell.supportCabalFiles": {
+          "scope": "resource",
+          "default": true,
+          "type": "boolean",
+          "description": "Enable Language Server support for `.cabal` files. Requires Haskell Language Server version >= 2.0.0.0."
+        },
         "haskell.maxCompletions": {
           "scope": "resource",
           "default": 40,
