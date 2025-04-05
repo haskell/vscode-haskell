@@ -205,6 +205,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     args = args.concat(extraArgs.split(' '));
   }
 
+  const cabalFileSupport: boolean = workspace.getConfiguration('haskell', uri).supportCabalFiles;
+  logger.info(`Support for '.cabal' files enabled: ${cabalFileSupport ? 'yes' : 'no'}`);
+
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
@@ -253,14 +256,21 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   logger.log(`document selector patten: ${pat}`);
+
+
+  const cabalDocumentSelector = cabalFileSupport ? [{ scheme: 'file', language: 'cabal', pattern: pat }] : [];
+  const haskellDocumentSelector = [
+    { scheme: 'file', language: 'haskell', pattern: pat },
+    { scheme: 'file', language: 'literate haskell', pattern: pat },
+  ];
+
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
-    documentSelector: [
-      { scheme: 'file', language: 'haskell', pattern: pat },
-      { scheme: 'file', language: 'literate haskell', pattern: pat },
-      { scheme: 'file', language: 'cabal', pattern: pat },
-    ],
+    documentSelector:
+      [ ... haskellDocumentSelector
+      , ... cabalDocumentSelector
+      ],
     synchronize: {
       // Synchronize the setting section 'haskell' to the server.
       configurationSection: 'haskell',
