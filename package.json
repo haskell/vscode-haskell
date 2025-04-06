@@ -236,9 +236,19 @@
         },
         "haskell.supportCabalFiles": {
           "scope": "resource",
-          "default": true,
-          "type": "boolean",
-          "description": "Enable Language Server support for `.cabal` files. Requires Haskell Language Server version >= 2.0.0.0."
+          "default": "automatic",
+          "type": "string",
+          "enum": [
+            "enable",
+            "disable",
+            "automatic"
+          ],
+          "description": "Enable Language Server support for `.cabal` files. Requires Haskell Language Server version >= 1.9.0.0.",
+          "enumDescriptions": [
+            "Enable Language Server support for `.cabal` files",
+            "Disable Language Server support for `.cabal` files",
+            "Enable Language Server support for `.cabal` files if the HLS version supports it."
+          ]
         },
         "haskell.maxCompletions": {
           "scope": "resource",

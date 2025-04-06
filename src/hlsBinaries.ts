@@ -58,7 +58,7 @@ type ProcessCallback = (
  * @param callback Upon process termination, execute this callback. If given, must resolve promise. On error, stderr and stdout are logged regardless of whether the callback has been specified.
  * @returns Stdout of the process invocation, trimmed off newlines, or whatever the `callback` resolved to.
  */
-async function callAsync(
+export async function callAsync(
   binary: string,
   args: string[],
   logger: Logger,
