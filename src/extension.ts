@@ -21,8 +21,8 @@ import {
 import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
-import { findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
-import { addPathToProcessPath, expandHomeDir, ExtensionLogger } from './utils';
+import { callAsync, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
+import { addPathToProcessPath, comparePVP, expandHomeDir, ExtensionLogger } from './utils';
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -205,6 +205,12 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     args = args.concat(extraArgs.split(' '));
   }
 
+  const cabalFileSupport: 'automatic' | 'enable' | 'disable' = workspace.getConfiguration(
+    'haskell',
+    uri,
+  ).supportCabalFiles;
+  logger.info(`Support for '.cabal' files: ${cabalFileSupport}`);
+
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
@@ -253,14 +259,44 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const pat = folder ? `${folder.uri.fsPath}/**/*` : '**/*';
   logger.log(`document selector patten: ${pat}`);
+
+  const cabalDocumentSelector = { scheme: 'file', language: 'cabal', pattern: pat };
+  const haskellDocumentSelector = [
+    { scheme: 'file', language: 'haskell', pattern: pat },
+    { scheme: 'file', language: 'literate haskell', pattern: pat },
+  ];
+
+  const documentSelector = [...haskellDocumentSelector];
+
+  switch (cabalFileSupport) {
+    case 'automatic':
+      const hlsVersion = await callAsync(
+        serverExecutable,
+        ['--numeric-version'],
+        logger,
+        currentWorkingDir,
+        undefined /* this command is very fast, don't show anything */,
+        false,
+        serverEnvironment,
+      );
+      if (comparePVP(hlsVersion, '1.9.0.0') >= 0) {
+        // If hlsVersion is >= '1.9.0.0'
+        documentSelector.push(cabalDocumentSelector);
+      }
+      break;
+    case 'enable':
+      documentSelector.push(cabalDocumentSelector);
+      break;
+    case 'disable':
+      break;
+    default:
+      break;
+  }
+
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
-    documentSelector: [
-      { scheme: 'file', language: 'haskell', pattern: pat },
-      { scheme: 'file', language: 'literate haskell', pattern: pat },
-      { scheme: 'file', language: 'cabal', pattern: pat },
-    ],
+    documentSelector: [...documentSelector],
     synchronize: {
       // Synchronize the setting section 'haskell' to the server.
       configurationSection: 'haskell',
