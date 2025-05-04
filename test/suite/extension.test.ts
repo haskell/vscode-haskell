@@ -7,7 +7,7 @@
 
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import path = require('path');
+import * as path from 'path';
 import * as fs from 'fs';
 import { StopServerCommandName } from '../../src/commands/constants';
 
