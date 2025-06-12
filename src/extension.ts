@@ -10,7 +10,7 @@ import {
 import * as constants from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
-import { findHaskellLanguageServer, HlsExecutable, IEnvVars } from './hlsBinaries';
+import { findHaskellLanguageServer, HlsExecutable, IEnvVars, fetchConfig } from './hlsBinaries';
 import { addPathToProcessPath, comparePVP, callAsync } from './utils';
 import { Config, initConfig, initLoggerFromConfig, logConfig } from './config';
 import { HaskellStatusBar } from './statusBar';
@@ -83,6 +83,7 @@ export async function activate(context: ExtensionContext) {
       await langClient?.client.stop();
     }
     clients.clear();
+    fetchConfig();
 
     for (const document of workspace.textDocuments) {
       await activateServer(context, document);

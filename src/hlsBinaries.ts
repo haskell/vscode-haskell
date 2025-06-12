@@ -13,7 +13,7 @@ import {
 } from './utils';
 import { ToolConfig, Tool, initDefaultGHCup, GHCup, GHCupConfig } from './ghcup';
 import { getHlsMetadata } from './metadata';
-export { IEnvVars };
+export { IEnvVars, fetchConfig };
 
 export type Context = {
   manageHls: ManageHLS;
@@ -25,7 +25,7 @@ export type Context = {
 /**
  * Global configuration for this extension.
  */
-const haskellConfig = workspace.getConfiguration('haskell');
+let haskellConfig = workspace.getConfiguration('haskell');
 
 /**
  * On Windows the executable needs to be stored somewhere with an .exe extension
@@ -34,6 +34,11 @@ const exeExt = process.platform === 'win32' ? '.exe' : '';
 
 type ManageHLS = 'GHCup' | 'PATH';
 let manageHLS = haskellConfig.get('manageHLS') as ManageHLS;
+
+function fetchConfig() {
+  haskellConfig = workspace.getConfiguration('haskell');
+  manageHLS = haskellConfig.get('manageHLS') as ManageHLS;
+}
 
 /**
  * Gets serverExecutablePath and fails if it's not set.
