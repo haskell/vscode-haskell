@@ -9,7 +9,7 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
       "sourceMaps": true,
-      "outFiles": ["${workspaceRoot}/out/src/**/*.js"],
+      "outFiles": ["${workspaceRoot}/dist/**/*.js"],
       "preLaunchTask": "npm: webpack"
     },
     {
