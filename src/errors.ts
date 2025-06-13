@@ -20,8 +20,6 @@ export class MissingToolError extends HlsError {
         prettyTool = 'GHCup';
         break;
       case 'haskell-language-server':
-        prettyTool = 'HLS';
-        break;
       case 'hls':
         prettyTool = 'HLS';
         break;

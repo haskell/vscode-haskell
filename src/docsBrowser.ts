@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { dirname } from 'path';
 import {
   CancellationToken,
@@ -51,7 +50,7 @@ async function showDocumentation({
     const bytes = await workspace.fs.readFile(Uri.parse(localPath));
 
     const addBase = `
-          <base href="${panel.webview.asWebviewUri(Uri.parse(documentationDirectory))}/">
+          <base href="${panel.webview.asWebviewUri(Uri.parse(documentationDirectory)).toString()}/">
           `;
 
     panel.webview.html = `
@@ -63,8 +62,10 @@ async function showDocumentation({
           </body>
           </html>
           `;
-  } catch (e: any) {
-    await window.showErrorMessage(e);
+  } catch (e) {
+    if (e instanceof Error) {
+      await window.showErrorMessage(e.message);
+    }
   }
   return panel;
 }
@@ -87,8 +88,10 @@ async function openDocumentationOnHackage({
     if (inWebView) {
       await commands.executeCommand('workbench.action.closeActiveEditor');
     }
-  } catch (e: any) {
-    await window.showErrorMessage(e);
+  } catch (e) {
+    if (e instanceof Error) {
+      await window.showErrorMessage(e.message);
+    }
   }
 }
 
@@ -154,11 +157,9 @@ function processLink(ms: MarkdownString | MarkedString): string | MarkdownString
             cmd = 'command:haskell.showDocumentation?' + encoded;
           }
           return `[${title}](${cmd})`;
-        } else if (title === 'Source') {
-          hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/src/${fileAndAnchor.replace(
-            /-/gi,
-            '.',
-          )}`;
+        } else if (title === 'Source' && typeof fileAndAnchor === 'string') {
+          const moduleLocation = fileAndAnchor.replace(/-/gi, '.');
+          hackageUri = `https://hackage.haskell.org/package/${packageName}/docs/src/${moduleLocation}`;
           const encoded = encodeURIComponent(JSON.stringify({ title, localPath, hackageUri }));
           let cmd: string;
           if (openSourceInHackage) {
@@ -174,7 +175,7 @@ function processLink(ms: MarkdownString | MarkedString): string | MarkdownString
     );
   }
   if (typeof ms === 'string') {
-    return transform(ms as string);
+    return transform(ms);
   } else if (ms instanceof MarkdownString) {
     const mstr = new MarkdownString(transform(ms.value));
     mstr.isTrusted = true;
