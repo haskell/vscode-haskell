@@ -1352,7 +1352,7 @@
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.29",
-    "@types/vscode": "^1.96.0",
+    "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.37.0",
