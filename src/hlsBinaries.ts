@@ -177,16 +177,16 @@ export async function findHaskellLanguageServer(
     // (we need HLS and cabal/stack and ghc as fallback),
     // later we may install a different toolchain that's more project-specific
     if (latestHLS === undefined) {
-      latestHLS = await ghcup.getLatestVersion('hls');
+      latestHLS = await ghcup.getAnyLatestVersion('hls').then((tool) => tool?.version);
     }
     if (latestCabal === undefined) {
-      latestCabal = await ghcup.getLatestVersion('cabal');
+      latestCabal = (await ghcup.findLatestUserInstalledTool('cabal')).version;
     }
     if (latestStack === undefined) {
-      latestStack = await ghcup.getLatestVersion('stack');
+      latestStack = (await ghcup.findLatestUserInstalledTool('stack')).version;
     }
     if (recGHC === undefined) {
-      recGHC = !executableExists('ghc') ? await ghcup.getLatestAvailableVersion('ghc', 'recommended') : null;
+      recGHC = !executableExists('ghc') ? (await ghcup.getLatestAvailableVersion('ghc', 'recommended')).version : null;
     }
 
     // download popups

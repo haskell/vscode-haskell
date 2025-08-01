@@ -25,6 +25,12 @@ export type GHCupConfig = {
   executablePath?: string;
 };
 
+export type ToolInfo = {
+  tool: Tool;
+  version: string;
+  tags: string[];
+};
+
 export class GHCup {
   constructor(
     readonly logger: Logger,
@@ -64,9 +70,26 @@ export class GHCup {
    * Upgrade the `ghcup` binary unless this option was disabled by the user.
    */
   public async upgrade(): Promise<void> {
-    const upgrade = this.config.upgradeGHCup; // workspace.getConfiguration('haskell').get('upgradeGHCup') as boolean;
+    const upgrade = this.config.upgradeGHCup;
     if (upgrade) {
       await this.call(['upgrade'], 'Upgrading ghcup', true);
+    }
+  }
+
+  /**
+   * Find the `set` version of a {@link Tool} in GHCup.
+   * If no version is set, return null.
+   * @param tool Tool you want to know the latest version of.
+   * @returns The latest installed or generally available version of the {@link tool}
+   */
+  public async getSetVersion(tool: Tool): Promise<ToolInfo | null> {
+    // these might be custom/stray/compiled, so we try first
+    const installedVersions = await this.listTool(tool, 'set');
+    const latestInstalled = installedVersions.pop();
+    if (latestInstalled) {
+      return latestInstalled;
+    } else {
+      return null;
     }
   }
 
@@ -76,15 +99,15 @@ export class GHCup {
    * @param tool Tool you want to know the latest version of.
    * @returns The latest installed or generally available version of the {@link tool}
    */
-  public async getLatestVersion(tool: Tool): Promise<string> {
+  public async getAnyLatestVersion(tool: Tool): Promise<ToolInfo | null> {
     // these might be custom/stray/compiled, so we try first
-    const installedVersions = await this.call(['list', '-t', tool, '-c', 'installed', '-r'], undefined, false);
-    const latestInstalled = installedVersions.split(/\r?\n/).pop();
+    const installedVersions = await this.listTool(tool, 'installed');
+    const latestInstalled = installedVersions.pop();
     if (latestInstalled) {
-      return latestInstalled.split(/\s+/)[1];
+      return latestInstalled;
+    } else {
+      return this.getLatestAvailableVersion(tool);
     }
-
-    return this.getLatestAvailableVersion(tool);
   }
 
   /**
@@ -95,16 +118,14 @@ export class GHCup {
    * @param tag The tag to filter the available versions with. By default `"latest"`.
    * @returns The latest available version filtered by {@link tag}.
    */
-  public async getLatestAvailableVersion(tool: Tool, tag: string = 'latest'): Promise<string> {
+  public async getLatestAvailableVersion(tool: Tool, tag: string = 'latest'): Promise<ToolInfo> {
     // fall back to installable versions
-    const availableVersions = await this.call(['list', '-t', tool, '-c', 'available', '-r'], undefined, false).then(
-      (s) => s.split(/\r?\n/),
-    );
+    const availableVersions = await this.listTool(tool, 'available');
 
-    let latestAvailable: string | null = null;
-    availableVersions.forEach((ver) => {
-      if (ver.split(/\s+/)[2].split(',').includes(tag)) {
-        latestAvailable = ver.split(/\s+/)[1];
+    let latestAvailable: ToolInfo | null = null;
+    availableVersions.forEach((toolInfo) => {
+      if (toolInfo.tags.includes(tag)) {
+        latestAvailable = toolInfo;
       }
     });
     if (!latestAvailable) {
@@ -112,6 +133,31 @@ export class GHCup {
     } else {
       return latestAvailable;
     }
+  }
+
+  private async listTool(tool: Tool, category: string): Promise<ToolInfo[]> {
+    // fall back to installable versions
+    const availableVersions = await this.call(['list', '-t', tool, '-c', category, '-r'], undefined, false).then((s) =>
+      s.split(/\r?\n/),
+    );
+
+    return availableVersions.map((toolString) => {
+      const toolParts = toolString.split(/\s+/);
+      return {
+        tool: tool,
+        version: toolParts[1],
+        tags: toolParts[2]?.split(',') ?? [],
+      };
+    });
+  }
+
+  public async findLatestUserInstalledTool(tool: Tool): Promise<ToolInfo> {
+    let toolInfo = null;
+    toolInfo = await this.getSetVersion(tool);
+    if (toolInfo) return toolInfo;
+    toolInfo = await this.getAnyLatestVersion(tool);
+    if (toolInfo) return toolInfo;
+    throw new Error(`Unable to find a version for tool ${tool}`);
   }
 }
 
