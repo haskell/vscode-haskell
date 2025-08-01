@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -334,6 +334,18 @@
           "scope": "resource",
           "type": "boolean"
         },
+        "haskell.plugin.eval.codeActionsOn": {
+          "default": true,
+          "description": "Enables eval code actions",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.eval.codeLensOn": {
+          "default": true,
+          "description": "Enables eval code lenses",
+          "scope": "resource",
+          "type": "boolean"
+        },
         "haskell.plugin.eval.config.diff": {
           "default": true,
           "markdownDescription": "Enable the diff output (WAS/NOW) of eval lenses",
@@ -343,12 +355,6 @@
         "haskell.plugin.eval.config.exception": {
           "default": false,
           "markdownDescription": "Enable marking exceptions with `*** Exception:` similarly to doctest and GHCi.",
-          "scope": "resource",
-          "type": "boolean"
-        },
-        "haskell.plugin.eval.globalOn": {
-          "default": true,
-          "description": "Enables eval plugin",
           "scope": "resource",
           "type": "boolean"
         },

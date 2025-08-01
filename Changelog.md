@@ -1,5 +1,14 @@
 # Changelog for vscode-haskell
 
+## 2.6.1
+
+- Prefer the `set` version for `cabal` and `stack` if there is any
+  ([#1275](https://github.com/haskell/vscode-haskell/pull/1275))  by @fendor
+- Make js debugger work
+  ([#1258](https://github.com/haskell/vscode-haskell/pull/1258))  by @dyniec
+- Prepare release 2.6.0
+  ([#1103](https://github.com/haskell/vscode-haskell/pull/1103))  by @fendor
+
 ## 2.6.0
 
 - Add option to enable/disable `.cabal` file support
