@@ -260,10 +260,10 @@ export async function findHaskellLanguageServer(
       latestHLS = await getLatestToolFromGHCup(context, logger, 'hls');
     }
     if (latestCabal === undefined) {
-      latestCabal = await getLatestToolFromGHCup(context, logger, 'cabal');
+      latestCabal = await getSetOrLatestToolFromGHCup(context, logger, 'cabal');
     }
     if (latestStack === undefined) {
-      latestStack = await getLatestToolFromGHCup(context, logger, 'stack');
+      latestStack = await getSetOrLatestToolFromGHCup(context, logger, 'stack');
     }
     if (recGHC === undefined) {
       recGHC = !executableExists('ghc')
@@ -629,6 +629,25 @@ export async function getStoragePath(context: ExtensionContext): Promise<string>
 
   return storagePath;
 }
+
+// the tool might be installed or not
+async function getSetOrLatestToolFromGHCup(context: ExtensionContext, logger: Logger, tool: Tool): Promise<string> {
+  // these might be custom/stray/compiled, so we try first
+  const installedVersions = await callGHCup(
+    context,
+    logger,
+    ['list', '-t', tool, '-c', 'set', '-r'],
+    undefined,
+    false,
+  );
+  const latestInstalled = installedVersions.split(/\r?\n/).pop();
+  if (latestInstalled) {
+    return latestInstalled.split(/\s+/)[1];
+  }
+
+  return getLatestToolFromGHCup(context, logger, tool);
+}
+
 
 // the tool might be installed or not
 async function getLatestToolFromGHCup(context: ExtensionContext, logger: Logger, tool: Tool): Promise<string> {
