@@ -164,6 +164,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
     hlsExecutable = await findHaskellLanguageServer(context, logger, config.ghcupConfig, config.workingDir, folder);
   } catch (e) {
     await handleInitializationError(e, logger);
+    // Make sure to release the key again.
+    clients.delete(clientsKey);
     return;
   }
 

@@ -20,7 +20,7 @@ export class HaskellStatusBar {
         `---\n\n` +
         `[$(terminal) Open Logs](command:${constants.OpenLogsCommandName} "Open the logs of the Server and Extension")\n\n` +
         `[$(debug-restart) Restart Server](command:${constants.RestartServerCommandName} "Restart Haskell Language Server")\n\n` +
-        `[$(refresh) Restart Extension](command:${constants.RestartServerCommandName} "Restart vscode-haskell Extension")\n\n`,
+        `[$(refresh) Restart Extension](command:${constants.RestartExtensionCommandName} "Restart vscode-haskell Extension")\n\n`,
     );
   }
 
