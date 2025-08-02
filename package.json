@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -334,6 +334,18 @@
           "scope": "resource",
           "type": "boolean"
         },
+        "haskell.plugin.eval.codeActionsOn": {
+          "default": true,
+          "description": "Enables eval code actions",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.eval.codeLensOn": {
+          "default": true,
+          "description": "Enables eval code lenses",
+          "scope": "resource",
+          "type": "boolean"
+        },
         "haskell.plugin.eval.config.diff": {
           "default": true,
           "markdownDescription": "Enable the diff output (WAS/NOW) of eval lenses",
@@ -343,12 +355,6 @@
         "haskell.plugin.eval.config.exception": {
           "default": false,
           "markdownDescription": "Enable marking exceptions with `*** Exception:` similarly to doctest and GHCi.",
-          "scope": "resource",
-          "type": "boolean"
-        },
-        "haskell.plugin.eval.globalOn": {
-          "default": true,
-          "description": "Enables eval plugin",
           "scope": "resource",
           "type": "boolean"
         },
@@ -1351,23 +1357,23 @@
     "@eslint/js": "^9.24.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.14.0",
+    "@types/node": "^22.15.29",
     "@types/vscode": "^1.96.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
-    "@typescript-eslint/parser": "^8.29.0",
+    "@typescript-eslint/parser": "^8.37.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2",
-    "eslint": "^9.24.0",
+    "eslint": "^9.28.0",
     "eslint-webpack-plugin": "^5.0.0",
-    "glob": "^11.0.1",
-    "globals": "^16.0.0",
+    "glob": "^11.0.2",
+    "globals": "^16.2.0",
     "husky": "^9.1.7",
     "mocha": "^11.1.0",
     "prettier": "^3.5.3",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.29.0",
+    "typescript-eslint": "^8.33.0",
     "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1"
   },
