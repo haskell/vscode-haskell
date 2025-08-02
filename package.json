@@ -1316,9 +1316,9 @@
     },
     "commands": [
       {
-        "command": "haskell.commands.importIdentifier",
-        "title": "Haskell: Import identifier",
-        "description": "Imports a function or type based on a Hoogle search"
+        "command": "haskell.commands.restartExtension",
+        "title": "Haskell: Restart vscode-haskell extension",
+        "description": "Restart the vscode-haskell extension. Reloads configuration."
       },
       {
         "command": "haskell.commands.restartServer",

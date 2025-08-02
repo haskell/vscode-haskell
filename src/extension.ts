@@ -1,15 +1,4 @@
-import * as path from 'path';
-import {
-  commands,
-  env,
-  ExtensionContext,
-  OutputChannel,
-  TextDocument,
-  Uri,
-  window,
-  workspace,
-  WorkspaceFolder,
-} from 'vscode';
+import { commands, env, ExtensionContext, TextDocument, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import {
   ExecutableOptions,
   LanguageClient,
@@ -18,68 +7,112 @@ import {
   RevealOutputChannelOn,
   ServerOptions,
 } from 'vscode-languageclient/node';
-import { RestartServerCommandName, StartServerCommandName, StopServerCommandName } from './commands/constants';
+import * as constants from './commands/constants';
 import * as DocsBrowser from './docsBrowser';
 import { HlsError, MissingToolError, NoMatchingHls } from './errors';
-import { callAsync, findHaskellLanguageServer, IEnvVars } from './hlsBinaries';
-import { addPathToProcessPath, comparePVP, expandHomeDir, ExtensionLogger } from './utils';
+import { findHaskellLanguageServer, HlsExecutable, IEnvVars, fetchConfig } from './hlsBinaries';
+import { addPathToProcessPath, comparePVP, callAsync } from './utils';
+import { Config, initConfig, initLoggerFromConfig, logConfig } from './config';
+import { HaskellStatusBar } from './statusBar';
+
+/**
+ * Global information about the running clients.
+ */
+type Client = {
+  client: LanguageClient;
+  config: Config;
+};
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
 // in which case don't try to launch another one for that uri
-const clients: Map<string, LanguageClient | null> = new Map();
+const clients: Map<string, Client | null> = new Map();
 
 // This is the entrypoint to our extension
 export async function activate(context: ExtensionContext) {
+  const statusBar = new HaskellStatusBar(context.extension.packageJSON.version as string | undefined);
+  context.subscriptions.push(statusBar);
+
   // (Possibly) launch the language server every time a document is opened, so
   // it works across multiple workspace folders. Eventually, haskell-lsp should
   // just support
   // https://microsoft.github.io/language-server-protocol/specifications/specification-3-15/#workspace_workspaceFolders
   // and then we can just launch one server
-  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activeServer(context, document));
-  workspace.textDocuments.forEach(async (document: TextDocument) => await activeServer(context, document));
+  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateServer(context, document));
+  for (const document of workspace.textDocuments) {
+    await activateServer(context, document);
+  }
 
   // Stop the server from any workspace folders that are removed.
-  workspace.onDidChangeWorkspaceFolders((event) => {
+  workspace.onDidChangeWorkspaceFolders(async (event) => {
     for (const folder of event.removed) {
       const client = clients.get(folder.uri.toString());
       if (client) {
         const uri = folder.uri.toString();
-        client.info(`Deleting folder for clients: ${uri}`);
+        client.client.info(`Deleting folder for clients: ${uri}`);
         clients.delete(uri);
-        client.info('Stopping the server');
-        client.stop();
+        client.client.info('Stopping the server');
+        await client.client.stop();
       }
     }
   });
 
   // Register editor commands for HIE, but only register the commands once at activation.
-  const restartCmd = commands.registerCommand(RestartServerCommandName, async () => {
+  const restartCmd = commands.registerCommand(constants.RestartServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Stopping the server');
-      await langClient?.stop();
-      langClient?.info('Starting the server');
-      langClient?.start();
+      langClient?.client.info('Stopping the server');
+      await langClient?.client.stop();
+      langClient?.client.info('Starting the server');
+      await langClient?.client.start();
     }
   });
 
   context.subscriptions.push(restartCmd);
 
-  const stopCmd = commands.registerCommand(StopServerCommandName, async () => {
+  const openLogsCmd = commands.registerCommand(constants.OpenLogsCommandName, () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Stopping the server');
-      await langClient?.stop();
-      langClient?.info('Server stopped');
+      langClient?.config.outputChannel.show();
+    }
+  });
+
+  context.subscriptions.push(openLogsCmd);
+
+  const restartExtensionCmd = commands.registerCommand(constants.RestartExtensionCommandName, async () => {
+    for (const langClient of clients.values()) {
+      langClient?.client.info('Stopping the server');
+      await langClient?.client.stop();
+    }
+    clients.clear();
+    fetchConfig();
+
+    for (const document of workspace.textDocuments) {
+      await activateServer(context, document);
+    }
+  });
+
+  context.subscriptions.push(restartExtensionCmd);
+
+  const showVersionsCmd = commands.registerCommand(constants.ShowExtensionVersions, () => {
+    void window.showInformationMessage(`Extension Version: ${context.extension.packageJSON.version ?? '<unknown>'}`);
+  });
+
+  context.subscriptions.push(showVersionsCmd);
+
+  const stopCmd = commands.registerCommand(constants.StopServerCommandName, async () => {
+    for (const langClient of clients.values()) {
+      langClient?.client.info('Stopping the server');
+      await langClient?.client.stop();
+      langClient?.client.info('Server stopped');
     }
   });
 
   context.subscriptions.push(stopCmd);
 
-  const startCmd = commands.registerCommand(StartServerCommandName, async () => {
+  const startCmd = commands.registerCommand(constants.StartServerCommandName, async () => {
     for (const langClient of clients.values()) {
-      langClient?.info('Starting the server');
-      langClient?.start();
-      langClient?.info('Server started');
+      langClient?.client.info('Starting the server');
+      await langClient?.client.start();
+      langClient?.client.info('Server started');
     }
   });
 
@@ -91,9 +124,12 @@ export async function activate(context: ExtensionContext) {
 
   const openOnHackageDisposable = DocsBrowser.registerDocsOpenOnHackage();
   context.subscriptions.push(openOnHackageDisposable);
+
+  statusBar.refresh();
+  statusBar.show();
 }
 
-async function activeServer(context: ExtensionContext, document: TextDocument) {
+async function activateServer(context: ExtensionContext, document: TextDocument) {
   // We are only interested in Haskell files.
   if (
     (document.languageId !== 'haskell' &&
@@ -107,114 +143,50 @@ async function activeServer(context: ExtensionContext, document: TextDocument) {
   const uri = document.uri;
   const folder = workspace.getWorkspaceFolder(uri);
 
-  activateServerForFolder(context, uri, folder);
+  await activateServerForFolder(context, uri, folder);
 }
 
 async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
   const clientsKey = folder ? folder.uri.toString() : uri.toString();
-  // Set a unique name per workspace folder (useful for multi-root workspaces).
-  const langName = 'Haskell' + (folder ? ` (${folder.name})` : '');
-
   // If the client already has an LSP server for this uri/folder, then don't start a new one.
   if (clients.has(clientsKey)) {
     return;
   }
-
-  const currentWorkingDir = folder ? folder.uri.fsPath : path.dirname(uri.fsPath);
-
   // Set the key to null to prevent multiple servers being launched at once
   clients.set(clientsKey, null);
 
-  const logLevel = workspace.getConfiguration('haskell', uri).trace.server;
-  const clientLogLevel = workspace.getConfiguration('haskell', uri).trace.client;
-  const logFile: string = workspace.getConfiguration('haskell', uri).logFile;
+  const config = initConfig(workspace.getConfiguration('haskell', uri), uri, folder);
+  const logger: Logger = initLoggerFromConfig(config);
 
-  const outputChannel: OutputChannel = window.createOutputChannel(langName);
+  logConfig(logger, config);
 
-  const logFilePath = logFile !== '' ? path.resolve(currentWorkingDir, expandHomeDir(logFile)) : undefined;
-  const logger: Logger = new ExtensionLogger('client', clientLogLevel, outputChannel, logFilePath);
-  if (logFilePath) {
-    logger.info(`Writing client log to file ${logFilePath}`);
-  }
-  logger.log('Environment variables:');
-  Object.entries(process.env).forEach(([key, value]: [string, string | undefined]) => {
-    // only list environment variables that we actually care about.
-    // this makes it safe for users to just paste the logs to whoever,
-    // and avoids leaking secrets.
-    if (['PATH'].includes(key)) {
-      logger.log(`  ${key}: ${value}`);
-    }
-  });
-
-  let serverExecutable: string;
-  let addInternalServerPath: string | undefined; // if we download HLS, add that bin dir to PATH
+  let hlsExecutable: HlsExecutable;
   try {
-    [serverExecutable, addInternalServerPath] = await findHaskellLanguageServer(
-      context,
-      logger,
-      currentWorkingDir,
-      folder,
-    );
-    if (!serverExecutable) {
-      return;
-    }
+    hlsExecutable = await findHaskellLanguageServer(context, logger, config.ghcupConfig, config.workingDir, folder);
   } catch (e) {
-    if (e instanceof MissingToolError) {
-      const link = e.installLink();
-      if (link) {
-        if (await window.showErrorMessage(e.message, `Install ${e.tool}`)) {
-          env.openExternal(link);
-        }
-      } else {
-        await window.showErrorMessage(e.message);
-      }
-    } else if (e instanceof HlsError) {
-      logger.error(`General HlsError: ${e.message}`);
-      window.showErrorMessage(e.message);
-    } else if (e instanceof NoMatchingHls) {
-      const link = e.docLink();
-      logger.error(`${e.message}`);
-      if (await window.showErrorMessage(e.message, 'Open documentation')) {
-        env.openExternal(link);
-      }
-    } else if (e instanceof Error) {
-      logger.error(`Internal Error: ${e.message}`);
-      window.showErrorMessage(e.message);
-    }
-    if (e instanceof Error) {
-      // general stack trace printing
-      if (e.stack) {
-        logger.error(`${e.stack}`);
-      }
-    }
+    await handleInitializationError(e, logger);
+    // Make sure to release the key again.
+    clients.delete(clientsKey);
     return;
   }
 
-  let args: string[] = ['--lsp'];
+  const serverEnvironment: IEnvVars = initServerEnvironment(config, hlsExecutable);
+  const exeOptions: ExecutableOptions = {
+    cwd: config.workingDir,
+    env: { ...process.env, ...serverEnvironment },
+  };
 
-  if (logLevel === 'messages') {
-    args = args.concat(['-d']);
-  }
-
-  if (logFile !== '') {
-    args = args.concat(['-l', logFile]);
-  }
-
-  const extraArgs: string = workspace.getConfiguration('haskell', uri).serverExtraArgs;
-  if (extraArgs !== '') {
-    args = args.concat(extraArgs.split(' '));
-  }
-
-  const cabalFileSupport: 'automatic' | 'enable' | 'disable' = workspace.getConfiguration(
-    'haskell',
-    uri,
-  ).supportCabalFiles;
-  logger.info(`Support for '.cabal' files: ${cabalFileSupport}`);
+  // For our intents and purposes, the server should be launched the same way in
+  // both debug and run mode.
+  const serverOptions: ServerOptions = {
+    run: { command: hlsExecutable.location, args: config.serverArgs, options: exeOptions },
+    debug: { command: hlsExecutable.location, args: config.serverArgs, options: exeOptions },
+  };
 
   // If we're operating on a standalone file (i.e. not in a folder) then we need
   // to launch the server in a reasonable current directory. Otherwise the cradle
   // guessing logic in hie-bios will be wrong!
-  let cwdMsg = `Activating the language server in working dir: ${currentWorkingDir}`;
+  let cwdMsg = `Activating the language server in working dir: ${config.workingDir}`;
   if (folder) {
     cwdMsg += ' (the workspace folder)';
   } else {
@@ -222,31 +194,8 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   }
   logger.info(cwdMsg);
 
-  let serverEnvironment: IEnvVars = await workspace.getConfiguration('haskell', uri).serverEnvironment;
-  if (addInternalServerPath !== undefined) {
-    const newPath = await addPathToProcessPath(addInternalServerPath);
-    serverEnvironment = {
-      ...serverEnvironment,
-      ...{ PATH: newPath },
-    };
-  }
-  const exeOptions: ExecutableOptions = {
-    cwd: folder ? folder.uri.fsPath : path.dirname(uri.fsPath),
-    env: { ...process.env, ...serverEnvironment },
-  };
-
-  // We don't want empty strings in our args
-  args = args.map((x) => x.trim()).filter((x) => x !== '');
-
-  // For our intents and purposes, the server should be launched the same way in
-  // both debug and run mode.
-  const serverOptions: ServerOptions = {
-    run: { command: serverExecutable, args, options: exeOptions },
-    debug: { command: serverExecutable, args, options: exeOptions },
-  };
-
-  logger.info(`run command: ${serverExecutable} ${args.join(' ')}`);
-  logger.info(`debug command: ${serverExecutable} ${args.join(' ')}`);
+  logger.info(`run command: ${hlsExecutable.location} ${config.serverArgs.join(' ')}`);
+  logger.info(`debug command: ${hlsExecutable.location} ${config.serverArgs.join(' ')}`);
   if (exeOptions.cwd) {
     logger.info(`server cwd: ${exeOptions.cwd}`);
   }
@@ -268,13 +217,19 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   const documentSelector = [...haskellDocumentSelector];
 
+  const cabalFileSupport: 'automatic' | 'enable' | 'disable' = workspace.getConfiguration(
+    'haskell',
+    uri,
+  ).supportCabalFiles;
+  logger.info(`Support for '.cabal' files: ${cabalFileSupport}`);
+
   switch (cabalFileSupport) {
-    case 'automatic':
+    case 'automatic': {
       const hlsVersion = await callAsync(
-        serverExecutable,
+        hlsExecutable.location,
         ['--numeric-version'],
         logger,
-        currentWorkingDir,
+        config.workingDir,
         undefined /* this command is very fast, don't show anything */,
         false,
         serverEnvironment,
@@ -284,6 +239,7 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
         documentSelector.push(cabalDocumentSelector);
       }
       break;
+    }
     case 'enable':
       documentSelector.push(cabalDocumentSelector);
       break;
@@ -301,10 +257,10 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       // Synchronize the setting section 'haskell' to the server.
       configurationSection: 'haskell',
     },
-    diagnosticCollectionName: langName,
+    diagnosticCollectionName: config.langName,
     revealOutputChannelOn: RevealOutputChannelOn.Never,
-    outputChannel,
-    outputChannelName: langName,
+    outputChannel: config.outputChannel,
+    outputChannelName: config.langName,
     middleware: {
       provideHover: DocsBrowser.hoverLinksMiddlewareHook,
       provideCompletionItem: DocsBrowser.completionLinksMiddlewareHook,
@@ -314,15 +270,67 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
   };
 
   // Create the LSP client.
-  const langClient = new LanguageClient('haskell', langName, serverOptions, clientOptions);
+  const langClient = new LanguageClient('haskell', config.langName, serverOptions, clientOptions);
 
   // Register ClientCapabilities for stuff like window/progress
   langClient.registerProposedFeatures();
 
   // Finally start the client and add it to the list of clients.
   logger.info('Starting language server');
-  langClient.start();
-  clients.set(clientsKey, langClient);
+  clients.set(clientsKey, {
+    client: langClient,
+    config,
+  });
+  await langClient.start();
+}
+
+/**
+ * Handle errors the extension may throw. Errors are expected to be fatal.
+ *
+ * @param e Error thrown during the extension initialization.
+ * @param logger
+ */
+async function handleInitializationError(e: unknown, logger: Logger) {
+  if (e instanceof MissingToolError) {
+    const link = e.installLink();
+    if (link) {
+      if (await window.showErrorMessage(e.message, `Install ${e.tool}`)) {
+        env.openExternal(link);
+      }
+    } else {
+      await window.showErrorMessage(e.message);
+    }
+  } else if (e instanceof HlsError) {
+    logger.error(`General HlsError: ${e.message}`);
+    window.showErrorMessage(e.message);
+  } else if (e instanceof NoMatchingHls) {
+    const link = e.docLink();
+    logger.error(`${e.message}`);
+    if (await window.showErrorMessage(e.message, 'Open documentation')) {
+      env.openExternal(link);
+    }
+  } else if (e instanceof Error) {
+    logger.error(`Internal Error: ${e.message}`);
+    window.showErrorMessage(e.message);
+  }
+  if (e instanceof Error) {
+    // general stack trace printing
+    if (e.stack) {
+      logger.error(`${e.stack}`);
+    }
+  }
+}
+
+function initServerEnvironment(config: Config, hlsExecutable: HlsExecutable) {
+  let serverEnvironment: IEnvVars = config.serverEnvironment;
+  if (hlsExecutable.tag === 'ghcup') {
+    const newPath = addPathToProcessPath(hlsExecutable.binaryDirectory);
+    serverEnvironment = {
+      ...serverEnvironment,
+      ...{ PATH: newPath },
+    };
+  }
+  return serverEnvironment;
 }
 
 /*
@@ -332,7 +340,7 @@ export async function deactivate() {
   const promises: Thenable<void>[] = [];
   for (const client of clients.values()) {
     if (client) {
-      promises.push(client.stop());
+      promises.push(client.client.stop());
     }
   }
   await Promise.all(promises);
