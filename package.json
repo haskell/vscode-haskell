@@ -2,11 +2,11 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.102.0"
   },
   "keywords": [
     "language",
@@ -1355,14 +1355,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
-    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.29",
-    "@types/vscode": "^1.96.0",
+    "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.37.0",
-    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.28.0",
     "eslint-webpack-plugin": "^5.0.0",

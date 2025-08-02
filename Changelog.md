@@ -1,5 +1,10 @@
 # Changelog for vscode-haskell
 
+## 2.7.0
+
+- Introduce the `StatusBarItem`
+  ([#1237](https://github.com/haskell/vscode-haskell/pull/1237))  by @fendor
+
 ## 2.6.1
 
 - Prefer the `set` version for `cabal` and `stack` if there is any
