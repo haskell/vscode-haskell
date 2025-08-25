@@ -1354,7 +1354,7 @@
     }
   },
   "devDependencies": {
-    "@eslint/js": "^9.24.0",
+    "@eslint/js": "^9.34.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.29",
     "@types/vscode": "^1.102.0",
