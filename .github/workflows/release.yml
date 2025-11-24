@@ -7,7 +7,7 @@ jobs:
   publish-extension:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v5
         with:
           ## make sure this corresponds with the version in test.yml
