@@ -12,7 +12,7 @@ jobs:
         with:
           ## make sure this corresponds with the version in test.yml
           node-version: latest
-      - run: yarn install --immutable --immutable-cache --check-cache
+      - run: corepack yarn install --immutable
 
       - name: Package Extension
         id: packageExtension

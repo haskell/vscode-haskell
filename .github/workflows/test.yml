@@ -4,7 +4,7 @@ on:
       - master
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   build:
@@ -24,9 +24,14 @@ jobs:
           ## make sure this corresponds with the version in release.yml
           node-version: latest
 
+      - name: Use recent yarn version
+        run: |
+          corepack enable
+          corepack yarn set version berry
+
       # Install test dependencies
-      - run: yarn install --immutable --immutable-cache --check-cache
-      - run: yarn run webpack
+      - run: corepack yarn install --immutable
+      - run: corepack yarn run webpack
 
       # Setup toolchains, install ghcup, install ghc, etc...
       - name: Install GHCup
@@ -73,21 +78,21 @@ jobs:
         run: |
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
           export PATH="$(pwd)/test-workspace/bin/.ghcup/bin:$PATH"
-          xvfb-run -s '-screen 0 640x480x16' -a yarn run test
+          xvfb-run -s '-screen 0 640x480x16' -a corepack yarn run test
         shell: bash
         if: runner.os == 'Linux'
       - name: Run the test on macOS
         run: |
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
           export PATH="$(pwd)/test-workspace/bin/.ghcup/bin:$PATH"
-          yarn run test
+          corepack yarn run test
         shell: bash
         if: runner.os == 'macOS'
       - name: Run the test on Windows
         run: |
           export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
           export PATH="$(pwd)/test-workspace/bin/ghcup/bin:$PATH"
-          yarn run test
+          corepack yarn run test
         shell: bash
         if: runner.os == 'Windows'
 

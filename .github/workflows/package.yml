@@ -4,7 +4,7 @@ on:
       - master
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   build:
@@ -23,7 +23,10 @@ jobs:
           ## make sure this corresponds with the version in release.yml
           node-version: latest
 
-      - run: yarn install --immutable --immutable-cache --check-cache
+      - run: |
+          corepack enable
+          corepack yarn set version berry
+          corepack yarn install --immutable
 
       - name: Package extension
         run: npx vsce package

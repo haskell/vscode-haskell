@@ -1363,6 +1363,7 @@
     "@typescript-eslint/parser": "^8.45.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
+    "corepack": "^0.34.6",
     "eslint": "^9.37.0",
     "eslint-webpack-plugin": "^5.0.0",
     "glob": "^11.1.0",
@@ -1383,5 +1384,6 @@
     "ts-pattern": "^5.7.0",
     "vscode-languageclient": "9.0.1",
     "which": "^5.0.0"
-  }
+  },
+  "packageManager": "yarn@4.12.0"
 }
