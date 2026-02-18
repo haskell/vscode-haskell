@@ -2,15 +2,14 @@
 
 ## Dependencies and Building
 
-Run `yarn install` in the project root to install the development dependencies.
+Run `npm install` in the project root to install the development dependencies.
 
 You can also package up the extension with
 
-- `yarn global add vsce` to get the Extension Manager,
-- `yarn install` to build the extension
-- `vsce package` which creates an extension package at `haskell-<version>.vsix`.
+- `npm install` to install the dependencies
+- `npm run package` which creates an extension package at `haskell-<version>.vsix`.
 
-_Note:_ that if you get errors running `vsce package`, it might help running `yarn run pretest` directly, since that gives the actual error output of the TypeScript compilation.
+_Note:_ that if you get errors running `vsce package`, it might help running `npm run pretest` directly, since that gives the actual error output of the TypeScript compilation.
 
 ## Developing inside VS Code
 
