@@ -24,9 +24,7 @@ jobs:
           node-version: latest
 
       - run: |
-          corepack enable
-          corepack yarn set version berry
-          corepack yarn install --immutable
+          npm ci
 
       - name: Package extension
         run: npx vsce package

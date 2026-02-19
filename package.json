@@ -1339,6 +1339,8 @@
   },
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
+    "package": "npx vsce package --out=dist/",
+    "build": "npm install",
     "webpack": "webpack --mode none",
     "watch": "webpack --mode development --watch",
     "lint": "eslint -c eslint.config.mjs src",
@@ -1385,5 +1387,5 @@
     "vscode-languageclient": "9.0.1",
     "which": "^5.0.0"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "npm@11.9.0"
 }

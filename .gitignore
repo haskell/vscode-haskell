@@ -6,4 +6,4 @@ test-workspace
 dist
 *.vsix
 .husky
-.yarn
+
