@@ -12,7 +12,7 @@ jobs:
         with:
           ## make sure this corresponds with the version in test.yml
           node-version: latest
-      - run: yarn install --immutable --immutable-cache --check-cache
+      - run: npm ci
 
       - name: Package Extension
         id: packageExtension
@@ -21,7 +21,6 @@ jobs:
           pat: stub
           dryRun: true
           preRelease: ${{ github.event.action == 'prereleased' }}
-          yarn: true
 
       ## Make sure the artifact is added to the release.
       - name: Upload extension vsix to workflow artifacts
@@ -39,7 +38,6 @@ jobs:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           extensionFile: ${{ steps.packageExtension.outputs.vsixPath }}
-          yarn: true
           preRelease: ${{ github.event.action == 'prereleased' }}
 
       ## If this is a release job, publish to VSX Marketplace,
@@ -51,5 +49,4 @@ jobs:
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           extensionFile: ${{ steps.packageExtension.outputs.vsixPath }}
-          yarn: true
           preRelease: ${{ github.event.action == 'prereleased' }}

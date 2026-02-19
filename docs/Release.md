@@ -2,10 +2,10 @@
 
 Follow this list for items that must be completed for release of the `vscode-haskell` extension.
 
-- [ ] Run `yarn audit` for security vulnerabilities.
+- [ ] Run `npm audit` for security vulnerabilities.
   - Fix vulnerabilities.
-- [ ] Run `yarn outdated` to find outdated package version, review what needs to be updated.
-  - `yarn upgrade-interactive` and `yarn upgrade-interactive --latest` is helpful here.
+- [ ] Run `npm outdated` to find outdated package version, review what needs to be updated.
+  - `npm upgrade-interactive` and `npm upgrade-interactive --latest` is helpful here.
 - [ ] Run `cat test/testdata/schema/*/vscode-extension-schema.golden.json | jq --sort-keys -s add` in the `haskell-language-server` repo and add new configuration items.
 - [ ] SemVer Compatible Version Bump in `package.json`
   - For pre-releases, we follow the version convention at: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions. We use `major.EVEN_NUMBER.patch` for release versions and `major.ODD_NUMBER.patch` for pre-release versions. For example: `2.0.*` for release and `2.1.*` for pre-release.

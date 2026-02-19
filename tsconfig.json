@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "target": "es2022",
+    "target": "ES2024",
     "outDir": "out",
-    "lib": ["es2022"],
+    "lib": ["ES2024"],
     "sourceMap": true,
     "rootDir": ".",
     "noUnusedLocals": true,
@@ -14,6 +14,6 @@
     "strictNullChecks": true,
     "strictBuiltinIteratorReturn": false
   },
-  "include": ["./src/**/*.ts", "./test/**/*.ts"],
+  "include": ["./src/**/*.ts", "./test/**/*.ts", "webpack.config.js"],
   "exclude": ["node_modules", ".vscode", ".vscode-test"]
 }

@@ -1,5 +1,5 @@
-import { OutputChannel } from "vscode";
-import { Logger } from "vscode-languageclient";
+import { OutputChannel } from 'vscode';
+import { Logger } from 'vscode-languageclient';
 import * as fs from 'fs';
 
 enum LogLevel {

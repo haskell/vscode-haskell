@@ -1,49 +1,78 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *  Minimal webpack config for VS Code extensions
+ *  Uses ES Modules (compatible with Yarn 4, npm 11, and modern Node.js)
  *--------------------------------------------------------------------------------------------*/
 
-//@ts-check
+import path from 'path';
+import { fileURLToPath } from 'url';
+import ESLintPlugin from 'eslint-webpack-plugin';
 
-'use strict';
+// Recreate __dirname for ES Modules (not available in ESM by default)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const path = require('path');
-const ESLintPlugin = require('eslint-webpack-plugin');
+/** @type {import('webpack').Configuration} */
+export default {
+  // VS Code extensions run in a Node.js environment, not a browser
+  target: 'node',
 
-/**@type {import('webpack').Configuration}*/
-const config = {
-  target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-  entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+  // 'none' mode disables default optimizations (VS Code handles this)
+  mode: 'none',
+
+  // Entry point: where webpack starts bundling your extension
+  entry: './src/extension.ts',
+
   output: {
-    // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
+    // Output directory for the bundled extension
     path: path.resolve(__dirname, 'dist'),
+    // Final bundle filename (must match 'main' in package.json)
     filename: 'extension.js',
-    libraryTarget: 'commonjs2',
-    devtoolModuleFilenameTemplate: '../[resource-path]'
+    // Required format for VS Code extensions (CommonJS)
+    libraryTarget: 'commonjs2'
   },
+
+  // Generate source maps for debugging (maps bundled code back to original TypeScript)
   devtool: 'source-map',
+
   externals: {
-    vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
+    // 'vscode' module is provided by VS Code at runtime — don't bundle it
+    vscode: 'commonjs vscode'
+    // Add other native modules here if needed (e.g., 'fsevents': 'commonjs fsevents')
   },
+
   resolve: {
-    // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+    // File extensions webpack will look for (in order)
     extensions: ['.ts', '.js']
   },
-  plugins: [new ESLintPlugin()],
+
   module: {
     rules: [
       {
+        // Match all TypeScript files
         test: /\.ts$/,
+        // Skip node_modules (already compiled)
         exclude: /node_modules/,
-        enforce: 'pre',
-        use: [
-          {
-            loader: 'ts-loader'
-          }
-        ]
+        use: {
+          loader: 'ts-loader',
+          // Explicitly point to your tsconfig.json (fixes ESM resolution issues)
+          options: { configFile: path.resolve(__dirname, 'tsconfig.json') }
+        }
       }
     ]
-  }
-};
+  },
 
-module.exports = config;
+  plugins: [
+    // Lint TypeScript files during build
+    new ESLintPlugin({
+      extensions: ['.ts'],
+      exclude: ['node_modules', 'dist']
+    })
+  ],
+
+  // Suppress known harmless warnings from vscode-languageserver-types UMD build
+  ignoreWarnings: [
+    {
+      module: /vscode-languageserver-types/,
+      message: /Critical dependency: require function is used in a way/
+    }
+  ]
+};
