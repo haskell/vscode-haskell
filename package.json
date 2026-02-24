@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -1297,6 +1297,12 @@
         "haskell.plugin.semanticTokens.globalOn": {
           "default": false,
           "description": "Enables semanticTokens plugin",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.signatureHelp.globalOn": {
+          "default": true,
+          "description": "Enables signatureHelp plugin",
           "scope": "resource",
           "type": "boolean"
         },

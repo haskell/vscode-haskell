@@ -1,5 +1,12 @@
 # Changelog for vscode-haskell
 
+## 2.8.0
+
+- Migrate project to npm 11.9.0
+  ([#1336](https://github.com/haskell/vscode-haskell/pull/1336)) by @fendor
+- Standardized LICENSE for vscode-haskell
+  ([#1290](https://github.com/haskell/vscode-haskell/pull/1290)) by @Shubhashish-Chakraborty
+
 ## 2.7.0
 
 - Introduce the `StatusBarItem`
