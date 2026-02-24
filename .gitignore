@@ -1,8 +1,14 @@
 out
 node_modules
 .vscode-test
-test-workspace
 .DS_Store
 dist
 *.vsix
 .husky
+
+# Ignore everything in test-workspace
+test-workspace/*
+
+# Except the .gitkeep file
+!test-workspace/.gitkeep
+

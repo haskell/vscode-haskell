@@ -1,8 +1,9 @@
 import globals from 'globals';
 import eslint from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig(
   { files: ['**/*.{js,mjs,cjs,ts}'] },
   {
     languageOptions: {
