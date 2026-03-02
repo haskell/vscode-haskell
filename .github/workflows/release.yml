@@ -24,7 +24,7 @@ jobs:
 
       ## Make sure the artifact is added to the release.
       - name: Upload extension vsix to workflow artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: haskell-${{ github.event.release.tag_name }}.vsix
           path: ${{ steps.packageExtension.outputs.vsixPath }}

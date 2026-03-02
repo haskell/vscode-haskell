@@ -29,7 +29,7 @@ jobs:
       - name: Package extension
         run: npx vsce package
       - name: Upload extension vsix to workflow artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: haskell-${{ github.sha }}.vsix
           path: haskell-*.vsix
