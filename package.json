@@ -1372,7 +1372,7 @@
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "corepack": "^0.34.6",
-    "eslint": "^9.37.0",
+    "eslint": "^10.0.2",
     "eslint-webpack-plugin": "^5.0.3",
     "glob": "^13.0.5",
     "globals": "^17.3.0",
