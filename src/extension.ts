@@ -1,4 +1,4 @@
-import { commands, env, ExtensionContext, TextDocument, Uri, window, workspace, WorkspaceFolder } from 'vscode';
+import { commands, env, ExtensionContext, TextDocument, ThemeColor, Uri, window, workspace, WorkspaceFolder } from 'vscode';
 import {
   ExecutableOptions,
   LanguageClient,
@@ -13,7 +13,7 @@ import { HlsError, MissingToolError, NoMatchingHls } from './errors';
 import { findHaskellLanguageServer, HlsExecutable, IEnvVars, fetchConfig } from './hlsBinaries';
 import { addPathToProcessPath, comparePVP, callAsync } from './utils';
 import { Config, initConfig, initLoggerFromConfig, logConfig } from './config';
-import { HaskellStatusBar } from './statusBar';
+import { CradleInfo, HaskellStatusBar } from './statusBar';
 
 /**
  * Global information about the running clients.
@@ -22,6 +22,19 @@ type Client = {
   client: LanguageClient;
   config: Config;
 };
+
+type HlsStatusBase<S extends string, F, P> = {
+  status: S
+  rootDir: string,
+  file: F
+  payload: P
+}
+
+type HlsStatusNotification =
+  | HlsStatusBase<"started", null, null>
+  | HlsStatusBase<"loading", string, null>
+  | HlsStatusBase<"error", string, { message: string }>
+  | HlsStatusBase<"ready", string, { ghcVersion: string; inferred: boolean }>
 
 // The current map of documents & folders to language servers.
 // It may be null to indicate that we are in the process of launching a server,
@@ -38,9 +51,9 @@ export async function activate(context: ExtensionContext) {
   // just support
   // https://microsoft.github.io/language-server-protocol/specifications/specification-3-15/#workspace_workspaceFolders
   // and then we can just launch one server
-  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateServer(context, document));
+  workspace.onDidOpenTextDocument(async (document: TextDocument) => await activateServer(context, document, statusBar));
   for (const document of workspace.textDocuments) {
-    await activateServer(context, document);
+    await activateServer(context, document, statusBar);
   }
 
   // Stop the server from any workspace folders that are removed.
@@ -86,7 +99,7 @@ export async function activate(context: ExtensionContext) {
     fetchConfig();
 
     for (const document of workspace.textDocuments) {
-      await activateServer(context, document);
+      await activateServer(context, document, statusBar);
     }
   });
 
@@ -125,11 +138,25 @@ export async function activate(context: ExtensionContext) {
   const openOnHackageDisposable = DocsBrowser.registerDocsOpenOnHackage();
   context.subscriptions.push(openOnHackageDisposable);
 
+  // Refresh Status bad on file change
+  context.subscriptions.push(
+    window.onDidChangeActiveTextEditor((editor) => {
+      statusBar.refreshForDocument(editor?.document);
+    }),
+  );
+  context.subscriptions.push(
+    workspace.onDidCloseTextDocument((document) => {
+      if (document.uri.scheme === 'file') {
+        statusBar.clearCradleInfo(document.uri.fsPath);
+      }
+    }),
+  );
+
   statusBar.refresh();
   statusBar.show();
 }
 
-async function activateServer(context: ExtensionContext, document: TextDocument) {
+async function activateServer(context: ExtensionContext, document: TextDocument, statusBar: HaskellStatusBar) {
   // We are only interested in Haskell files.
   if (
     (document.languageId !== 'haskell' &&
@@ -143,10 +170,10 @@ async function activateServer(context: ExtensionContext, document: TextDocument)
   const uri = document.uri;
   const folder = workspace.getWorkspaceFolder(uri);
 
-  await activateServerForFolder(context, uri, folder);
+  await activateServerForFolder(context, uri, statusBar, folder);
 }
 
-async function activateServerForFolder(context: ExtensionContext, uri: Uri, folder?: WorkspaceFolder) {
+async function activateServerForFolder(context: ExtensionContext, uri: Uri, statusBar: HaskellStatusBar, folder?: WorkspaceFolder) {
   const clientsKey = folder ? folder.uri.toString() : uri.toString();
   // If the client already has an LSP server for this uri/folder, then don't start a new one.
   if (clients.has(clientsKey)) {
@@ -274,7 +301,30 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
 
   // Register ClientCapabilities for stuff like window/progress
   langClient.registerProposedFeatures();
+  langClient.onNotification('ghcide/status', (notification: HlsStatusNotification) => {
+    const status = notification.status;
+    if (status === 'started' || status === 'loading') {
+      statusBar.item.backgroundColor = new ThemeColor('statusBarItem.warningBackground');
+      statusBar.item.color = new ThemeColor('statusBarItem.warningForeground');
+      statusBar.clearStatusInfo();
+    } else if (status === 'error') {
+      statusBar.item.backgroundColor = new ThemeColor('statusBarItem.errorBackground');
+      statusBar.item.color = new ThemeColor('statusBarItem.errorForeground');
+      statusBar.setErrorMessage(notification.payload?.message ?? '<unknown error>');
+    } else if (status === 'ready') {
+      statusBar.item.backgroundColor = undefined;
+      statusBar.item.color = undefined;
+      statusBar.clearStatusInfo();
 
+      const cradleInfo: CradleInfo = {
+        file: notification.file,
+        rootDir: notification.rootDir,
+        ghcVersion: notification.payload.ghcVersion,
+        inferred: notification.payload.inferred ?? false,
+      };
+      statusBar.setCradleInfo(cradleInfo);
+    }
+  });
   // Finally start the client and add it to the list of clients.
   logger.info('Starting language server');
   clients.set(clientsKey, {
