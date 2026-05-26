@@ -12,7 +12,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "strictNullChecks": true,
-    "strictBuiltinIteratorReturn": false
+    "strictBuiltinIteratorReturn": false,
+    "skipLibCheck": true
   },
   "include": ["./src/**/*.ts", "./test/**/*.ts", "webpack.config.js"],
   "exclude": ["node_modules", ".vscode", ".vscode-test"]
