@@ -1362,34 +1362,34 @@
     }
   },
   "devDependencies": {
-    "@eslint/js": "^9.37.0",
+    "@eslint/js": "^10.0.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.15.29",
+    "@types/node": "^25.9.1",
     "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.1",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "corepack": "^0.34.6",
-    "eslint": "^9.37.0",
-    "eslint-webpack-plugin": "^5.0.3",
-    "glob": "^13.0.5",
-    "globals": "^17.4.0",
+    "corepack": "^0.35.0",
+    "eslint": "^10.4.0",
+    "eslint-webpack-plugin": "^6.0.0",
+    "glob": "^13.0.6",
+    "globals": "^17.6.0",
     "husky": "^9.1.7",
-    "mocha": "^11.7.5",
+    "mocha": "^11.7.6",
     "prettier": "^3.8.1",
-    "ts-loader": "^9.5.2",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0",
-    "webpack": "^5.105.4",
-    "webpack-cli": "^6.0.1"
+    "ts-loader": "^9.5.7",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0",
+    "webpack": "^5.107.2",
+    "webpack-cli": "^7.0.2"
   },
   "extensionDependencies": [],
   "dependencies": {
     "ts-pattern": "^5.9.0",
     "vscode-languageclient": "^9.0.1",
-    "which": "^6.0.1"
+    "which": "^7.0.0"
   },
   "packageManager": "npm@11.9.0"
 }
