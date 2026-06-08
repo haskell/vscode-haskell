@@ -4,7 +4,7 @@ on:
       - master
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   build:
@@ -30,24 +30,7 @@ jobs:
 
       # Setup toolchains, install ghcup, install ghc, etc...
       - name: Install GHCup
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-        shell: bash
-        env:
-          BOOTSTRAP_HASKELL_NONINTERACTIVE: 1
-          BOOTSTRAP_HASKELL_MINIMAL: 1
-
-      - name: Check GHCup (Windows)
-        run: |
-          echo "c:/ghcup/bin" >> $GITHUB_PATH
-        shell: bash
-        if: runner.os == 'Windows'
-
-      - name: Check GHCup (Unix)
-        run: |
-          echo "${HOME}/.ghcup/bin" >> $GITHUB_PATH
-        shell: bash
-        if: runner.os != 'Windows'
+        uses: haskell/ghcup-setup@v1
 
       - name: Toolchain settings
         run: |
