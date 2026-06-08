@@ -31,22 +31,13 @@ jobs:
       # Setup toolchains, install ghcup, install ghc, etc...
       - name: Install GHCup
         uses: haskell/ghcup-setup@v1
+        with:
+          ghc: ${{ matrix.ghc }}
+          cabal: latest
+          stack: latest
 
-      - name: Toolchain settings
+      - name: Install HLS 2.2 and latest
         run: |
-          ghcup upgrade -i -f
-          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
-          ghcup config set cache true
-
-          ghcup install stack latest
-          ghcup install cabal latest
-
-          ghcup install ghc ${{ matrix.ghc }}
-          ghcup set ghc ${{ matrix.ghc }}
-
-          # This is a prefetched, fallback HLS version.
-          # We want to make sure, we still support old GHC versions
-          # and graciously fallback to an HLS version that supports the old GHC version, such as 8.10.7
           ghcup install hls 2.2.0.0
           ghcup install hls latest
         shell: bash
@@ -54,32 +45,16 @@ jobs:
       # Run the tests
       - name: Run the test on Linux
         run: |
-          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
-          export PATH="$(pwd)/test-workspace/bin/.ghcup/bin:$PATH"
           xvfb-run -s '-screen 0 640x480x16' -a npm run test
         shell: bash
         if: runner.os == 'Linux'
       - name: Run the test on macOS
         run: |
-          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
-          export PATH="$(pwd)/test-workspace/bin/.ghcup/bin:$PATH"
           npm run test
         shell: bash
         if: runner.os == 'macOS'
       - name: Run the test on Windows
         run: |
-          export GHCUP_INSTALL_BASE_PREFIX=$(pwd)/test-workspace/bin
-          export PATH="$(pwd)/test-workspace/bin/ghcup/bin:$PATH"
           npm run test
         shell: bash
         if: runner.os == 'Windows'
-
-      # Create package artefacts
-      - name: Delete test artefacts
-        # The test-suite doesn't clean up correctly after itself.
-        # This is a poor man's workaround that after test execution,
-        # the test-workspace still contains binaries and caches.
-        run: |
-          rm -rf test-workspace
-          rm -rf out
-        shell: bash
