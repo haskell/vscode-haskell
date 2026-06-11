@@ -101,13 +101,23 @@ export class GHCup {
    */
   public async getAnyLatestVersion(tool: Tool): Promise<ToolInfo | null> {
     // these might be custom/stray/compiled, so we try first
-    const installedVersions = await this.listTool(tool, 'installed');
+    const installedVersions = await this.getAllInstalledVersions(tool);
     const latestInstalled = installedVersions.pop();
     if (latestInstalled) {
       return latestInstalled;
     } else {
       return this.getLatestAvailableVersion(tool);
     }
+  }
+
+  /**
+   * Find all installed versions of a {@link Tool} that we can find in GHCup.
+   *
+   * @param tool Tool you want to know which versions are installed of.
+   * @returns All installed versions of the {@link tool}
+   */
+  public async getAllInstalledVersions(tool: Tool): Promise<ToolInfo[]> {
+    return await this.listTool(tool, 'installed');
   }
 
   /**
@@ -138,22 +148,40 @@ export class GHCup {
   private async listTool(tool: Tool, category: string): Promise<ToolInfo[]> {
     // fall back to installable versions
     const availableVersions = await this.call(['list', '-t', tool, '-c', category, '-r'], undefined, false).then((s) =>
-      s.split(/\r?\n/),
+      // Split by newline and filter empty lines
+      s.split(/\r?\n/).filter((tool) => tool.length > 0),
     );
 
-    return availableVersions.map((toolString) => {
-      const toolParts = toolString.split(/\s+/);
-      return {
-        tool: tool,
-        version: toolParts[1],
-        tags: toolParts[2]?.split(',') ?? [],
-      };
-    });
+    return availableVersions
+      .map((toolString) => {
+        const toolParts = toolString.split(/\s+/);
+        return {
+          tool: tool,
+          version: toolParts[1],
+          tags: toolParts[2]?.split(',') ?? [],
+        };
+      })
+      .filter((tool) => {
+        // We check that the first character is a digit to filter out
+        // third-party channels binaries.
+        // Currently, third-party channels usually prefix their binary versions with a string:
+        //
+        //    > ghcup --no-verbose list -t ghc -c available -r
+        //    ...
+        //    ghc 9.14.1 latest,base-4.22.0.0 2025-12-18
+        //    ghc javascript-unknown-ghcjs-9.12.2 base-4.21.0.0
+        //
+        // A poor man's filter, but we have to wait for
+        // https://github.com/haskell/ghcup-hs/issues/1362
+        // to get something less hacky.
+        //
+        const c = tool.version.charAt(0);
+        return '0' <= c && c <= '9';
+      });
   }
 
   public async findLatestUserInstalledTool(tool: Tool): Promise<ToolInfo> {
-    let toolInfo = null;
-    toolInfo = await this.getSetVersion(tool);
+    let toolInfo = await this.getSetVersion(tool);
     if (toolInfo) return toolInfo;
     toolInfo = await this.getAnyLatestVersion(tool);
     if (toolInfo) return toolInfo;
