@@ -49,7 +49,7 @@ export function initConfig(workspaceConfig: WorkspaceConfiguration, uri: Uri, fo
     ghcupConfig: {
       metadataUrl: workspaceConfig.metadataURL as string,
       upgradeGHCup: workspaceConfig.get('upgradeGHCup') as boolean,
-      executablePath: workspaceConfig.get('ghcupExecutablePath') as string,
+      executablePath: workspaceConfig.get('ghcupExecutablePath'),
     },
   };
 }
