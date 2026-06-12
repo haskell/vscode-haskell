@@ -152,8 +152,7 @@ export class GHCup {
   }
 
   public async findLatestUserInstalledTool(tool: Tool): Promise<ToolInfo> {
-    let toolInfo = null;
-    toolInfo = await this.getSetVersion(tool);
+    let toolInfo = await this.getSetVersion(tool);
     if (toolInfo) return toolInfo;
     toolInfo = await this.getAnyLatestVersion(tool);
     if (toolInfo) return toolInfo;

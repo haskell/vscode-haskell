@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import * as fs from 'fs';
 import * as https from 'https';
 import * as path from 'path';
@@ -190,8 +191,10 @@ async function getReleaseMetadata(storagePath: string, logger: Logger): Promise<
           githubError.message,
       );
       return cachedInfoParsed;
-    } catch (_fileError) {
-      throw new Error("Couldn't get the latest haskell-language-server releases from GitHub: " + githubError.message);
+    } catch (fileError) {
+      throw new Error("Couldn't get the latest haskell-language-server releases from GitHub: " + githubError.message, {
+        cause: fileError,
+      });
     }
   }
 }

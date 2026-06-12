@@ -38,10 +38,6 @@ export class ExtensionLogger implements Logger {
   }
 
   private write(msg: string) {
-    let now = new Date();
-    // Ugly hack to make js date iso format similar to hls one
-    const offset = now.getTimezoneOffset();
-    now = new Date(now.getTime() - offset * 60 * 1000);
     const timedMsg = `${new Date().toISOString().replace('T', ' ').replace('Z', '0000')} ${msg}`;
     this.channel.appendLine(timedMsg);
     if (this.logFile) {
