@@ -401,7 +401,7 @@ async function getLatestProjectHls(
   // first we get supported GHC versions from available HLS bindists (whether installed or not)
   const metadataMap = (await getHlsMetadata(storagePath, logger)) || new Map<string, string[]>();
   // then we get supported GHC versions from currently installed HLS versions
-  const ghcupMap = (await findAvailableHlsBinariesFromGHCup(ghcup)) || new Map<string, string[]>();
+  const ghcupMap = await findAvailableHlsBinariesFromGHCup(ghcup);
   // since installed HLS versions may support a different set of GHC versions than the bindists
   // (e.g. because the user ran 'ghcup compile hls'), we need to merge both maps, preferring
   // values from already installed HLSes
@@ -507,8 +507,8 @@ export function getStoragePath(context: ExtensionContext): string {
  * @returns A Map of the locally installed HLS versions and with which `GHC` versions they are compatible.
  */
 
-async function findAvailableHlsBinariesFromGHCup(ghcup: GHCup): Promise<Map<string, string[]> | null> {
-  const hlsVersions = await ghcup.call(['list', '-t', 'hls', '-c', 'installed', '-r'], undefined, false);
+async function findAvailableHlsBinariesFromGHCup(ghcup: GHCup): Promise<Map<string, string[]>> {
+  const hlsVersions = await ghcup.getAllInstalledVersions('hls');
 
   const bindir = await ghcup.call(['whereis', 'bindir'], undefined, false);
   const files = fs.readdirSync(bindir).filter((e) => {
@@ -516,22 +516,17 @@ async function findAvailableHlsBinariesFromGHCup(ghcup: GHCup): Promise<Map<stri
     return stat.isFile();
   });
 
-  const installed = hlsVersions.split(/\r?\n/).map((e) => e.split(/\s+/)[1]);
-  if (installed?.length) {
-    const myMap = new Map<string, string[]>();
-    installed.forEach((hls) => {
-      const ghcs = files
-        .filter((f) => f.endsWith(`~${hls}${exeExt}`) && f.startsWith('haskell-language-server-'))
-        .map((f) => {
-          const rmPrefix = f.substring('haskell-language-server-'.length);
-          return rmPrefix.substring(0, rmPrefix.length - `~${hls}${exeExt}`.length);
-        });
-      myMap.set(hls, ghcs);
-    });
-    return myMap;
-  } else {
-    return null;
-  }
+  const myMap = new Map<string, string[]>();
+  hlsVersions.forEach((hls) => {
+    const ghcs = files
+      .filter((f) => f.endsWith(`~${hls.version}${exeExt}`) && f.startsWith('haskell-language-server-'))
+      .map((f) => {
+        const rmPrefix = f.substring('haskell-language-server-'.length);
+        return rmPrefix.substring(0, rmPrefix.length - `~${hls.version}${exeExt}`.length);
+      });
+    myMap.set(hls.version, ghcs);
+  });
+  return myMap;
 }
 
 async function installationStatusOfGhcupTool(ghcup: GHCup, tool: Tool, version: string): Promise<ToolStatus> {
