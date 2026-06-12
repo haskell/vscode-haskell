@@ -1,5 +1,14 @@
 # Changelog for vscode-haskell
 
+## 2.8.1
+
+- Remove language-haskell extension dependency
+  ([#1377](https://github.com/haskell/vscode-haskell/pull/1377)) by @fendor
+- Filter third-party binaries from ghcup list output
+  ([#1375](https://github.com/haskell/vscode-haskell/pull/1375)) by @fendor
+- Change the default sessionLoading to multiple
+  ([#1372](https://github.com/haskell/vscode-haskell/pull/1372)) by @xsebek
+
 ## 2.8.0
 
 - Migrate project to npm 11.9.0
