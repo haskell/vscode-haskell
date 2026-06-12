@@ -1385,9 +1385,7 @@
     "webpack": "^5.105.4",
     "webpack-cli": "^6.0.1"
   },
-  "extensionDependencies": [
-    "justusadam.language-haskell"
-  ],
+  "extensionDependencies": [],
   "dependencies": {
     "ts-pattern": "^5.9.0",
     "vscode-languageclient": "^9.0.1",
