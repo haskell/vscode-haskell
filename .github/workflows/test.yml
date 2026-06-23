@@ -58,3 +58,77 @@ jobs:
           npm run test
         shell: bash
         if: runner.os == 'Windows'
+
+  vscode:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            ARTIFACT: "x86_64-linux-ghcup"
+            ghc: 9.12.2
+            legacy: false
+            ext: ""
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          repository: haskell/vscode-haskell
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          ## make sure this corresponds with the version in release.yml
+          node-version: latest
+
+      # Install test dependencies
+      - run: npm ci
+      - run: npm run webpack
+
+      - name: Add bin to PATH
+        run: echo "$PWD/out" >> $GITHUB_PATH
+        shell: bash
+
+      # Setup toolchains, install ghcup, install ghc, etc...
+      - name: Install GHCup
+        uses: haskell/ghcup-setup@v1
+        with:
+          ghc: ${{ matrix.ghc }}
+          cabal: latest
+          stack: latest
+
+      - name: Install toolchain
+        run: |
+          echo $PATH
+          which ghcup
+          ghcup --version
+          ghcup install ghc ${{ matrix.ghc }}
+          ghcup install cabal latest
+          ghcup install stack latest
+          ghcup install hls 2.2.0.0
+          ghcup install hls latest
+          ghcup config add-release-channel cross
+          ghcup config add-release-channel 3rdparty
+          ghcup config add-release-channel prereleases
+        shell: bash
+
+      # Run the tests
+      - name: Run the test on Linux
+        run: |
+          xvfb-run -s '-screen 0 640x480x16' -a npm run test
+        shell: bash
+        if: runner.os == 'Linux'
+
+      - name: Run the test on macOS
+        run: |
+          npm run test
+        shell: bash
+        if: runner.os == 'macOS'
+
+      - name: Run the test on Windows
+        run: |
+          npm run test
+        shell: bash
+        if: runner.os == 'Windows'
