@@ -249,6 +249,9 @@ async function activateServerForFolder(context: ExtensionContext, uri: Uri, fold
       break;
   }
 
+  // TODO @fendor: guard the cabal.project support by HLS version
+  documentSelector.push({ scheme: 'file', language: 'cabal project', pattern: pat });
+
   const clientOptions: LanguageClientOptions = {
     // Use the document selector to only notify the LSP on files inside the folder
     // path for the specific workspace.
