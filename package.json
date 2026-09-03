@@ -2,7 +2,7 @@
   "name": "haskell",
   "displayName": "Haskell",
   "description": "Haskell language support powered by the Haskell Language Server",
-  "version": "2.8.2",
+  "version": "2.8.3",
   "license": "MIT",
   "publisher": "haskell",
   "engines": {
@@ -231,10 +231,55 @@
             "multipleComponents"
           ],
           "default": "multipleComponents",
-          "description": "Preferred approach for loading package components. Setting this to 'multiple components' allows the build tool (such as `cabal` or `stack`) to [load multiple components at once](https://github.com/haskell/cabal/pull/8726), which is a significant improvement.",
+          "description": "Preferred approach for loading package components. Setting this to 'multipleComponents' allows the build tool (such as `cabal` or `stack`) to [load multiple components at once](https://github.com/haskell/cabal/pull/8726), which is a significant improvement.",
           "enumDescriptions": [
             "Prefer a multiple component session, if the build tool supports it. At the moment, only `cabal` supports multiple components session loading. If the `cabal` version does not support loading multiple components at once, we gracefully fall back to \"singleComponent\" mode.",
             "You can force single component session loading if you encountered any issues."
+          ],
+          "deprecationMessage": "Prefer `haskell.componentsLoading` in HLS 2.15.0.0 or newer. This option will keep working with HLS 2.15.0.0."
+        },
+        "haskell.componentsLoading": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "single",
+            "multi: needed-only",
+            "multi: whole-project"
+          ],
+          "default": "multi: needed-only",
+          "description": "Preferred approach for loading package components. Setting this to 'multi: needed-only' allows the build tool (such as `cabal` or `stack`) to load multiple components at once, which is a significant improvement.",
+          "enumDescriptions": [
+            "Load only the component required to load the file you open in the editor. Might fail if you open components that require a currently unloaded component.",
+            "Load components on demand that are required to load the files open in your editor.",
+            "Load the whole project at once. Experimental and might contain more bugs"
+          ]
+        },
+        "haskell.linkDocTo": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "LinkToHackage",
+            "LinkToLocal"
+          ],
+          "default": "LinkToHackage",
+          "description": "Where should `Documentation` links in hover messages point to",
+          "enumDescriptions": [
+            "Link to Hackage",
+            "Link to local haddock"
+          ]
+        },
+        "haskell.linkSourceTo": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "LinkToHackage",
+            "LinkToLocal"
+          ],
+          "default": "LinkToHackage",
+          "description": "Where should `Source` links in hover messages point to",
+          "enumDescriptions": [
+            "Link to Hackage",
+            "Link to local haddock"
           ]
         },
         "haskell.supportCabalFiles": {
@@ -319,6 +364,12 @@
           "scope": "resource",
           "type": "boolean"
         },
+        "haskell.plugin.caseSplit.globalOn": {
+          "default": true,
+          "description": "Enables caseSplit plugin",
+          "scope": "resource",
+          "type": "boolean"
+        },
         "haskell.plugin.changeTypeSignature.globalOn": {
           "default": true,
           "description": "Enables changeTypeSignature plugin",
@@ -376,6 +427,12 @@
         "haskell.plugin.explicit-fixity.globalOn": {
           "default": true,
           "description": "Enables explicit-fixity plugin",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.export.globalOn": {
+          "default": true,
+          "description": "Enables export plugin",
           "scope": "resource",
           "type": "boolean"
         },
@@ -509,9 +566,15 @@
           "scope": "resource",
           "type": "boolean"
         },
-        "haskell.plugin.moduleName.globalOn": {
+        "haskell.plugin.notes.completionOn": {
           "default": true,
-          "description": "Enables moduleName plugin",
+          "description": "Enables notes completions",
+          "scope": "resource",
+          "type": "boolean"
+        },
+        "haskell.plugin.notes.hoverOn": {
+          "default": true,
+          "description": "Enables notes hover",
           "scope": "resource",
           "type": "boolean"
         },
@@ -551,21 +614,21 @@
           "scope": "resource",
           "type": "boolean"
         },
+        "haskell.plugin.rename.codeLensOn": {
+          "default": true,
+          "description": "Enables rename code lenses",
+          "scope": "resource",
+          "type": "boolean"
+        },
         "haskell.plugin.rename.config.crossModule": {
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable experimental cross-module renaming",
           "scope": "resource",
           "type": "boolean"
         },
-        "haskell.plugin.rename.globalOn": {
+        "haskell.plugin.rename.renameOn": {
           "default": true,
-          "description": "Enables rename plugin",
-          "scope": "resource",
-          "type": "boolean"
-        },
-        "haskell.plugin.retrie.globalOn": {
-          "default": true,
-          "description": "Enables retrie plugin",
+          "description": "Enables rename rename",
           "scope": "resource",
           "type": "boolean"
         },
@@ -1298,7 +1361,7 @@
           "type": "string"
         },
         "haskell.plugin.semanticTokens.globalOn": {
-          "default": false,
+          "default": true,
           "description": "Enables semanticTokens plugin",
           "scope": "resource",
           "type": "boolean"
