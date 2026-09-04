@@ -1,5 +1,10 @@
 # Changelog for vscode-haskell
 
+## 2.8.3
+
+- Prepare release 2.8.3 ([#1396](https://github.com/haskell/vscode-haskell/pull/1396)) by @fendor
+  - Added new configuration options for HLS 2.15.0.0
+
 ## 2.8.2
 
 - Add language-haskell extension pack
