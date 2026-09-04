@@ -1436,7 +1436,7 @@
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.1",
     "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-electron": "^3.1.0",
     "corepack": "^0.35.0",
     "eslint": "^10.4.0",
     "eslint-webpack-plugin": "^6.0.0",
