@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as process from 'process';
-import { WorkspaceFolder } from 'vscode';
+import { Uri, WorkspaceFolder } from 'vscode';
 import { Logger } from 'vscode-languageclient';
 import { MissingToolError } from './errors';
 import { resolvePathPlaceHolders, executableExists, callAsync, ProcessCallback, IEnvVars } from './utils';
@@ -19,8 +19,26 @@ export function initDefaultGHCup(config: GHCupConfig, logger: Logger, folder?: W
   });
 }
 
+export type MetadataUri = Uri | string[];
+
+export function parseMetadataUri(m: string): MetadataUri {
+  try {
+    const value = JSON.parse(m);
+    if (Array.isArray(value) && value.every((item) => typeof item === 'string')) return value;
+    else return Uri.parse(m, true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (SyntaxError) {
+    return Uri.parse(m, true);
+  }
+}
+
+function showMetadataUri(m: MetadataUri): string {
+  if (m instanceof Uri) return m.toString();
+  else return JSON.stringify(m);
+}
+
 export type GHCupConfig = {
-  metadataUrl?: string;
+  metadataUrl?: MetadataUri;
   upgradeGHCup: boolean;
   executablePath?: string;
 };
@@ -56,7 +74,7 @@ export class GHCup {
     const metadataUrl = this.config.metadataUrl; // ;
     return await callAsync(
       this.location,
-      ['--no-verbose'].concat(metadataUrl ? ['-s', metadataUrl] : []).concat(args),
+      ['--no-verbose'].concat(metadataUrl ? ['-s', showMetadataUri(metadataUrl)] : []).concat(args),
       this.logger,
       undefined,
       title,

@@ -153,7 +153,7 @@
           "scope": "resource",
           "type": "string",
           "default": "",
-          "description": "An optional URL to override where ghcup checks for tool download info (usually at: https://raw.githubusercontent.com/haskell/ghcup-metadata/master/ghcup-0.0.7.yaml)"
+          "description": "An optional URL to override where ghcup checks for tool download info (usually at: https://raw.githubusercontent.com/haskell/ghcup-metadata/master/ghcup-0.1.0.yaml). Allows multiple channels passed as a JSON array, for example '[ \"GHCupURL\", \"prereleases\", \"cross\" ]'."
         },
         "haskell.releasesDownloadStoragePath": {
           "scope": "resource",
