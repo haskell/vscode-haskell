@@ -1441,7 +1441,7 @@
     "eslint": "^10.4.0",
     "eslint-webpack-plugin": "^6.0.0",
     "glob": "^13.0.6",
-    "globals": "^17.6.0",
+    "globals": "^17.13.0",
     "husky": "^9.1.7",
     "mocha": "^11.7.5",
     "prettier": "^3.8.1",
