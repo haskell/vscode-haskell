@@ -1435,7 +1435,7 @@
     "@types/which": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.1",
-    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
     "corepack": "^0.35.0",
     "eslint": "^10.4.0",
