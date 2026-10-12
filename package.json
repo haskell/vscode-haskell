@@ -1449,7 +1449,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1",
     "webpack": "^5.107.2",
-    "webpack-cli": "^7.0.2"
+    "webpack-cli": "^7.2.3"
   },
   "extensionDependencies": [],
   "dependencies": {
