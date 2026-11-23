@@ -1454,7 +1454,7 @@
   "extensionDependencies": [],
   "dependencies": {
     "ts-pattern": "^5.9.0",
-    "vscode-languageclient": "^9.0.1",
+    "vscode-languageclient": "^10.1.2",
     "which": "^7.0.0"
   },
   "packageManager": "npm@11.9.0"
